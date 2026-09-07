@@ -59,8 +59,7 @@ export function WelcomeCard({ supervisor }: WelcomeCardProps) {
                     <Button
                         variant="white"
                         color="violet"
-                        size="xs"
-                        compact
+                        size="compact-xs"
                         onClick={() => alert("Modo Aplicador activado (Simulación)")}
                     >
                         Modo Aplicador

@@ -13,7 +13,7 @@ interface UseCountdownTimerReturn {
 export function useCountdownTimer(durationInMinutes: number): UseCountdownTimerReturn {
     const [timeRemaining, setTimeRemaining] = useState(durationInMinutes * 60);
     const [isRunning, setIsRunning] = useState(false);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         if (isRunning && timeRemaining > 0) {

@@ -138,7 +138,7 @@ export function ProfileSettings({ profile, onSave }: ProfileSettingsProps) {
                         <Button
                             type="submit"
                             size="md"
-                            loading={form.isSubmitting}
+                            loading={form.submitting}
                         >
                             Guardar Cambios
                         </Button>

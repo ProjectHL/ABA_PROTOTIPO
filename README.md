@@ -1,67 +1,48 @@
-# ABA Therapy Prototipo (Módulo Clínico)
+# ABA Clínico
 
-Este proyecto es un prototipo funcional de alto nivel desarrollado con **React**, **TypeScript**, **Vite** y **Mantine UI**. Simula el flujo de trabajo completo de una plataforma de gestión clínica para terapias ABA (Análisis Conductual Aplicado).
+Plataforma de gestión clínica ABA construida con Next.js, TypeScript, Mantine y Supabase.
 
-## 🚀 Inicio Rápido
+## Requisitos
 
-### Prerrequisitos
-- Node.js (v18 o superior recomendado)
-- npm o yarn
+- Node.js 20.9 o superior
+- Acceso al proyecto Supabase de staging
 
-### Instalación
+## Inicio local
+
 ```bash
-# Instalar dependencias
 npm install
-```
-
-### Ejecución en Desarrollo
-```bash
-# Iniciar servidor de desarrollo (puerto 5173 por defecto)
+copy .env.example .env.local
 npm run dev
 ```
 
-### Linting y Calidad de Código
+El proyecto local ya incluye `.env.local` para el entorno de staging. Nunca subas ese archivo al repositorio.
+
+## Comandos
+
 ```bash
-# Ejecutar linter para verificar errores
 npm run lint
+npm run typecheck
+npm test
+npm run test:db
+npm run test:e2e
+npm run build
+npm run start
 ```
 
-## 🏗️ Tecnologías Clave
+## Arquitectura
 
-*   **Core**: React 18 + TypeScript + Vite.
-*   **UI Framework**: Mantine UI v7 (Componentes, Hooks, Notificaciones).
-*   **Routing**: React Router DOM v6.
-*   **Gráficos**: Recharts (para visualización de datos clínicos).
-*   **Iconos**: Lucide React.
-*   **Estado Global**: React Context API (para simulación de autenticación y roles).
+- `app/`: rutas de Next.js App Router.
+- `src/views/`: pantallas de la aplicación.
+- `src/features/`: módulos clínicos reutilizables.
+- `src/lib/supabase/`: clientes de navegador, servidor y actualización de sesión.
+- `proxy.ts`: refresca la sesión y redirige a `/login` las rutas protegidas.
 
-## 📂 Estructura del Proyecto
+## Supabase
 
-La estructura sigue un enfoque **Feature-Based** para escalar mejor que el clásico "components/pages":
+La aplicación usa las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. La clave publicable puede estar en el navegador; la seguridad de los datos depende de las políticas RLS. No uses una clave `service_role` en componentes de cliente ni variables `NEXT_PUBLIC_`.
 
-```
-src/
-├── api/              # Mocks de datos y simuladores de backend
-├── components/       # Componentes UI reutilizables y Layouts globales
-├── context/          # Contextos globales (RoleContext)
-├── features/         # Módulos de funcionalidad específica
-│   ├── analytics/    # Gráficos y Dashboard de Análisis
-│   ├── auth/         # Componentes de Login/Registro
-│   ├── dashboard/    # Widgets del Dashboard Principal
-│   ├── dataCollection/ # Motor de toma de datos (Sesión Activa)
-│   ├── programs/     # Gestión de Programas Clínicos
-│   └── students/     # Gestión de Estudiantes y Perfiles
-├── hooks/            # Hooks personalizados (useRole)
-├── pages/            # Páginas principales (vistas de rutas)
-└── types/            # Definiciones de tipos TypeScript compartidas
-```
+El espacio clínico en `src/modules/clinical/` consulta y escribe Supabase mediante capacidades por estudiante. Incluye ficha ampliada, programas versionados y captura de porcentaje, frecuencia e intervalos. Las migraciones recuperadas y las pruebas PostgreSQL aisladas viven en `supabase/migrations/` y `tests/database/`.
 
-## 🔐 Gestión de Roles (Simulado)
+Los datos sintéticos deben crearse con un UUID `ABA_TEST_RUN_ID`. Antes de una PoC real, siga [OPERACION_POC.md](OPERACION_POC.md): respaldo, inventario, ensayo de limpieza, limpieza por lote y verificación. En la PoC deje esa variable vacía.
 
-El sistema incluye un selector de roles en la barra superior para probar diferentes perspectivas:
-1.  **Administrador**: Acceso total, gestión de usuarios.
-2.  **Supervisor**: Crea programas, analiza gráficos, aprueba sesiones.
-3.  **Terapeuta**: Ejecuta sesiones (`SessionPage`), toma datos.
-4.  **Familia**: Vista de solo lectura, reportes simplificados.
-
-Cambia el rol dinámicamente usando el desplegable en el Header.
+La administración de clínica puede invitar cuentas mediante la Edge Function `invite-clinic-member`, que exige JWT y vuelve a autorizar el rol admin antes de usar Auth administrativo. El despliegue para VPS se encuentra en `Dockerfile` y `deploy/`. No publique sin aplicar las migraciones, configurar URLs de Auth, HTTPS, una clave estable de Server Actions y respaldos.

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from '@/lib/navigation';
 import {
     Paper,
     Avatar,
@@ -45,8 +45,8 @@ import {
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { type StudentProfile, type MedicationRecord } from '@/api/mockData';
-import { programsData, type Program, type SkillAcquisitionProgram, type BehaviorManagementProgram } from '@/api/programsData';
+import { type StudentProfile, type MedicationRecord } from './student.types';
+import { type Program, type SkillAcquisitionProgram, type BehaviorManagementProgram } from '@/api/programsData';
 import { ProgramsDashboard, SkillProgramDesigner, BehaviorProgramDesigner } from '@/features/programs';
 import { DataCollectionEngine } from '@/features/dataCollection';
 import { useRole } from '@/hooks/useRole';
@@ -58,27 +58,32 @@ interface StudentDetailProps {
 }
 
 export function StudentDetail({ student }: StudentDetailProps) {
-    const [searchParams, setSearchParams] = useSearchParams(); // Hook
+    const searchParams = useSearchParams();
+    const navigate = useNavigate();
+    const location = useLocation();
     const activeTab = searchParams.get('tab') || 'general'; // Valor actual
 
     const handleTabChange = (val: string | null) => {
-        if (val) setSearchParams({ tab: val });
+        if (val) navigate(`${location.pathname}?tab=${val}`);
     };
 
     const [medications, setMedications] = useState<MedicationRecord[]>(student.medications);
     const { isSupervisor, isTherapist } = useRole();
-    const [programs, setPrograms] = useState<Program[]>(
-        programsData.filter((p) => p.studentId === student.id)
-    );
+    const [programs, setPrograms] = useState<Program[]>([]);
     const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-    const [skillDesignerOpened, { open: openSkillDesigner, close: closeSkillDesigner }] = useDisclosure(false);
-    const [behaviorDesignerOpened, { open: openBehaviorDesigner, close: closeBehaviorDesigner }] = useDisclosure(false);
-    const [dataCollectionOpened, { open: openDataCollection, close: closeDataCollection }] = useDisclosure(false);
+    const [skillDesignerOpened, { close: closeSkillDesigner }] = useDisclosure(false);
+    const [behaviorDesignerOpened, { close: closeBehaviorDesigner }] = useDisclosure(false);
+    const [dataCollectionOpened, { close: closeDataCollection }] = useDisclosure(false);
     const [shareModalOpened, { open: openShareModal, close: closeShareModal }] = useDisclosure(false);
 
-    const [medicationModalOpened, { open: openMedicationModal, close: closeMedicationModal }] = useDisclosure(false);
-    const [editingMedicationId, setEditingMedicationId] = useState<string | null>(null);
+    const [medicationModalOpened, { close: closeMedicationModal }] = useDisclosure(false);
+    const [editingMedicationId] = useState<string | null>(null);
     const [historyExpanded, setHistoryExpanded] = useState<Record<string, boolean>>({});
+    const persistenceNotice = () => notifications.show({
+        title: 'Acción aún no disponible',
+        message: 'Esta información clínica todavía no tiene un contrato de persistencia aprobado. No se guardó ningún cambio.',
+        color: 'yellow',
+    });
 
     const toggleHistory = (medId: string) => {
         setHistoryExpanded((prev) => ({ ...prev, [medId]: !prev[medId] }));
@@ -106,22 +111,12 @@ export function StudentDetail({ student }: StudentDetailProps) {
     });
 
     const handleAddMedication = () => {
-        setEditingMedicationId(null);
-        medicationForm.reset();
-        openMedicationModal();
+        persistenceNotice();
     };
 
     const handleEditMedication = (med: MedicationRecord) => {
-        setEditingMedicationId(med.id);
-        medicationForm.setValues({
-            name: med.name,
-            dose: med.dose,
-            frequency: med.frequency,
-            startDate: new Date(med.startDate),
-            prescribedBy: med.prescribedBy || '',
-            notes: med.notes || '',
-        });
-        openMedicationModal();
+        void med;
+        persistenceNotice();
     };
 
     const handleSaveMedication = (mode: 'correction' | 'update' = 'correction') => {
@@ -234,23 +229,13 @@ export function StudentDetail({ student }: StudentDetailProps) {
 
     // Programs handlers
     const handleDesignProgram = (programId: string) => {
-        const program = programs.find((p) => p.id === programId);
-        if (program) {
-            setSelectedProgram(program);
-            if (program.category === 'skill-acquisition') {
-                openSkillDesigner();
-            } else {
-                openBehaviorDesigner();
-            }
-        }
+        void programId;
+        persistenceNotice();
     };
 
     const handleRegisterData = (programId: string) => {
-        const program = programs.find((p) => p.id === programId);
-        if (program) {
-            setSelectedProgram(program);
-            openDataCollection();
-        }
+        void programId;
+        persistenceNotice();
     };
 
     const handleViewChart = (programId: string) => {
@@ -262,12 +247,8 @@ export function StudentDetail({ student }: StudentDetailProps) {
     };
 
     const handleCreateProgram = (category: 'skill-acquisition' | 'behavior-management') => {
-        setSelectedProgram(null);
-        if (category === 'skill-acquisition') {
-            openSkillDesigner();
-        } else {
-            openBehaviorDesigner();
-        }
+        void category;
+        persistenceNotice();
     };
 
     const handleSaveSkillProgram = async (data: Partial<SkillAcquisitionProgram>) => {
@@ -384,6 +365,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                 color="green"
                                 leftSection={<PlayCircle size={20} />}
                                 onClick={() => window.location.href = `/session/${student.id}`}
+                                disabled
                             >
                                 Iniciar Sesión
                             </Button>
@@ -397,6 +379,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                     color="blue"
                                     size="lg"
                                     onClick={openShareModal}
+                                    disabled
                                 >
                                     <Share2 size={20} />
                                 </ActionIcon>
@@ -437,6 +420,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                         placeholder="Nombre del estudiante"
                                         required
                                         {...generalForm.getInputProps('fullName')}
+                                        disabled
                                     />
                                 </Grid.Col>
                                 <Grid.Col span={{ base: 12, md: 6 }}>
@@ -445,6 +429,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                         placeholder="12.345.678-9"
                                         required
                                         {...generalForm.getInputProps('identityNumber')}
+                                        disabled
                                     />
                                 </Grid.Col>
                                 <Grid.Col span={{ base: 12, md: 6 }}>
@@ -453,6 +438,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                         placeholder="Selecciona una fecha"
                                         required
                                         {...generalForm.getInputProps('dateOfBirth')}
+                                        disabled
                                     />
                                 </Grid.Col>
                                 <Grid.Col span={{ base: 12, md: 6 }}>
@@ -461,6 +447,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                         placeholder="Ej: TEA Nivel 2"
                                         required
                                         {...generalForm.getInputProps('diagnosis')}
+                                        disabled
                                     />
                                 </Grid.Col>
                                 <Grid.Col span={12}>
@@ -469,6 +456,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                                         placeholder="Descripción del motivo de consulta..."
                                         minRows={3}
                                         {...generalForm.getInputProps('consultationReason')}
+                                        disabled
                                     />
                                 </Grid.Col>
                             </Grid>
@@ -481,7 +469,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                     <Paper shadow="xs" p="lg" radius="md" withBorder>
                         <Group justify="space-between" mb="md">
                             <Title order={4}>Contactos Familiares</Title>
-                            <Button variant="light" leftSection={<Plus size={16} />}>
+                            <Button variant="light" leftSection={<Plus size={16} />} disabled>
                                 Agregar Familiar
                             </Button>
                         </Group>
@@ -594,7 +582,7 @@ export function StudentDetail({ student }: StudentDetailProps) {
                     <Paper shadow="xs" p="lg" radius="md" withBorder>
                         <Group justify="space-between" mb="md">
                             <Title order={4}>Medicación</Title>
-                            <Button variant="light" leftSection={<Plus size={16} />} onClick={handleAddMedication}>
+                            <Button variant="light" leftSection={<Plus size={16} />} onClick={handleAddMedication} disabled>
                                 Agregar Medicación
                             </Button>
                         </Group>

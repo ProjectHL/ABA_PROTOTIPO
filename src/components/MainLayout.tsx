@@ -1,5 +1,5 @@
 import { type ReactNode, useState, useEffect, useCallback } from 'react'; // Agregar useState, useEffect
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from '@/lib/navigation';
 import {
     AppShell,
     Burger,
@@ -10,7 +10,6 @@ import {
     Menu,
     ActionIcon,
     Box,
-    Select,
     Badge,
     Indicator,
     Popover,
@@ -23,7 +22,6 @@ import {
     Users,
     FolderOpen,
     FileCheck,
-    MessageSquare,
     LogOut,
     Bell,
     Search,
@@ -36,15 +34,14 @@ import {
     Sparkles,
     HelpCircle,
     Mail,
-    MessageCircle,
     ChevronRight
 } from 'lucide-react';
 import { type UserProfile } from '@/api/mockData';
 import { useRole } from '@/hooks/useRole';
-import { type UserRole } from '@/types/authUtils';
 import { mockSharedAccess } from '@/api/invitationsData'; // Importar datos mock
 import { notifications } from '@mantine/notifications'; // Importar sistema notificaciones
 import { UpgradePlanModal } from './UpgradePlanModal'; // Importar Modal
+import { createClient } from '@/lib/supabase/client';
 
 interface MainLayoutProps {
     children: ReactNode;
@@ -57,7 +54,7 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
     const location = useLocation();
     const [opened, { toggle }] = useDisclosure();
     const [upgradeModalOpened, { open: openUpgradeModal, close: closeUpgradeModal }] = useDisclosure(false); // Estado del modal
-    const { currentRole, setRole, isTherapist } = useRole();
+    const { currentRole, membershipRole, isTherapist } = useRole();
     const [pendingInvitations, setPendingInvitations] = useState<typeof mockSharedAccess>([]);
     const [invitationsPopoverOpened, setInvitationsPopoverOpened] = useState(false);
 
@@ -115,12 +112,17 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
         }
     };
 
+    const handleSignOut = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        navigate('/login');
+    };
+
     const navItems = [
         { icon: Home, label: 'Dashboard', path: '/dashboard' },
         { icon: Users, label: 'Mi Equipo', path: '/team' },
         { icon: FolderOpen, label: 'Carpetas de Estudiantes', path: '/students' },
         { icon: FileCheck, label: 'Accesos Compartidos', path: '/shared-access', restricted: true },
-        { icon: MessageSquare, label: 'Chat', path: '/chat' },
     ];
 
     const filteredNavItems = navItems.filter(item => !isTherapist || !item.restricted);
@@ -169,7 +171,7 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
                                         Sistema de Supervisión
                                     </Text>
                                     <Badge size="xs" variant="light" color={getRoleColor()}>
-                                        {currentRole === 'admin' ? 'Admin' : currentRole === 'supervisor' ? 'Supervisor' : currentRole === 'therapist' ? 'Aplicador' : 'Familia'}
+                                        {membershipRole ?? 'Sin membresía activa'}
                                     </Badge>
                                 </Group>
                             </Box>
@@ -178,21 +180,6 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
 
                     <Group>
                         {/* Selector de Rol */}
-                        <Select
-                            placeholder="Cambiar Vista"
-                            value={currentRole}
-                            onChange={(value) => setRole(value as UserRole)}
-                            data={[
-                                { value: 'admin', label: '🏥 Admin' },
-                                { value: 'supervisor', label: '📋 Supervisor' },
-                                { value: 'therapist', label: '🧑‍⚕️ Aplicador' },
-                                { value: 'family', label: '👨‍👩‍👧 Familia', disabled: true },
-                            ]}
-                            allowDeselect={false}
-                            w={200}
-                            disabled={false}
-                        />
-
                         <ActionIcon variant="subtle" color="gray" size="lg">
                             <Search size={18} />
                         </ActionIcon>
@@ -290,7 +277,7 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
                                 <Menu.Item
                                     leftSection={<LogOut size={16} />}
                                     color="red"
-                                    onClick={() => navigate('/login')}
+                                    onClick={handleSignOut}
                                 >
                                     Cerrar Sesión
                                 </Menu.Item>
@@ -376,9 +363,6 @@ export function MainLayout({ children, supervisor, onEditProfile }: MainLayoutPr
                                 </Menu.Item>
                                 <Menu.Item leftSection={<Mail size={14} />}>
                                     Contacto
-                                </Menu.Item>
-                                <Menu.Item leftSection={<MessageCircle size={14} />}>
-                                    Chat en vivo
                                 </Menu.Item>
                             </Menu.Dropdown>
                         </Menu>
