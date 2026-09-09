@@ -9,4 +9,26 @@ describe('schema reconstruction', () => {
             expect(rows).toEqual([]);
         } finally { await db.close(); }
     }, 60000);
+
+    it('keeps future public tables closed to client roles by default', async () => {
+        const db = await createTestDatabase();
+        try {
+            // PGlite does not materialize ALTER DEFAULT PRIVILEGES for the
+            // built-in PUBLIC function grant. Function defaults are verified
+            // against staging's pg_default_acl after promotion.
+            await db.exec('create table public.b0_acl_canary(id integer)');
+            const { rows } = await db.query<{
+                anon_table: boolean;
+                authenticated_table: boolean;
+            }>(`
+                select
+                  has_table_privilege('anon','public.b0_acl_canary','select') anon_table,
+                  has_table_privilege('authenticated','public.b0_acl_canary','select') authenticated_table
+            `);
+            expect(rows[0]).toEqual({
+                anon_table: false,
+                authenticated_table: false,
+            });
+        } finally { await db.close(); }
+    }, 60000);
 });

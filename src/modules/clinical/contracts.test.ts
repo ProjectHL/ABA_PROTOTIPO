@@ -15,8 +15,10 @@ describe('clinical input contracts',()=>{
         expect(measurement.safeParse({dimension:'frequency',payload:{count:1,duration_seconds:0}}).success).toBe(false);
     });
     it('accepts only valid clinic invitation roles and normalized emails',()=>{
-        expect(commandSchema.parse({op:'invite',email:' Admin@Example.com ',role:'supervisor'})).toMatchObject({email:'Admin@Example.com',role:'supervisor'});
-        expect(commandSchema.safeParse({op:'invite',email:'not-an-email',role:'supervisor'}).success).toBe(false);
-        expect(commandSchema.safeParse({op:'invite',email:'admin@example.com',role:'superadmin'}).success).toBe(false);
+        const operationId='30000000-0000-4000-8000-000000000001';
+        expect(commandSchema.parse({op:'invite',operationId,email:' Admin@Example.com ',role:'supervisor'})).toMatchObject({operationId,email:'Admin@Example.com',role:'supervisor'});
+        expect(commandSchema.safeParse({op:'invite',operationId,email:'not-an-email',role:'supervisor'}).success).toBe(false);
+        expect(commandSchema.safeParse({op:'invite',operationId,email:'admin@example.com',role:'superadmin'}).success).toBe(false);
+        expect(commandSchema.safeParse({op:'invite',operationId:'not-a-uuid',email:'admin@example.com',role:'admin'}).success).toBe(false);
     });
 });

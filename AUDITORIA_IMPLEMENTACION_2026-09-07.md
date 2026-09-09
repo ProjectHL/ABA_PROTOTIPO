@@ -50,7 +50,7 @@ La base aislada usa PGlite/PostgreSQL real y reproduce todas las migraciones SQL
 
 ### I01 · P0 operacional · No existe una cuenta admin en staging
 
-Las seis membresías remotas siguen con roles históricos `clinician` o `viewer`. `hbarrera.dgr@gmail.com` existe como `clinician`. Hasta designar la primera cuenta admin no se puede probar administración/invitación desde una sesión normal.
+Las seis membresías remotas siguen con roles históricos `clinician` o `viewer`. La cuenta privada provista por el propietario existe como `clinician`. Hasta designar la primera cuenta admin no se puede probar administración/invitación desde una sesión normal.
 
 ### I02 · P0 de salida · Infraestructura y aceptación no disponibles
 

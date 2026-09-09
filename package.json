@@ -11,7 +11,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:db": "vitest run tests/database",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "supabase:start": "supabase start",
+    "supabase:reset": "supabase db reset --local",
+    "supabase:stop": "supabase stop",
+    "supabase:types:check": "node scripts/check-supabase-types.mjs"
   },
   "dependencies": {
     "@mantine/core": "^7.15.2",

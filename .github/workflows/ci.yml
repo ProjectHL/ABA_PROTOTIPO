@@ -4,6 +4,10 @@ permissions: { contents: read }
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # Configuración sintética para que Next/Playwright no dependan de un .env.local del checkout.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -15,6 +19,34 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+  supabase-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run supabase:start
+      - run: npm run supabase:reset
+      - run: npm run supabase:types:check
+      - if: always()
+        run: npm run supabase:stop
+  container-build:
+    runs-on: ubuntu-latest
+    env:
+      # Valor sintético de 32 bytes para CI; no reutilizar en ningún despliegue.
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          tags: aba-clinico:ci
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_ci_placeholder
+          secret-envs: |
+            next_server_actions_encryption_key=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY

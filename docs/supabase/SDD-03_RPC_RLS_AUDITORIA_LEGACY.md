@@ -1,5 +1,9 @@
 # Simulación de migración — SDD-03 RPC, RLS y auditoría
 
+> Documento histórico conservado para trazabilidad. No representa el estado actual.
+> Las migraciones ejecutables y el plan vigente están en `supabase/migrations/` y
+> `SPEC_PLAN_MEJORAS_SUPABASE_BACKEND_2026-09-08.md`.
+
 Estado: simulación. No aplicar en ABA_staging.
 
 ## Objetivo

@@ -1,5 +1,7 @@
 # Status map y checklist — ABA Clínico
 
+> Documento histórico. El estado vigente está en [STATUS_MAP_2026-09-08.md](STATUS_MAP_2026-09-08.md).
+
 Corte: 2026-09-07. Evidencia vigente: [auditoría de implementación](AUDITORIA_IMPLEMENTACION_2026-09-07.md). Contrato de aceptación: [SDD-07](SPEC_SDD_07_POC_CLINICA.md).
 
 **Estado global: candidato técnico implementado en local y staging hasta G3; G4 permanece abierto. No habilitar pacientes reales todavía.**
@@ -52,7 +54,7 @@ Estados: CERRADO = implementado y comprobado; PARCIAL = falta evidencia externa 
 - [x] Gestión de perfiles, suspensión y guardia contra retirar el último admin.
 - [x] Invitación de cuentas mediante Edge Function sin exponer `service_role`.
 - [x] Gestión de asignaciones y acceso total del admin limitado a su clínica.
-- [ ] **Decisión requerida:** confirmar si `hbarrera.dgr@gmail.com` será admin o profesional. Hoy es `clinician` y no existe ningún admin remoto.
+- [ ] **Decisión requerida:** confirmar si la cuenta privada provista por el propietario será admin o profesional. Hoy es `clinician` y no existe ningún admin remoto.
 - [ ] Probar una invitación real y la entrega del correo desde una sesión admin.
 
 ### G2 — aceptación clínica
@@ -91,7 +93,7 @@ Estados: CERRADO = implementado y comprobado; PARCIAL = falta evidencia externa 
 
 ## Lo que necesito del propietario
 
-1. Confirmar el destino de `hbarrera.dgr@gmail.com`: **admin/clínica** o **profesional/supervisor**.
+1. Confirmar el destino de la cuenta privada provista por el propietario: **admin/clínica** o **profesional/supervisor**.
 2. Entregar el segundo correo si administrador y profesional serán personas distintas. No enviar contraseñas ni claves.
 3. Informar cuando la VPS y un hostname estén disponibles.
 4. Coordinar dos sesiones con la profesional: validación ficticia G2/G3 y aceptación final G4.

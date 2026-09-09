@@ -27,21 +27,21 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
     const rpc=db.rpc as unknown as (name:string,args?:Record<string,unknown>)=>PromiseLike<RpcResult>;
     let result:RpcResult;
     switch(c.op) {
-        case 'student': result=await rpc('mvp_save_student',{p_organization_id:active.id,p_client_id:c.id,p_expected_updated_at:c.expected,p_payload:c.payload,p_test_run_id:testRun});break;
-        case 'context': result=await db.rpc('save_client_context',{p_client_id:c.clientId,p_expected_version:c.expected,p_home_adaptations:c.home||undefined,p_schooling:c.school||undefined,p_school_adaptations:c.adaptations||undefined,p_test_run_id:testRun});break;
-        case 'history': result=await db.rpc('append_clinical_history_entry',{p_client_id:c.clientId,p_kind:c.kind,p_descriptor:c.descriptor,p_occurred_on:c.occurred||undefined,p_dose:c.dose||undefined,p_prescriber_descriptor:c.prescriber||undefined,p_started_on:c.started||undefined,p_ended_on:c.ended||undefined,p_supersedes_id:c.supersedes,p_test_run_id:testRun});break;
-        case 'consent': result=await db.rpc('record_consent_reference',{p_client_id:c.clientId,p_purpose_code:c.purpose,p_notice_version:c.notice,p_grantor_descriptor:c.grantor,p_channel:c.channel,p_evidence_reference:c.reference||undefined,p_status:c.status,p_supersedes_id:c.supersedes,p_test_run_id:testRun});break;
+        case 'student': result=await rpc('mvp_save_student',{p_organization_id:active.id,p_client_id:c.id,p_expected_updated_at:c.expected,p_payload:c.payload,p_test_run_id:c.id?undefined:testRun});break;
+        case 'context': result=await db.rpc('save_client_context',{p_client_id:c.clientId,p_expected_version:c.expected,p_home_adaptations:c.home||undefined,p_schooling:c.school||undefined,p_school_adaptations:c.adaptations||undefined});break;
+        case 'history': result=await db.rpc('append_clinical_history_entry',{p_client_id:c.clientId,p_kind:c.kind,p_descriptor:c.descriptor,p_occurred_on:c.occurred||undefined,p_dose:c.dose||undefined,p_prescriber_descriptor:c.prescriber||undefined,p_started_on:c.started||undefined,p_ended_on:c.ended||undefined,p_supersedes_id:c.supersedes});break;
+        case 'consent': result=await db.rpc('record_consent_reference',{p_client_id:c.clientId,p_purpose_code:c.purpose,p_notice_version:c.notice,p_grantor_descriptor:c.grantor,p_channel:c.channel,p_evidence_reference:c.reference||undefined,p_status:c.status,p_supersedes_id:c.supersedes});break;
         case 'program': {
             if(c.predecessor) {
                 const old=await db.from('program_versions').select('id').eq('id',c.predecessor).eq('client_id',c.clientId).maybeSingle();
                 if(!old.data) return {error:'Versión no disponible.'};
-                result=await db.rpc('create_program_successor',{p_version_id:c.predecessor,p_title:c.title,p_design:c.design,p_test_run_id:testRun});
-            } else result=await db.rpc('create_program_draft',{p_client_id:c.clientId,p_title:c.title,p_program_type:c.design.kind,p_design:c.design,p_test_run_id:testRun});break;
+                result=await db.rpc('create_program_successor',{p_version_id:c.predecessor,p_title:c.title,p_design:c.design});
+            } else result=await db.rpc('create_program_draft',{p_client_id:c.clientId,p_title:c.title,p_program_type:c.design.kind,p_design:c.design});break;
         }
         case 'transition': {
             const program=await db.from('programs').select('id').eq('id',c.programId).eq('client_id',c.clientId).maybeSingle();
             if(!program.data) return {error:'Programa no disponible.'};
-            result=await db.rpc('transition_program',{p_program_id:c.programId,p_version_id:c.versionId,p_next_status:c.status,p_test_run_id:testRun});break;
+            result=await db.rpc('transition_program',{p_program_id:c.programId,p_version_id:c.versionId,p_next_status:c.status});break;
         }
         case 'record': result=await rpc('mvp_save_record',{p_id:c.id,p_session_id:c.sessionId,p_client_id:c.clientId,p_program_version_id:c.versionId,p_dimension:c.measurement.dimension,p_payload:c.measurement.payload,p_expected_version:c.expected,p_submit:c.submit});break;
         case 'finish': {
@@ -49,9 +49,9 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
             if(!session.data) return {error:'Sesión no disponible.'};
             result=await rpc('mvp_finish_session',{p_session_id:c.sessionId});break;
         }
-        case 'invite': result=await db.functions.invoke('invite-clinic-member',{body:{organizationId:active.id,email:c.email,role:c.role}});break;
+        case 'invite': result=await db.functions.invoke('invite-clinic-member',{body:{organizationId:active.id,operationId:c.operationId,email:c.email,role:c.role}});break;
         case 'member': result=await rpc('mvp_set_member',{p_organization_id:active.id,p_user_id:c.userId,p_role:c.role,p_status:c.status});break;
-        case 'assignment': result=await db.rpc('set_student_assignment',{p_client_id:c.clientId,p_user_id:c.userId,p_role:c.role,p_status:c.status,p_test_run_id:testRun});break;
+        case 'assignment': result=await db.rpc('set_student_assignment',{p_client_id:c.clientId,p_user_id:c.userId,p_role:c.role,p_status:c.status});break;
     }
     if(result.error) {
         const code=result.error.code;

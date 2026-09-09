@@ -28,7 +28,7 @@ export const commandSchema=z.discriminatedUnion('op',[
     z.object({op:z.literal('transition'),...client,programId:uuid,versionId:uuid,status:z.enum(['active','paused','achieved','discontinued'])}).strict(),
     z.object({op:z.literal('record'),...client,id:uuid,sessionId:uuid,versionId:uuid,expected:z.number().int().nonnegative(),submit:z.boolean(),measurement}).strict(),
     z.object({op:z.literal('finish'),...client,sessionId:uuid}).strict(),
-    z.object({op:z.literal('invite'),email:z.string().trim().email().max(254),role:z.enum(['admin','supervisor','therapist'])}).strict(),
+    z.object({op:z.literal('invite'),operationId:uuid,email:z.string().trim().email().max(254),role:z.enum(['admin','supervisor','therapist'])}).strict(),
     z.object({op:z.literal('member'),userId:uuid,role:z.enum(['admin','supervisor','therapist']),status:z.enum(['active','inactive'])}).strict(),
     z.object({op:z.literal('assignment'),...client,userId:uuid,role:z.enum(['supervisor','therapist']),status:z.enum(['active','inactive'])}).strict(),
 ]);

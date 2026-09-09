@@ -364,6 +364,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "clients_test_batch_fkey"
+            columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       clinic_admin_events: {
@@ -1519,6 +1526,47 @@ export type Database = {
           },
         ]
       }
+      test_data_batches: {
+        Row: {
+          cleaned_at: string | null
+          created_by: string | null
+          frozen_at: string | null
+          id: string
+          opened_at: string
+          organization_id: string
+          source: string
+          status: string
+        }
+        Insert: {
+          cleaned_at?: string | null
+          created_by?: string | null
+          frozen_at?: string | null
+          id: string
+          opened_at?: string
+          organization_id: string
+          source?: string
+          status?: string
+        }
+        Update: {
+          cleaned_at?: string | null
+          created_by?: string | null
+          frozen_at?: string | null
+          id?: string
+          opened_at?: string
+          organization_id?: string
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_data_batches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_data_cleanup_log: {
         Row: {
           actor_user_id: string
@@ -1775,6 +1823,15 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: string[]
       }
+      mvp_begin_clinic_invitation: {
+        Args: {
+          p_email: string
+          p_operation_id: string
+          p_organization_id: string
+          p_role: string
+        }
+        Returns: Json
+      }
       mvp_cleanup_test_run: {
         Args: {
           p_confirm?: string
@@ -1783,7 +1840,19 @@ export type Database = {
         }
         Returns: Json
       }
+      mvp_complete_clinic_invitation: {
+        Args: { p_operation_id: string; p_organization_id: string }
+        Returns: Json
+      }
       mvp_finish_session: { Args: { p_session_id: string }; Returns: Json }
+      mvp_freeze_test_batch: {
+        Args: { p_organization_id: string; p_test_run_id: string }
+        Returns: Json
+      }
+      mvp_open_test_batch: {
+        Args: { p_organization_id: string; p_test_run_id?: string }
+        Returns: Json
+      }
       mvp_save_record: {
         Args: {
           p_client_id: string

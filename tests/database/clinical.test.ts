@@ -7,12 +7,13 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
     let db: PGlite;
     const orgA=randomUUID(), orgB=randomUUID(), adminA=randomUUID(), adminB=randomUUID();
     const supervisor=randomUUID(), technician=randomUUID(), future=randomUUID();
+    const invitedProfessional=randomUUID();
     let clientA: { id: string; updated_at: string }, clientB: { id: string };
     let program: { id: string; program_id: string };
     const sessionId=randomUUID(), recordId=randomUUID();
     const payload={clinical_id:'DUMMY-001',initials:'A.B.',birth_date:'2015-01-01',primary_language:'Español',guardians:[{initials:'M.B.',relationship:'Madre'}],siblings:[]};
-    const command=async (org:string, client:string|null, version:string|null, value=payload) => {
-        const r=await db.query<{ value: typeof clientA }>('select public.mvp_save_student($1,$2,$3,$4::jsonb,null) value',[org,client,version,JSON.stringify(value)]);
+    const command=async (org:string, client:string|null, version:string|null, value=payload, testRun:string|null=null) => {
+        const r=await db.query<{ value: typeof clientA & {test_run_id:string|null} }>('select public.mvp_save_student($1,$2,$3,$4::jsonb,$5) value',[org,client,version,JSON.stringify(value),testRun]);
         return r.rows[0].value;
     };
     beforeAll(async () => {
@@ -65,12 +66,88 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         await asUser(db,technician,async()=>{expect((await db.query('select id from clients')).rows).toEqual([]);});
         await asUser(db,adminA,()=>db.query("select mvp_set_member($1,$2,'therapist','active')",[orgA,technician]));
     });
+    it('retries a durable invitation without duplicate membership or audit',async()=>{
+        const firstOperation=randomUUID(), retryOperation=randomUUID();
+        const email='new.professional@example.invalid';
+        await asUser(db,supervisor,()=>expect(
+            db.query("select mvp_begin_clinic_invitation($1,$2,$3,'supervisor')",[orgA,firstOperation,email]),
+        ).rejects.toMatchObject({code:'42501'}));
+        await asUser(db,adminA,async()=>{
+            const first=(await db.query<{value:{operation_id:string;status:string}}>(
+                "select mvp_begin_clinic_invitation($1,$2,$3,'supervisor') value",
+                [orgA,firstOperation,email],
+            )).rows[0].value;
+            expect(first).toMatchObject({operation_id:firstOperation,status:'pending'});
+            const retried=(await db.query<{value:{operation_id:string;status:string}}>(
+                "select mvp_begin_clinic_invitation($1,$2,$3,'supervisor') value",
+                [orgA,retryOperation,email],
+            )).rows[0].value;
+            expect(retried).toMatchObject({operation_id:firstOperation,status:'pending'});
+            await expect(db.query('select mvp_complete_clinic_invitation($1,$2)',[orgA,firstOperation]))
+                .rejects.toMatchObject({code:'22023'});
+        });
+        await db.query('insert into auth.users(id,email) values($1,$2)',[invitedProfessional,email]);
+        await asUser(db,adminA,async()=>{
+            const completed=(await db.query<{value:{operation_id:string;status:string;user_id:string;role:string}}>(
+                'select mvp_complete_clinic_invitation($1,$2) value',[orgA,firstOperation],
+            )).rows[0].value;
+            expect(completed).toMatchObject({operation_id:firstOperation,status:'completed',user_id:invitedProfessional,role:'supervisor'});
+            await db.query('select mvp_complete_clinic_invitation($1,$2)',[orgA,firstOperation]);
+        });
+        expect((await db.query('select user_id,role,status from memberships where organization_id=$1 and user_id=$2',[orgA,invitedProfessional])).rows)
+            .toEqual([{user_id:invitedProfessional,role:'supervisor',status:'active'}]);
+        expect((await db.query("select id from clinic_admin_events where organization_id=$1 and subject_user_id=$2 and action='invitation_completed:supervisor'",[orgA,invitedProfessional])).rows)
+            .toHaveLength(1);
+    });
     it('atomic family edit survives reread and rejects stale version',async()=>{
         await asUser(db,adminA,async()=>{
             const edited=await command(orgA,clientA.id,clientA.updated_at,{...payload,initials:'A.C.'});
             await expect(command(orgA,clientA.id,clientA.updated_at)).rejects.toMatchObject({code:'40001'});
             expect((await db.query('select initials from guardians where client_id=$1',[clientA.id])).rows).toEqual([{initials:'M.B.'}]);
             clientA=edited;
+        });
+    });
+    it('rejects direct DML that would bypass clinical commands',async()=>{
+        await asUser(db,adminA,async()=>{
+            const privileges=(await db.query<{
+                clients_update:boolean;
+                guardians_update:boolean;
+                context_update:boolean;
+                history_insert:boolean;
+            }>(`select
+                has_table_privilege('authenticated','public.clients','update') clients_update,
+                has_table_privilege('authenticated','public.guardians','update') guardians_update,
+                has_table_privilege('authenticated','public.client_context_profiles','update') context_update,
+                has_table_privilege('authenticated','public.clinical_history_entries','insert') history_insert
+            `)).rows[0];
+            expect(privileges).toEqual({
+                clients_update:false,
+                guardians_update:false,
+                context_update:false,
+                history_insert:false,
+            });
+            await expect(db.query("update clients set initials='X.X.' where id=$1",[clientA.id]))
+                .rejects.toMatchObject({code:'42501'});
+        });
+    });
+    it('governs dummy batches and freezes all capability paths',async()=>{
+        const token=randomUUID();
+        const dummyPayload={...payload,clinical_id:'DUMMY-BATCH',initials:'D.B.'};
+        await asUser(db,supervisor,async()=>{
+            await expect(db.query('select mvp_open_test_batch($1,$2)',[orgA,token]))
+                .rejects.toMatchObject({code:'42501'});
+            await expect(command(orgA,null,null,dummyPayload,token))
+                .rejects.toMatchObject({code:'42501'});
+        });
+        await asUser(db,adminA,async()=>{
+            await db.query('select mvp_open_test_batch($1,$2)',[orgA,token]);
+            await db.query('select mvp_open_test_batch($1,$2)',[orgA,token]);
+            const dummy=await command(orgA,null,null,dummyPayload,token);
+            expect(dummy.test_run_id).toBe(token);
+            await db.query('select mvp_freeze_test_batch($1,$2)',[orgA,token]);
+            expect((await db.query<{cap:string[]}>('select get_student_capabilities($1) cap',[dummy.id])).rows[0].cap).toEqual([]);
+            await expect(command(orgA,null,null,{...dummyPayload,clinical_id:'DUMMY-FROZEN'},token))
+                .rejects.toMatchObject({code:'22023'});
         });
     });
     it('creates and activates a versioned program with audit',async()=>{
@@ -110,14 +187,23 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
     it('inventories then removes one dummy lot while preserving accounts and clinic',async()=>{
         const token=randomUUID();
         const foreignClinicalAudit=randomUUID();
+        await asUser(db,adminA,()=>db.query('select mvp_open_test_batch($1,$2)',[orgA,token]));
+        await asUser(db,adminB,()=>db.query('select mvp_open_test_batch($1,$2)',[orgB,token]));
         await db.query('update clients set test_run_id=$1 where id in ($2,$3)',[token,clientA.id,clientB.id]);
         await db.query("insert into audit_events(organization_id,entity_type,entity_id,action,test_run_id) values($1,'client',$2,'updated',$3) returning id",[orgB,clientB.id,token]);
         const auditId=(await db.query<{id:string}>("select id::text from audit_events where organization_id=$1 and entity_id=$2 and test_run_id=$3 order by id desc limit 1",[orgB,clientB.id,token])).rows[0].id;
         await db.query("insert into clinical_audit_events(organization_id,client_id,entity_type,entity_id,action,test_run_id) values($1,$2,'assessment',$3,'updated',$4)",[orgB,clientB.id,foreignClinicalAudit,token]);
         await asUser(db,adminA,async()=>{
-            const dry=(await db.query<{value:{executed:boolean;clients:number;required_confirmation:string}}>('select mvp_cleanup_test_run($1,$2,null) value',[orgA,token])).rows[0].value;
-            expect(dry).toMatchObject({executed:false,clients:1});
+            const openDry=(await db.query<{value:{executed:boolean;clients:number;required_confirmation:string;status:string}}>('select mvp_cleanup_test_run($1,$2,null) value',[orgA,token])).rows[0].value;
+            expect(openDry).toMatchObject({executed:false,clients:1,status:'open'});
+            await expect(db.query('select mvp_cleanup_test_run($1,$2,$3)',[orgA,token,openDry.required_confirmation]))
+                .rejects.toMatchObject({code:'22023'});
+            await db.query('select mvp_freeze_test_batch($1,$2)',[orgA,token]);
+            const dry=(await db.query<{value:{executed:boolean;clients:number;required_confirmation:string;status:string}}>('select mvp_cleanup_test_run($1,$2,null) value',[orgA,token])).rows[0].value;
+            expect(dry).toMatchObject({executed:false,clients:1,status:'frozen'});
             await db.query('select mvp_cleanup_test_run($1,$2,$3)',[orgA,token,dry.required_confirmation]);
+            const repeated=(await db.query<{value:{executed:boolean;already_cleaned:boolean;status:string}}>('select mvp_cleanup_test_run($1,$2,$3) value',[orgA,token,dry.required_confirmation])).rows[0].value;
+            expect(repeated).toMatchObject({executed:false,already_cleaned:true,status:'cleaned'});
         });
         expect((await db.query('select id from clients where id=$1',[clientA.id])).rows).toEqual([]);
         expect((await db.query('select id from clients where id=$1',[clientB.id])).rows).toHaveLength(1);

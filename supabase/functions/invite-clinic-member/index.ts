@@ -1,21 +1,37 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.114.0';
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
-const reply = (status: number, body: Record<string, unknown>) =>
-  new Response(JSON.stringify(body), { status, headers: jsonHeaders });
+
+const allowedOrigins = new Set(
+  (Deno.env.get('ABA_ALLOWED_ORIGINS') ?? 'http://localhost:3000,http://127.0.0.1:3000')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 Deno.serve(async (request: Request) => {
+  const origin = request.headers.get('Origin');
+  if (origin && !allowedOrigins.has(origin)) {
+    return new Response(JSON.stringify({ error: 'origin_not_allowed' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json', Vary: 'Origin' },
+    });
+  }
+  const corsHeaders = {
+    ...(origin ? { 'Access-Control-Allow-Origin': origin } : {}),
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    Vary: 'Origin',
+  };
+  const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
+  const reply = (status: number, body: Record<string, unknown>) =>
+    new Response(JSON.stringify(body), { status, headers: jsonHeaders });
+
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (request.method !== 'POST') return reply(405, { error: 'method_not_allowed' });
 
   const authorization = request.headers.get('Authorization');
   if (!authorization?.startsWith('Bearer ')) return reply(401, { error: 'authentication_required' });
 
-  let body: { organizationId?: unknown; email?: unknown; role?: unknown };
+  let body: { organizationId?: unknown; operationId?: unknown; email?: unknown; role?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -23,11 +39,15 @@ Deno.serve(async (request: Request) => {
   }
 
   const organizationId = typeof body.organizationId === 'string' ? body.organizationId : '';
+  const operationId = typeof body.operationId === 'string' ? body.operationId : '';
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
   const role = typeof body.role === 'string' ? body.role : '';
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(organizationId)) {
+  const validUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  if (!validUuid(organizationId)) {
     return reply(400, { error: 'invalid_organization' });
   }
+  if (!validUuid(operationId)) return reply(400, { error: 'invalid_operation' });
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return reply(400, { error: 'invalid_email' });
   }
@@ -48,38 +68,61 @@ Deno.serve(async (request: Request) => {
   const { data: identity, error: identityError } = await userClient.auth.getUser(token);
   if (identityError || !identity.user) return reply(401, { error: 'authentication_required' });
 
-  // The RPC is the authorization boundary: it returns only for active clinic admins.
-  const { error: authorizationError } = await userClient.rpc('mvp_team', {
+  // Begin persists the intent before touching Auth and is also the admin boundary.
+  const { data: begun, error: beginError } = await userClient.rpc('mvp_begin_clinic_invitation', {
     p_organization_id: organizationId,
+    p_operation_id: operationId,
+    p_email: email,
+    p_role: role,
   });
-  if (authorizationError) return reply(403, { error: 'clinic_admin_required' });
-
-  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
-  const { data: usersPage, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (listError) return reply(502, { error: 'auth_directory_unavailable' });
-
-  let target = usersPage.users.find((candidate: { email?: string; id: string }) => candidate.email?.toLowerCase() === email);
-  let invited = false;
-  if (!target) {
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(email);
-    if (error || !data.user) return reply(502, { error: 'invitation_not_sent' });
-    target = data.user;
-    invited = true;
+  if (beginError) {
+    if (beginError.code === '42501') return reply(403, { error: 'clinic_admin_required' });
+    if (beginError.message.includes('conflict')) return reply(409, { error: 'invitation_conflict' });
+    return reply(500, { error: 'invitation_not_started' });
   }
 
-  const { error: membershipError } = await admin.from('memberships').upsert(
-    { organization_id: organizationId, user_id: target.id, role, status: 'active' },
-    { onConflict: 'organization_id,user_id' },
-  );
-  if (membershipError) return reply(500, { error: 'membership_not_saved' });
+  const started = begun as { operation_id?: string; status?: string; user_id?: string; role?: string };
+  const effectiveOperationId = started.operation_id ?? operationId;
+  if (started.status === 'completed') {
+    return reply(200, {
+      operationId: effectiveOperationId,
+      status: 'completed',
+      userId: started.user_id,
+      role: started.role ?? role,
+    });
+  }
 
-  const { error: auditError } = await admin.from('clinic_admin_events').insert({
-    organization_id: organizationId,
-    actor_user_id: identity.user.id,
-    subject_user_id: target.id,
-    action: invited ? `invited:${role}` : `linked:${role}`,
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+  const { error: invitationError } = await admin.auth.admin.inviteUserByEmail(email);
+
+  // Completion resolves the Auth user by normalized email and atomically writes
+  // membership, audit event and operation state. Existing users are valid retries.
+  const { data: completed, error: completeError } = await userClient.rpc('mvp_complete_clinic_invitation', {
+    p_organization_id: organizationId,
+    p_operation_id: effectiveOperationId,
   });
-  if (auditError) return reply(500, { error: 'audit_not_saved' });
+  if (completeError) {
+    if (completeError.code === '42501') return reply(403, { error: 'clinic_admin_required' });
+    if (completeError.message.includes('invited_auth_user_not_found')) {
+      return reply(502, {
+        error: 'invitation_not_sent',
+        operationId: effectiveOperationId,
+        retryable: true,
+      });
+    }
+    return reply(500, {
+      error: 'invitation_not_completed',
+      operationId: effectiveOperationId,
+      retryable: true,
+    });
+  }
 
-  return reply(200, { invited, userId: target.id, email, role });
+  const result = completed as { status?: string; user_id?: string; role?: string };
+  return reply(200, {
+    invited: !invitationError,
+    operationId: effectiveOperationId,
+    status: result.status ?? 'completed',
+    userId: result.user_id,
+    role: result.role ?? role,
+  });
 });

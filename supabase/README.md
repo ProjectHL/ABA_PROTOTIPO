@@ -1,25 +1,50 @@
-# Supabase — configuración simulada
+# Supabase — desarrollo local y migraciones
 
-Esta carpeta documenta la configuración futura de Supabase para ABA_PROTOTIPO.
-No contiene migraciones ejecutables, credenciales, datos clínicos ni acciones
-aplicadas al proyecto remoto.
+Esta carpeta es ejecutable y versionada. Contiene la configuración local, 30
+migraciones SQL, un seed exclusivamente sintético y la Edge Function del MVP.
+El proyecto remoto de staging es `ABA_staging`; nunca se reconstruye ni se carga
+con `seed.sql` desde los comandos locales.
 
-## Estado
+## Desarrollo local
 
-- Entorno remoto de referencia: ABA_staging.
-- Las configuraciones de seguridad permanecen simuladas hasta disponer de un
-  entorno de desarrollo aislado.
-- No aplicar los bloques SQL de estos documentos directamente en staging.
+Requisitos: Docker Desktop activo y dependencias instaladas.
 
-## Estructura
+```powershell
+npx supabase start
+npx supabase db reset --local
+npx supabase status
+```
 
-- migrations/: especificaciones de cambios de esquema, grants y RLS.
-- tests/: matriz de pruebas de autorización y aislamiento.
+`db reset --local` elimina y reconstruye sólo la base Docker local. No sustituir
+`--local` por `--linked`. Para detenerla conservando sus volúmenes:
 
-## Cuando se retome Supabase
+```powershell
+npx supabase stop
+```
 
-1. Crear un entorno de desarrollo aislado.
-2. Comparar las firmas reales de las RPC con la especificación.
-3. Convertir la especificación en una migración SQL versionada.
-4. Ejecutar la matriz de pruebas con usuarios de dos organizaciones.
-5. Revisar Security Advisor antes de promover cambios.
+La configuración deshabilita Storage, Realtime y Analytics porque están fuera del
+alcance del MVP. Mailpit y Edge Runtime permanecen activos para probar invitaciones
+sin entregar correos reales. `auto_expose_new_tables = false` obliga a declarar los
+grants de cada nuevo objeto.
+
+## Seed y datos dummy
+
+`seed.sql` crea dos clínicas y cuatro membresías sintéticas. Los usuarios no tienen
+contraseña ni identidad y no pueden iniciar sesión. Las pruebas autenticadas deben
+crear cuentas temporales mediante la API administrativa local; no se guardan claves
+en Git.
+
+El seed no contiene pacientes. Un fixture clínico sólo puede crearse contra un lote
+abierto mediante `mvp_open_test_batch`, y esa operación exige un admin de la clínica.
+No ejecutar `mvp_cleanup_test_run` sobre staging durante desarrollo.
+
+## Flujo de migraciones
+
+1. Crear una migración con `npx supabase migration new <nombre>`.
+2. Editar únicamente el archivo nuevo y revisar permisos/RLS/índices.
+3. Ejecutar `npx supabase db reset --local` y la suite del repositorio.
+4. Regenerar tipos desde el destino validado.
+5. Promover la migración inmutable y comprobar advisors/ledger.
+
+Las especificaciones históricas viven en `docs/supabase/`; `migrations/` contiene
+solamente archivos con el patrón `<timestamp>_<nombre>.sql`.

@@ -43,6 +43,8 @@ La aplicación usa las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPAB
 
 El espacio clínico en `src/modules/clinical/` consulta y escribe Supabase mediante capacidades por estudiante. Incluye ficha ampliada, programas versionados y captura de porcentaje, frecuencia e intervalos. Las migraciones recuperadas y las pruebas PostgreSQL aisladas viven en `supabase/migrations/` y `tests/database/`.
 
-Los datos sintéticos deben crearse con un UUID `ABA_TEST_RUN_ID`. Antes de una PoC real, siga [OPERACION_POC.md](OPERACION_POC.md): respaldo, inventario, ensayo de limpieza, limpieza por lote y verificación. En la PoC deje esa variable vacía.
+Los datos sintéticos usan un UUID `ABA_TEST_RUN_ID`, pero el UUID no es una credencial: primero debe registrarse como lote abierto mediante una operación admin de la clínica. Sólo se aplica al crear una ficha y no puede añadirse durante una edición. Antes de una PoC real, siga [OPERACION_POC.md](OPERACION_POC.md): respaldo, congelamiento, inventario, ensayo de limpieza, limpieza por lote y verificación. En la PoC deje esa variable vacía y no conserve lotes abiertos.
+
+El entorno local reproducible y sus comandos se documentan en [supabase/README.md](supabase/README.md). `supabase/seed.sql` no contiene pacientes ni usuarios capaces de iniciar sesión.
 
 La administración de clínica puede invitar cuentas mediante la Edge Function `invite-clinic-member`, que exige JWT y vuelve a autorizar el rol admin antes de usar Auth administrativo. El despliegue para VPS se encuentra en `Dockerfile` y `deploy/`. No publique sin aplicar las migraciones, configurar URLs de Auth, HTTPS, una clave estable de Server Actions y respaldos.
