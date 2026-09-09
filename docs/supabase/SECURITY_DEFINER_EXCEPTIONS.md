@@ -55,5 +55,9 @@ negativas, y una migración nueva por firma exacta.
 - Configuración: las 15 funciones tienen `search_path=''`.
 - Pruebas: `tests/database/clinical.test.ts` cubre aislamiento, suspensión,
   vigencia, DML directo, lotes, invitación idempotente, captura y cleanup.
+  `scripts/test-local-invitation.mjs` recorre Auth + Edge + Mailpit con JWT reales
+  locales y verifica auto-registro bloqueado `422`, `401`, `403`, `409`, reintento
+  `200`, membresía, auditoría y estado privado `completed`; los fixtures se
+  preparan sólo por PostgreSQL local.
 - Operación: no se acepta un WARN nuevo del Advisor sin añadirlo a este registro.
 - Pendiente externo: activar protección de contraseñas filtradas en Auth.

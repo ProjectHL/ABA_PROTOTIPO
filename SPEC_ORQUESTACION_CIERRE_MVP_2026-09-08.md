@@ -169,6 +169,7 @@ Estado: **PASS**. La preparación local se publicó después de autorización ex
 - [x] Docker Desktop iniciado; `docker info` PASS con Docker Engine 29.7.2.
 - [x] `npm run supabase:start` PASS; el stack local quedó disponible para reproducir el job `supabase-local`.
 - [x] `npm run supabase:reset` PASS; aplicó las 30 migraciones del árbol, incluidas B0/B2, y cargó el seed exclusivamente sintético.
+- [x] `npm run supabase:test:invitation` PASS con Auth/Edge/Mailpit locales: auto-registro bloqueado `422`, rechazo sin sesión `401`, no admin `403`, origen no permitido `403`, alta y reintento idempotente `200`, conflicto `409`, membresía/auditoría/operación persistidas y un único correo local capturado.
 - [x] `npm run supabase:types:check` PASS; los tipos generados desde el esquema local coinciden con los tipos versionados.
 - [x] El runner ejecutó `npm ci` desde checkout limpio en los jobs `verify` y `supabase-local`.
 
@@ -201,6 +202,17 @@ Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un fal
 - [x] RTO frío local observado menor a 2 minutos, incluida descarga inicial de imágenes; restore SQL menor a 1 segundo. Dataset estático sintético: pérdida observada `0`, sin extrapolar a producción.
 - [x] El stack temporal y los dumps se eliminaron; el stack original volvió con 2 organizaciones, 4 usuarios Auth, 4 membresías y 0 clientes.
 - [ ] Generar y custodiar un backup cifrado real de `ABA_staging`, restaurarlo en destino autorizado y aceptar formalmente RPO 24 h con RTO 4 h u 8 h. Hasta entonces Corrida 6 y Gate B4 siguen `PARTIAL/BLOCKED`.
+
+### Evidencia local de Corridas 3–4 — 2026-09-09
+
+- [x] Se añadió `scripts/test-local-invitation.mjs` y el comando `npm run supabase:test:invitation`; no contiene secretos y obtiene el contexto exclusivamente del stack Supabase local.
+- [x] Se corrigió `auth.email.enable_signup=true` para mantener operativo el proveedor email; `auth.enable_signup=false` continúa impidiendo el alta pública. Antes del cambio, GoTrue rechazaba el login con `email_provider_disabled`.
+- [x] Invitación local con actor admin y JWT reales: primera ejecución `200/completed`; mismo `operationId` y payload `200` con el mismo sujeto; reutilización con otro rol `409`.
+- [x] Controles negativos: auto-registro público `422`, petición sin sesión `401`, miembro técnico/no admin `403` y origen fuera de allowlist `403`.
+- [x] Persistencia conciliada directamente en PostgreSQL: membresía `supervisor/active`, un evento de auditoría y operación privada `completed`; Mailpit capturó exactamente un correo.
+- [x] Limpieza posterior con `npm run supabase:reset`: 2 organizaciones, 4 membresías, 4 usuarios Auth, 0 clientes y 0 operaciones de invitación.
+- [x] El job `supabase-local` ejecuta la prueba después de reset y antes del gate de tipos.
+- [ ] La evidencia es sólo local: SMTP personalizado, entrega externa y las tres identidades separadas de `ABA_staging` siguen pendientes para cerrar B2/B3.
 
 ## 6. Ruta crítica al 29 de septiembre
 
@@ -301,7 +313,7 @@ Prohibido registrar: payload clínico, capturas con PII, dumps, cadenas de conex
 - [ ] Registrar decisión del propietario sobre el WARN HIBP; las compensaciones no permiten marcarlo resuelto.
 - [ ] Completar corridas 1–4 con cuentas sintéticas y JWT reales de staging.
 - [ ] Resolver y registrar RTO 4 h vs 8 h.
-- [x] Preparar localmente los tres jobs de CI y hacer explícita la configuración Supabase sintética del job `verify`.
+- [x] Preparar localmente los tres jobs de CI, hacer explícita la configuración Supabase sintética del job `verify` e incorporar Auth/Edge/Mailpit al job `supabase-local`.
 - [x] Conciliar/versionar el árbol, ejecutar Corrida 5 desde checkout limpio y congelar el SHA `640389c` con CI remota verde.
 - [x] Ejecutar y documentar el ensayo de restore local sólo en un stack Supabase aislado.
 - [ ] Repetir Corrida 6 con backup cifrado real de staging, destino/custodia autorizados y RPO/RTO aceptados.

@@ -29,6 +29,7 @@ jobs:
       - run: npm ci
       - run: npm run supabase:start
       - run: npm run supabase:reset
+      - run: npm run supabase:test:invitation
       - run: npm run supabase:types:check
       - if: always()
         run: npm run supabase:stop

@@ -15,7 +15,8 @@
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset --local",
     "supabase:stop": "supabase stop",
-    "supabase:types:check": "node scripts/check-supabase-types.mjs"
+    "supabase:types:check": "node scripts/check-supabase-types.mjs",
+    "supabase:test:invitation": "node scripts/test-local-invitation.mjs"
   },
   "dependencies": {
     "@mantine/core": "^7.15.2",
