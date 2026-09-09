@@ -15,8 +15,8 @@ No se vuelven a contar los controles ya acreditados:
 - B2 DB está aplicada en `ABA_staging`; la Edge Function `invite-clinic-member` v2 está `ACTIVE`, con `verify_jwt=true`, y un POST anónimo devuelve `401`.
 - RLS/grants, lifecycle dummy, migraciones y proyecciones explícitas tienen la evidencia local/staging indicada en el status map.
 - Docker local ya pasó: configuración Compose, build con secreto BuildKit, contenedor `healthy`, healthcheck y revisión de logs. El 2026-09-09 se confirmó además Docker Engine 29.7.2 y el stack Supabase local operativo.
-- B3 sigue bloqueado por completar Corrida 1 —login humano, alias separados, SMTP personalizado y decisión de riesgo por leaked-password protection no disponible en Free— y por la matriz autenticada; B4 por restore/VPS; B5 por aceptación, corte autorizado y publicación. `ABA_staging` usa el plan Free y su proveedor SMTP compartido sólo entrega a miembros de la organización Supabase: los alias de prueba no pueden recibir invitaciones reales mientras no se configure un SMTP personalizado.
-- Corrida 5 quedó parcialmente verificada el 2026-09-09: el workflow de tres jobs existe sólo en el working tree; replay/tipos y suites pasan localmente; las 30 migraciones locales/remotas coinciden sin deriva y los Advisors remotos están registrados. Aún no existe CI remota sobre un SHA candidato, imagen publicada ni digest; `origin/main` todavía no contiene el workflow.
+- B3 sigue bloqueado por completar Corrida 1 —login humano, alias separados, SMTP personalizado y decisión de riesgo por leaked-password protection no disponible en Free— y por la matriz autenticada; B4 conserva pendientes el backup real cifrado de staging, la aceptación RPO/RTO y la VPS; B5 por aceptación, corte autorizado y publicación. `ABA_staging` usa el plan Free y su proveedor SMTP compartido sólo entrega a miembros de la organización Supabase: los alias de prueba no pueden recibir invitaciones reales mientras no se configure un SMTP personalizado.
+- Corrida 5 quedó **PASS** el 2026-09-09 sobre `640389c6a519992f89408d18b617204144e12fc4`: el push autorizado llegó a `origin/main` y GitHub Actions `34355815513` completó en verde `verify`, `supabase-local` y `container-build`. La publicación de una imagen en registro se mantiene como dependencia de despliegue de Corrida 7, no como evidencia ficticia de CI.
 
 Decisión ejecutada parcialmente el 2026-09-09: en `ABA_staging` (`arfwuctpwnnuhdgjtxaa`), organización `11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa` —“Organización sintética E2E A”—, la cuenta privada provista por el propietario fue verificada en Auth y promovida mediante bootstrap transaccional autorizado desde `clinician` a `admin/active`. Para pruebas y UAT siguen planificadas tres identidades Auth distintas que llegan al mismo buzón: la cuenta base como admin y dos alias privados separados para supervisor y técnico. Los alias aún no fueron creados ni invitados. Los correos operativos se conservan fuera de Git; no se solicitan ni comparten contraseñas.
 
@@ -98,8 +98,8 @@ Los alias Gmail comparten buzón de entrega, pero deben materializarse como **tr
 | 2 — Matriz autenticada staging, 12–16 sep | Corrida 1 PASS; tres identidades/JWT distintos; dos clínicas; lote dummy abierto | REST/RPC/UI con admin, supervisor y técnico; asignado/no asignado/suspended/future/cross-tenant/URL manipulada/DML directo. `auth_backend` + `qa_evidence` | SHA, timestamp, actor sintético, esperado/real, códigos y conteos; persistencia y reapertura | Todos los positivos pasan; negativos deniegan o devuelven cero filas; sin paciente real | Congelar y limpiar sólo el lote confirmado cuando esté autorizado; ningún dato fuera del lote | Cuentas/JWT separados y autorización de fixtures |
 | 3 — Invitación y recuperación, 16–18 sep | Corrida 1 PASS; SMTP personalizado operativo en staging; redirects finales | Invitación nueva/existente/duplicada, mismo `operationId`, reintento, entrega real a alias y password recovery. Mailpit repite el circuito sólo en local. `auth_backend` + `qa_evidence` | Estados `pending/completed`, una membresía/evento, códigos 400/401/403/409, recepción pseudonimizada y reset sin email completo | Flujo completo e idempotente; invitación y recuperación llegan mediante SMTP personalizado a identidades sintéticas separadas; Mailpit por sí solo no cierra el criterio | Reconciliar pendientes; desactivar/revertir configuración SMTP defectuosa sin exponer credenciales; rollback de Edge versionado; no borrar usuarios existentes | Proveedor SMTP, dominio/remitente verificado, custodia de credenciales y URLs Auth |
 | 4 — Fallos parciales Edge, 18–19 sep | Harness controlado; corrida 3 nominal PASS | Inyectar fallo antes/después de Auth y durante finalización DB/auditoría; reintentar. `auth_backend` + `qa_evidence` | Operación durable; ausencia de duplicados y estados huérfanos; reintento mismo resultado lógico | Ningún 500 deja estado irreconciliable | Volver a Edge anterior y reconciliar por runbook; aborto si aparece membresía sin trazabilidad | Autorización de prueba controlada |
-| 5 — CI y release candidata, 20–23 sep — **PARTIAL/BLOCKED** | Actualmente `main` está un commit delante de `origin/main` y el working tree está sucio; faltan checkout limpio y acceso/aprobación remota | Ya implementado/verificado: jobs `verify`, `supabase-local` y `container-build`, replay/tipos/suites locales, conciliación de migraciones y Advisors remotos. Pendiente: versionar/publicar el árbol, ejecutar CI completa y capturar/publicar imagen por digest. Orquestador + `qa_evidence` | Deriva remota cero y Advisors registrados; pendientes SHA único, jobs remotos y digest coincidente | Un único SHA compartido con todos los jobs verdes | Mantener digest anterior; forward-fix; no desplegar desde working tree | Acceso Git y aprobación del SHA; Docker local disponible para reproducir jobs |
-| 6 — Backup/restore aislado, 21–24 sep | Plan, RPO/RTO y destino autorizados | Dump cifrado, hashes, restore sólo en destino vacío, conteos e invariantes, tiempos. `infra_recovery` + `qa_evidence` | Conteos conciliados; 0 tablas públicas sin RLS; 0 constraints inválidos; DB replay PASS; RPO/RTO medidos | Restore íntegro dentro del objetivo aceptado | Descartar sólo el destino aislado y repetir desde vacío; nunca restaurar sobre `ABA_staging` | Plan/costo, destino, custodia y RTO |
+| 5 — CI y release candidata, 20–23 sep — **PASS** | Árbol conciliado, push público autorizado y Docker local disponible | Workflow de tres jobs, replay/tipos/suites, conciliación de migraciones, Advisors, build de contenedor y smoke. Orquestador + `qa_evidence` | SHA `640389c`; GitHub Actions `34355815513`: `verify`, `supabase-local` y `container-build` PASS; deriva `0`; digest local registrado | Un único SHA compartido con todos los jobs verdes | Mantener digest anterior; forward-fix; no desplegar desde working tree | Registro de imagen y VPS pasan a Corrida 7 |
+| 6 — Backup/restore aislado, 21–24 sep — **PARTIAL/BLOCKED** | Ensayo local autorizado y PASS; faltan backup real cifrado de staging, custodia y aceptación RPO/RTO | Dump con hashes, restore transaccional sólo en stack Supabase vacío, conteos, referencias Auth, RLS, constraints y tiempos. `infra_recovery` + `qa_evidence` | Ensayo local: conteos conciliados; 0 tablas públicas sin RLS; 0 constraints inválidos en `public/private`; 0 membresías huérfanas; Auth saludable | Restore técnico local íntegro; cierre operacional exige backup real y objetivo aceptado | Descartar sólo el destino aislado y repetir desde vacío; nunca restaurar sobre `ABA_staging` | Destino cifrado/custodia y elección RPO 24 h + RTO 4 h u 8 h |
 | 7 — VPS/HTTPS y smoke, 23–25 sep | Corridas 3 y 5 PASS; VPS, DNS, 80/443; secretos | Deploy por SHA, Caddy/TLS, Site URL/callback/CORS, healthcheck externo, alertas y logs. `infra_recovery` + `auth_backend` + `qa_evidence` | `/api/health` exacto, `compose ps`, SHA/digest, TLS, smoke autenticado y logs sin contenido clínico | HTTPS y smoke pasan desde red externa | Volver a imagen anterior por digest `--no-build`; no revertir DB con restore | VPS/hostname/DNS y configuración Auth |
 | 8 — Ensayo de corte, 25–26 sep | B3/B4 PASS; Corrida 3 acredita SMTP personalizado y recuperación; backup disponible; todos los lotes identificados | Verificar salud no secreta del canal Auth; detener escrituras de ensayo; freeze; inventario por clínica/lote/tabla; dry-run; conciliación; sin cleanup real. `clinical_cutover` + `qa_evidence` | Estado frozen, canal Auth operativo, cero escrituras posteriores, conteos completos y confirmación requerida capturada | Invitación/recuperación real siguen operativas por SMTP personalizado; inventario y dry-run coinciden; ningún lote de otra clínica es afectado | Abortar si reaparece `Email address not authorized` o falla recuperación; reabrir sólo antes de cleanup, por admin y con autorización | SMTP personalizado vigente, ventana y autorización de freeze/ensayo |
 | 9 — UAT profesional, 26–27 sep | Corridas 2, 5 y 7 PASS; fixtures dummy; SHA candidato | Ficha, estados UI, edición/recarga, programa/versión, captura, cancelación, reintento, reapertura/resultados y negativos. `clinical_cutover` + `qa_evidence` | Acta por escenario, SHA probado, incidencias y decisión explícita profesional | Responsable clínico marca `ACCEPTED`; no se infiere por CI | Mantener PoC cerrada y repetir sólo corridas impactadas tras corrección | Agenda y aceptación de la profesional |
@@ -144,18 +144,18 @@ Estas medidas reducen exposición, pero **no consultan HIBP y no sustituyen leak
 
 Cada control debe producir caso, esperado/real, configuración no secreta y timestamp. Ninguna evidencia puede contener contraseñas, tokens, cookies, claves o cuerpos completos de correo.
 
-### Evidencia parcial de Corrida 5 — 2026-09-09
+### Evidencia de Corrida 5 — 2026-09-09
 
-Estado: **PARTIAL/BLOCKED**. Esta revisión adelantó sólo trabajo local, independiente y reversible mientras Corrida 1 espera el login humano. No hubo commit, push, ejecución remota, publicación de imagen ni mutación de staging.
+Estado: **PASS**. La preparación local se publicó después de autorización explícita y se reprodujo en GitHub Actions sobre un SHA único. No hubo mutación adicional de staging ni publicación de imagen en un registro.
 
 **Git y alcance implementado**
 
-- [x] `HEAD=afd30fb9b0d497a9bd5620d46505d8147ce9f1d7`; `main` está un commit delante de `origin/main=794b7948add3573fa6cd419ad4fffb45592355e0`.
-- [x] El working tree contiene un workflow con tres jobs: `verify`, `supabase-local` y `container-build`. `container-build` sí ejecuta `actions/checkout@v5`, usa Buildx, `push: false`, argumentos públicos sintéticos y un secreto BuildKit sintético de CI.
+- [x] SHA candidato y remoto verificado: `640389c6a519992f89408d18b617204144e12fc4` en `origin/main`.
+- [x] El repositorio contiene un workflow con tres jobs: `verify`, `supabase-local` y `container-build`. `container-build` ejecuta `actions/checkout@v5`, usa Buildx, `push: false`, argumentos públicos sintéticos y un secreto BuildKit sintético de CI.
 - [x] El job `verify` declara `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` sintéticos a nivel del job, para que Playwright/Next y build no dependan de un `.env.local` ausente en un checkout limpio. No son credenciales de staging.
 - [x] `package-lock.json` v3 fija, entre otras dependencias, Next.js 16.3.4, Supabase CLI 2.117.0 y Playwright 1.63.0; `scripts/check-supabase-types.mjs` compara tipos generados localmente con los versionados.
 - [x] `Dockerfile` consume el secreto de Server Actions mediante BuildKit; `.dockerignore` excluye `.git`, entornos, dependencias y documentos de auditoría.
-- [ ] Estos cambios no están publicados: `origin/main` no contiene el workflow y varios archivos de CI/Supabase siguen modificados o no versionados. El estado `IMPLEMENTED` se limita al working tree.
+- [x] Los cambios están versionados y publicados; antes del push se retiraron de la documentación los correos operativos y aliases identificables.
 
 **Verificación local de esta continuación**
 
@@ -170,7 +170,7 @@ Estado: **PARTIAL/BLOCKED**. Esta revisión adelantó sólo trabajo local, indep
 - [x] `npm run supabase:start` PASS; el stack local quedó disponible para reproducir el job `supabase-local`.
 - [x] `npm run supabase:reset` PASS; aplicó las 30 migraciones del árbol, incluidas B0/B2, y cargó el seed exclusivamente sintético.
 - [x] `npm run supabase:types:check` PASS; los tipos generados desde el esquema local coinciden con los tipos versionados.
-- [ ] No se ejecutó `npm ci` sobre este working tree activo: reemplazar dependencias podía interrumpir el servidor entregado para el login. La reproducción final debe partir de checkout limpio y efímero.
+- [x] El runner ejecutó `npm ci` desde checkout limpio en los jobs `verify` y `supabase-local`.
 
 **Verificación remota agregada, sin PII**
 
@@ -180,16 +180,27 @@ Estado: **PARTIAL/BLOCKED**. Esta revisión adelantó sólo trabajo local, indep
 - [x] Performance Advisors al 2026-09-09: 58 INFO `unused_index`. No se eliminan índices sin carga real representativa.
 - [x] Ledger, deriva y ejecución de Advisors ya no bloquean Corrida 5. El WARN de leaked-password protection y su decisión de riesgo permanecen abiertos en Corrida 1 y Gate B2.
 
-**Pendiente para CI remota y release**
+**CI remota y release**
 
 - [x] Árbol conciliado y commit local candidato creado (`feat: harden MVP release and Supabase workflow`). El SHA final se registra en el handoff externo para evitar una referencia autorrecursiva dentro del propio commit; el working tree quedó limpio al crear el checkpoint.
-- [ ] `push` explícitamente autorizado al repositorio público y CI verde sobre el SHA candidato. La publicación fue bloqueada preventivamente hasta que el propietario acepte esa exposición externa.
-- [ ] Reproducir en el runner los `supabase start/reset/types:check` que ya pasaron localmente. El replay/tipos local no sustituye el job remoto y `npm test` usa PGlite, por lo que no demuestra por sí solo Auth/REST/Edge local.
+- [x] El propietario autorizó explícitamente el repositorio público; `afd30fb` y `640389c` fueron publicados en `origin/main` sin correos operativos versionados.
+- [x] GitHub Actions `34355815513` PASS sobre `640389c`: `verify` 1m43s, `container-build` 1m09s y `supabase-local` 1m57s. El runner ejecutó lint, tipos, 24 pruebas, 2 E2E, build, `supabase start/reset/types:check` y build de contenedor.
 - [x] Imagen local `aba-clinico:candidate-local` construida con valores sintéticos y BuildKit secret; digest local `sha256:2c09f2801de5e3381139eae65508576198334b369539d293239103147345a82c`. Smoke local de `/api/health` PASS con `{"status":"ok","service":"aba-clinico"}`; el contenedor temporal fue retirado.
 - [ ] Definir registro/destino y publicar/conservar la imagen por digest. El digest local no sustituye una release disponible para la VPS.
 - [x] `supabase/README.md` conciliado: documenta las 30 migraciones que existen en el árbol.
 
-Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un falso positivo sobre la ausencia de checkout en `container-build`; se pidió una sola corrección. La entrega corregida se contrastó con workflow, Git, scripts y resultados actuales y queda **ACCEPTED**. Este `ACCEPTED` valida el handoff, no la Corrida 5, que permanece `PARTIAL/BLOCKED`.
+Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un falso positivo sobre la ausencia de checkout en `container-build`; se pidió una sola corrección. La entrega corregida se contrastó con workflow, Git, scripts y resultados actuales y queda **ACCEPTED**. Con el push y los tres jobs remotos verdes, Corrida 5 queda **PASS**.
+
+### Evidencia parcial de Corrida 6 — 2026-09-09
+
+- [x] Dump local sintético separado en roles, estructura `public/private` y datos completos incluidos Auth; hashes SHA-256 registrados en `docs/runbooks/BACKUP_RESTORE.md`.
+- [x] Restore transaccional PASS en un stack Supabase temporal completo con GoTrue v2.196.0; nunca se conectó a `ABA_staging`.
+- [x] Origen y destino conciliaron 2 organizaciones, 4 usuarios Auth, 4 membresías, 0 clientes, 0 sesiones, 0 registros de sesión, 30 tablas públicas y 57 políticas.
+- [x] Invariantes: 0 tablas públicas sin RLS, 0 constraints inválidos en `public/private`, 0 membresías huérfanas y endpoint Auth saludable.
+- [x] Se detectaron y rechazaron dos falsos positivos: PostgreSQL sin migraciones GoTrue produjo deriva Auth; el restore sólo de aplicación dejó 4 membresías huérfanas. Ambas transacciones fallidas se revirtieron por completo.
+- [x] RTO frío local observado menor a 2 minutos, incluida descarga inicial de imágenes; restore SQL menor a 1 segundo. Dataset estático sintético: pérdida observada `0`, sin extrapolar a producción.
+- [x] El stack temporal y los dumps se eliminaron; el stack original volvió con 2 organizaciones, 4 usuarios Auth, 4 membresías y 0 clientes.
+- [ ] Generar y custodiar un backup cifrado real de `ABA_staging`, restaurarlo en destino autorizado y aceptar formalmente RPO 24 h con RTO 4 h u 8 h. Hasta entonces Corrida 6 y Gate B4 siguen `PARTIAL/BLOCKED`.
 
 ## 6. Ruta crítica al 29 de septiembre
 
@@ -221,11 +232,11 @@ Una fila sólo avanza un estado con evidencia del nivel correspondiente.
 | Entrega | IMPLEMENTED | VERIFIED LOCAL | VERIFIED STAGING | ACCEPTED | PUBLISHED |
 |---|---|---|---|---|---|
 | B0 contención | Sí | Sí | Sí en controles estructurales | Técnico pendiente de consolidación | No aplica |
-| B1 reproducibilidad | Sí | Sí | Ledger alineado | Técnico en corrida 5 | No aplica |
+| B1 reproducibilidad | Sí | Sí | Ledger alineado y CI `34355815513` PASS | Técnico cerrado en corrida 5 | No aplica |
 | B2 DB/Edge | Sí; DB aplicada, Edge v2 activa | Sí | Estructural/negativo sí; Corrida 1 parcial, 3–4 pendientes | Propietario/técnico pendiente | No aplica |
 | B3 flujos | Sí | Sí | Bootstrap admin verificado; alias, matriz y corridas 2–4 pendientes | Profesional pendiente | No aplica |
-| B4 operación | Runbooks/deploy sí | Docker local sí | Corridas 6–7 pendientes | Propietario pendiente | No aplica |
-| B5 promoción | Procedimiento y CI de tres jobs en working tree; Corrida 5 parcial | Docker 29.7.2, `supabase start/reset/types:check`, unit 24/24, E2E 2/2 y build PASS tras reset | Deriva 0 y Advisors remotos registrados; CI/SHA, digest y corte staging pendientes | Corrida 9 pendiente | Corrida 10 pendiente |
+| B4 operación | Runbooks/deploy sí | Restore aislado local PASS; Docker y Auth saludables | Backup real cifrado de staging y Corrida 7 pendientes | RPO/RTO y custodia pendientes del propietario | No aplica |
+| B5 promoción | Procedimiento y CI de tres jobs versionados; Corrida 5 PASS | Docker 29.7.2, `supabase start/reset/types:check`, unit 24/24, E2E 2/2, build e imagen local PASS | SHA `640389c`, deriva 0, Advisors y CI remota verdes; registro de imagen y corte pendientes | Corrida 9 pendiente | Corrida 10 pendiente |
 
 Definiciones:
 
@@ -291,8 +302,9 @@ Prohibido registrar: payload clínico, capturas con PII, dumps, cadenas de conex
 - [ ] Completar corridas 1–4 con cuentas sintéticas y JWT reales de staging.
 - [ ] Resolver y registrar RTO 4 h vs 8 h.
 - [x] Preparar localmente los tres jobs de CI y hacer explícita la configuración Supabase sintética del job `verify`.
-- [ ] Conciliar/versionar el árbol, ejecutar corrida 5 desde checkout limpio y congelar un SHA/digest con evidencia remota.
-- [ ] Ejecutar restore sólo en destino aislado y cerrar corrida 6.
+- [x] Conciliar/versionar el árbol, ejecutar Corrida 5 desde checkout limpio y congelar el SHA `640389c` con CI remota verde.
+- [x] Ejecutar y documentar el ensayo de restore local sólo en un stack Supabase aislado.
+- [ ] Repetir Corrida 6 con backup cifrado real de staging, destino/custodia autorizados y RPO/RTO aceptados.
 - [ ] Configurar VPS/HTTPS/Auth/CORS y cerrar corrida 7.
 - [ ] Preparar fixtures, actas y evidencia sin PII para 8–9.
 - [ ] Ejecutar freeze/inventario/dry-run sin limpieza en corrida 8.
@@ -312,7 +324,7 @@ Prohibido registrar: payload clínico, capturas con PII, dumps, cadenas de conex
 - [ ] Confirmar backup/PITR, custodia, retención, destino aislado y RPO/RTO.
 - [ ] Entregar VPS/hostname/DNS y ventana de operación.
 - [ ] Coordinar UAT y confirmar dimensiones clínicas soportadas.
-- [ ] Aprobar el SHA candidato.
+- [x] Autorizar la publicación pública y el SHA candidato `640389c`, decisión recibida el 2026-09-09.
 - [ ] Autorizar explícitamente el freeze y, por separado, la lista exacta de lotes a limpiar.
 - [ ] Estar disponible para la verificación final previa a `PUBLISHED`.
 
