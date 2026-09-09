@@ -171,6 +171,7 @@ Estado: **PASS**. La preparación local se publicó después de autorización ex
 - [x] `npm run supabase:reset` PASS; aplicó las 30 migraciones del árbol, incluidas B0/B2, y cargó el seed exclusivamente sintético.
 - [x] `npm run supabase:test:invitation` PASS con Auth/Edge/Mailpit locales: auto-registro bloqueado `422`, rechazo sin sesión `401`, no admin `403`, origen no permitido `403`, alta y reintento idempotente `200`, conflicto `409`, membresía/auditoría/operación persistidas y un único correo local capturado.
 - [x] `npm run supabase:test:authorization` PASS con 17 controles Auth/JWT/RLS/RPC: dos clínicas, tres perfiles, suspensión, asignación futura, ausencia de asignación, equipo de clínica, DML directo y comandos cross-tenant.
+- [x] `npm run test:e2e:local-auth` PASS 3/3 en un servidor Next.js aislado: admin limitado a su clínica y ruta cruzada 404; supervisor edita sin administración; técnico consulta/captura sin editar.
 - [x] `npm run supabase:types:check` PASS; los tipos generados desde el esquema local coinciden con los tipos versionados.
 - [x] El runner ejecutó `npm ci` desde checkout limpio en los jobs `verify` y `supabase-local`.
 
@@ -215,6 +216,8 @@ Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un fal
 - [x] Limpieza posterior restablecida: 2 organizaciones, 4 membresías, 4 usuarios Auth, 0 clientes, 0 asignaciones y 0 operaciones de invitación.
 - [x] El job `supabase-local` ejecuta esta matriz después de la prueba de invitación.
 - [x] Secuencia exacta de CI local PASS en un mismo stack: reset → invitación → autorización → tipos → reset; baseline final `2/4/4/0/0/0`.
+- [x] E2E autenticado de interfaz PASS 3/3 contra Supabase local. El runner usa puerto 3100 y `.next-local-auth`, restaura archivos que Next genera y ejecuta reset aun cuando Playwright falle.
+- [x] El E2E detectó y corrigió la etiqueta inaccesible de contraseña y dos llamadas `db.rpc` sin contexto en carga admin/Server Actions.
 - [ ] Falta repetir la matriz con identidades separadas y JWT reales de `ABA_staging`; la evidencia local no cierra B3.
 
 ### Evidencia local de Corridas 3–4 — 2026-09-09

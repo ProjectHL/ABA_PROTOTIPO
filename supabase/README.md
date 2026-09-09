@@ -15,6 +15,7 @@ npx supabase db reset --local
 npx supabase status
 npm run supabase:test:invitation
 npm run supabase:test:authorization
+npm run test:e2e:local-auth
 ```
 
 `db reset --local` elimina y reconstruye sólo la base Docker local. No sustituir

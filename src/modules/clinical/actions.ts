@@ -24,7 +24,7 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
         if(check.error || !check.data) return {error:'Carpeta no disponible en esta clínica.'};
     }
     type RpcResult={data:unknown;error:{code?:string;message:string}|null};
-    const rpc=db.rpc as unknown as (name:string,args?:Record<string,unknown>)=>PromiseLike<RpcResult>;
+    const rpc=db.rpc.bind(db) as unknown as (name:string,args?:Record<string,unknown>)=>PromiseLike<RpcResult>;
     let result:RpcResult;
     switch(c.op) {
         case 'student': result=await rpc('mvp_save_student',{p_organization_id:active.id,p_client_id:c.id,p_expected_updated_at:c.expected,p_payload:c.payload,p_test_run_id:c.id?undefined:testRun});break;

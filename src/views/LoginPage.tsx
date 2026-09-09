@@ -79,15 +79,13 @@ export default function LoginPage() {
                             onChange={(event) => setEmail(event.currentTarget.value)}
                             required
                         />
-                        <div>
-                            <Text component="label" size="sm" fw={500} mb={5}>Contraseña</Text>
-                            <PasswordInput
-                                placeholder="********"
-                                value={password}
-                                onChange={(event) => setPassword(event.currentTarget.value)}
-                                required
-                            />
-                        </div>
+                        <PasswordInput
+                            label="Contraseña"
+                            placeholder="********"
+                            value={password}
+                            onChange={(event) => setPassword(event.currentTarget.value)}
+                            required
+                        />
                         <Button
                             type="submit"
                             fullWidth

@@ -38,7 +38,7 @@ export async function ClinicalPage({studentId,programId,initialTab}:{studentId?:
         data.students=students.data;
         if(active.role==='admin') {
             type TeamResult={data:unknown;error:{message:string}|null};
-            const rpc=db.rpc as unknown as (name:string,args:Record<string,unknown>)=>PromiseLike<TeamResult>;
+            const rpc=db.rpc.bind(db) as unknown as (name:string,args:Record<string,unknown>)=>PromiseLike<TeamResult>;
             const team=await rpc('mvp_team',{p_organization_id:active.id});
             if(team.error) throw new Error('No se pudo cargar el equipo. Verifica que las migraciones estén aplicadas.');
             data.team=team.data as unknown as WorkspaceData['team'];

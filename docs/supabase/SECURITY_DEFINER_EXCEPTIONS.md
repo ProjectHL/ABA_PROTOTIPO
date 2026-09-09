@@ -62,5 +62,7 @@ negativas, y una migración nueva por firma exacta.
   `scripts/test-local-authorization.mjs` usa sesiones Auth/JWT reales contra
   PostgREST/RPC y verifica dos clínicas, los tres perfiles, membresía suspendida,
   asignación futura, usuario sin asignación, DML directo y acceso cruzado.
+  `tests/e2e/authenticated.local.spec.ts` confirma en la UI que admin, supervisor
+  y técnico reciben navegación y controles coherentes con esas capacidades.
 - Operación: no se acepta un WARN nuevo del Advisor sin añadirlo a este registro.
 - Pendiente externo: activar protección de contraseñas filtradas en Auth.

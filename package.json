@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:db": "vitest run tests/database",
     "test:e2e": "playwright test",
+    "test:e2e:local-auth": "node scripts/run-local-auth-e2e.mjs",
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset --local",
     "supabase:stop": "supabase stop",
