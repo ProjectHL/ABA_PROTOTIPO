@@ -18,6 +18,7 @@
     "supabase:stop": "supabase stop",
     "supabase:types:check": "node scripts/check-supabase-types.mjs",
     "supabase:test:invitation": "node scripts/test-local-invitation.mjs",
+    "supabase:test:invitation-failures": "node scripts/test-local-invitation-failures.mjs",
     "supabase:test:authorization": "node scripts/test-local-authorization.mjs"
   },
   "dependencies": {

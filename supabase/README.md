@@ -14,6 +14,7 @@ npx supabase start
 npx supabase db reset --local
 npx supabase status
 npm run supabase:test:invitation
+npm run supabase:test:invitation-failures
 npm run supabase:test:authorization
 npm run test:e2e:local-auth
 ```

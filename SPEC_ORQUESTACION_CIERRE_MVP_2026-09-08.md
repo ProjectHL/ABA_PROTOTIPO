@@ -229,6 +229,11 @@ Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un fal
 - [x] Persistencia conciliada directamente en PostgreSQL: membresía `supervisor/active`, un evento de auditoría y operación privada `completed`; Mailpit capturó exactamente un correo.
 - [x] Limpieza posterior con `npm run supabase:reset`: 2 organizaciones, 4 membresías, 4 usuarios Auth, 0 clientes y 0 operaciones de invitación.
 - [x] El job `supabase-local` ejecuta la prueba después de reset y antes del gate de tipos.
+- [x] Harness local de Corrida 4 añadido: Auth ausente antes de completar conserva `pending`; crear el usuario y reintentar completa una sola vez.
+- [x] Usuario Auth ya existente antes de finalizar: el reintento por Edge completa la operación sin reenviar invitación y sin duplicar membresía ni auditoría.
+- [x] Fallo controlado al insertar auditoría: la transacción revierte la membresía, conserva la operación `pending`, elimina el trigger temporal y el reintento posterior completa exactamente una vez.
+- [x] Pérdida simulada de respuesta posterior al commit: repetir `begin/complete` con el mismo `operationId` devuelve el mismo sujeto y conserva una operación, una membresía y un evento.
+- [x] `npm run supabase:test:invitation-failures` se incorpora al job `supabase-local`; no modifica Edge ni crea una migración de prueba.
 - [ ] La evidencia es sólo local: SMTP personalizado, entrega externa y las tres identidades separadas de `ABA_staging` siguen pendientes para cerrar B2/B3.
 
 ## 6. Ruta crítica al 29 de septiembre

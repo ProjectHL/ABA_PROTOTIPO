@@ -31,6 +31,7 @@ jobs:
       - run: npm run supabase:start
       - run: npm run supabase:reset
       - run: npm run supabase:test:invitation
+      - run: npm run supabase:test:invitation-failures
       - run: npm run supabase:test:authorization
       - run: npm run test:e2e:local-auth
       - run: npm run supabase:types:check

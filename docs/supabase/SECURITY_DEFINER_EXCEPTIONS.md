@@ -59,6 +59,11 @@ negativas, y una migración nueva por firma exacta.
   locales y verifica auto-registro bloqueado `422`, `401`, `403`, `409`, reintento
   `200`, membresía, auditoría y estado privado `completed`; los fixtures se
   preparan sólo por PostgreSQL local.
+  `scripts/test-local-invitation-failures.mjs` fuerza únicamente en PostgreSQL
+  local la ausencia del usuario Auth, un fallo transaccional al insertar la
+  auditoría y la pérdida simulada de la respuesta posterior al commit. Verifica
+  rollback completo, estado `pending` recuperable, reintentos sin duplicados y
+  elimina el trigger temporal en `finally`.
   `scripts/test-local-authorization.mjs` usa sesiones Auth/JWT reales contra
   PostgREST/RPC y verifica dos clínicas, los tres perfiles, membresía suspendida,
   asignación futura, usuario sin asignación, DML directo y acceso cruzado.
