@@ -19,6 +19,16 @@ npm run supabase:test:authorization
 npm run test:e2e:local-auth
 ```
 
+Preflight remoto de Auth para `ABA_staging` (sólo lecturas públicas y rechazo
+anónimo; no crea usuarios ni envía correos):
+
+```powershell
+npm run supabase:staging:auth-preflight
+```
+
+El comando exige que `NEXT_PUBLIC_SUPABASE_URL` corresponda al project ref de
+staging. Un exit code distinto de cero mantiene abierta la puerta B2.
+
 `db reset --local` elimina y reconstruye sólo la base Docker local. No sustituir
 `--local` por `--linked`. Para detenerla conservando sus volúmenes:
 

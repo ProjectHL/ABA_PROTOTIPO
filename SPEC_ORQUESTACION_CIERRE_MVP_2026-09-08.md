@@ -236,6 +236,17 @@ Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un fal
 - [x] `npm run supabase:test:invitation-failures` se incorpora al job `supabase-local`; no modifica Edge ni crea una migración de prueba.
 - [ ] La evidencia es sólo local: SMTP personalizado, entrega externa y las tres identidades separadas de `ABA_staging` siguen pendientes para cerrar B2/B3.
 
+### Preflight de Corrida 3 en `ABA_staging` — 2026-09-09
+
+- [x] Inventario remoto agregado y sin PII: 30 migraciones alineadas; Edge `invite-clinic-member` v2 activa con `verify_jwt=true`; cero operaciones de invitación pendientes o completadas.
+- [x] La cuenta proporcionada corresponde al único admin activo y está confirmada; no se registró su correo en la evidencia versionada.
+- [x] Las 9 fichas existentes tienen `test_run_id`; pertenecen a 8 lotes, mientras existen 9 lotes abiertos. No se modificó ni eliminó ningún registro.
+- [x] Se añadió `npm run supabase:staging:auth-preflight`: consulta únicamente `/auth/v1/settings` y verifica que Edge rechace una petición anónima antes de ejecutar lógica de negocio. El comando no crea usuarios ni envía correos.
+- [ ] **FAIL:** el alta pública permanece habilitada en Auth; el contrato del MVP y la prueba local exigen rechazo antes de abrir la PoC.
+- [ ] **BLOCKED:** SMTP personalizado está deshabilitado. La entrega externa de invitación y recuperación no puede cerrar Corrida 3 con el proveedor compartido.
+- [ ] **BLOCKED:** Site URL y allowlist conservan la aplicación anterior y `/recuperar-contrasena`; el MVP actual solicita `/auth/callback?next=/reset-password`. Deben actualizarse cuando exista una URL HTTPS utilizable.
+- [ ] **BLOCKED:** staging aún usa membresías heredadas `clinician/viewer`. Una identidad no puede ocupar tres perfiles en una misma clínica porque la clave es `(organization_id,user_id)`; la matriz B3 necesita tres usuarios Auth/JWT, aunque puedan entregar correo al mismo buzón mediante alias controlados.
+
 ## 6. Ruta crítica al 29 de septiembre
 
 ```text
