@@ -170,6 +170,7 @@ Estado: **PASS**. La preparación local se publicó después de autorización ex
 - [x] `npm run supabase:start` PASS; el stack local quedó disponible para reproducir el job `supabase-local`.
 - [x] `npm run supabase:reset` PASS; aplicó las 30 migraciones del árbol, incluidas B0/B2, y cargó el seed exclusivamente sintético.
 - [x] `npm run supabase:test:invitation` PASS con Auth/Edge/Mailpit locales: auto-registro bloqueado `422`, rechazo sin sesión `401`, no admin `403`, origen no permitido `403`, alta y reintento idempotente `200`, conflicto `409`, membresía/auditoría/operación persistidas y un único correo local capturado.
+- [x] `npm run supabase:test:authorization` PASS con 17 controles Auth/JWT/RLS/RPC: dos clínicas, tres perfiles, suspensión, asignación futura, ausencia de asignación, equipo de clínica, DML directo y comandos cross-tenant.
 - [x] `npm run supabase:types:check` PASS; los tipos generados desde el esquema local coinciden con los tipos versionados.
 - [x] El runner ejecutó `npm ci` desde checkout limpio en los jobs `verify` y `supabase-local`.
 
@@ -202,6 +203,19 @@ Dictamen del handoff efímero `ci_evidence`: la primera entrega contenía un fal
 - [x] RTO frío local observado menor a 2 minutos, incluida descarga inicial de imágenes; restore SQL menor a 1 segundo. Dataset estático sintético: pérdida observada `0`, sin extrapolar a producción.
 - [x] El stack temporal y los dumps se eliminaron; el stack original volvió con 2 organizaciones, 4 usuarios Auth, 4 membresías y 0 clientes.
 - [ ] Generar y custodiar un backup cifrado real de `ABA_staging`, restaurarlo en destino autorizado y aceptar formalmente RPO 24 h con RTO 4 h u 8 h. Hasta entonces Corrida 6 y Gate B4 siguen `PARTIAL/BLOCKED`.
+
+### Evidencia local de Corrida 2 — 2026-09-09
+
+- [x] `scripts/test-local-authorization.mjs` crea siete identidades Auth efímeras y ejecuta todas las verificaciones de aplicación con sus JWT; la clave privilegiada sólo prepara actores y nunca se imprime.
+- [x] Admin A ve y actualiza por RPC únicamente la ficha de clínica A; admin B únicamente la ficha de clínica B. La consulta manipulada y el comando cruzado devuelven lista/capacidades vacías o `42501`.
+- [x] Supervisor asignado ve y edita la ficha, pero no recibe `authorization.decide` al no ser supervisor principal.
+- [x] Técnico asignado recibe captura/consulta y no `student.edit`; usuario técnico sin asignación no ve fichas ni capacidades.
+- [x] Suspender la membresía corta acceso inmediatamente aunque el JWT siga vigente; una asignación con inicio futuro no concede acceso anticipado.
+- [x] `mvp_team` queda limitado al admin de la clínica; supervisor recibe `42501`. El DML directo sobre ficha también recibe `42501`, mientras la escritura por comando persiste.
+- [x] Limpieza posterior restablecida: 2 organizaciones, 4 membresías, 4 usuarios Auth, 0 clientes, 0 asignaciones y 0 operaciones de invitación.
+- [x] El job `supabase-local` ejecuta esta matriz después de la prueba de invitación.
+- [x] Secuencia exacta de CI local PASS en un mismo stack: reset → invitación → autorización → tipos → reset; baseline final `2/4/4/0/0/0`.
+- [ ] Falta repetir la matriz con identidades separadas y JWT reales de `ABA_staging`; la evidencia local no cierra B3.
 
 ### Evidencia local de Corridas 3–4 — 2026-09-09
 
@@ -246,7 +260,7 @@ Una fila sólo avanza un estado con evidencia del nivel correspondiente.
 | B0 contención | Sí | Sí | Sí en controles estructurales | Técnico pendiente de consolidación | No aplica |
 | B1 reproducibilidad | Sí | Sí | Ledger alineado y CI `34355815513` PASS | Técnico cerrado en corrida 5 | No aplica |
 | B2 DB/Edge | Sí; DB aplicada, Edge v2 activa | Sí | Estructural/negativo sí; Corrida 1 parcial, 3–4 pendientes | Propietario/técnico pendiente | No aplica |
-| B3 flujos | Sí | Sí | Bootstrap admin verificado; alias, matriz y corridas 2–4 pendientes | Profesional pendiente | No aplica |
+| B3 flujos | Sí | Matriz Auth/JWT/RLS/RPC local PASS | Bootstrap admin verificado; alias y corridas 2–4 de staging pendientes | Profesional pendiente | No aplica |
 | B4 operación | Runbooks/deploy sí | Restore aislado local PASS; Docker y Auth saludables | Backup real cifrado de staging y Corrida 7 pendientes | RPO/RTO y custodia pendientes del propietario | No aplica |
 | B5 promoción | Procedimiento y CI de tres jobs versionados; Corrida 5 PASS | Docker 29.7.2, `supabase start/reset/types:check`, unit 24/24, E2E 2/2, build e imagen local PASS | SHA `640389c`, deriva 0, Advisors y CI remota verdes; registro de imagen y corte pendientes | Corrida 9 pendiente | Corrida 10 pendiente |
 

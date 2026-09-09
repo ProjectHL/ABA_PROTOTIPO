@@ -59,5 +59,8 @@ negativas, y una migración nueva por firma exacta.
   locales y verifica auto-registro bloqueado `422`, `401`, `403`, `409`, reintento
   `200`, membresía, auditoría y estado privado `completed`; los fixtures se
   preparan sólo por PostgreSQL local.
+  `scripts/test-local-authorization.mjs` usa sesiones Auth/JWT reales contra
+  PostgREST/RPC y verifica dos clínicas, los tres perfiles, membresía suspendida,
+  asignación futura, usuario sin asignación, DML directo y acceso cruzado.
 - Operación: no se acepta un WARN nuevo del Advisor sin añadirlo a este registro.
 - Pendiente externo: activar protección de contraseñas filtradas en Auth.

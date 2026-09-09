@@ -13,6 +13,8 @@ Requisitos: Docker Desktop activo y dependencias instaladas.
 npx supabase start
 npx supabase db reset --local
 npx supabase status
+npm run supabase:test:invitation
+npm run supabase:test:authorization
 ```
 
 `db reset --local` elimina y reconstruye sólo la base Docker local. No sustituir
@@ -25,14 +27,15 @@ npx supabase stop
 La configuración deshabilita Storage, Realtime y Analytics porque están fuera del
 alcance del MVP. Mailpit y Edge Runtime permanecen activos para probar invitaciones
 sin entregar correos reales. `auto_expose_new_tables = false` obliga a declarar los
-grants de cada nuevo objeto.
+grants de cada nuevo objeto. El proveedor email está habilitado para login e
+invitaciones; `auth.enable_signup = false` mantiene cerrado el auto-registro público.
 
 ## Seed y datos dummy
 
 `seed.sql` crea dos clínicas y cuatro membresías sintéticas. Los usuarios no tienen
 contraseña ni identidad y no pueden iniciar sesión. Las pruebas autenticadas deben
 crear cuentas temporales mediante la API administrativa local; no se guardan claves
-en Git.
+en Git. Después de ejecutarlas, usar `npm run supabase:reset` para recuperar el seed.
 
 El seed no contiene pacientes. Un fixture clínico sólo puede crearse contra un lote
 abierto mediante `mvp_open_test_batch`, y esa operación exige un admin de la clínica.
