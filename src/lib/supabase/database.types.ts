@@ -56,12 +56,14 @@ export type Database = {
           {
             foreignKeyName: "acquisition_goals_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "acquisition_goals_program_client_fkey"
             columns: ["program_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "acquisition_programs"
             referencedColumns: ["id", "client_id"]
           },
@@ -102,6 +104,7 @@ export type Database = {
           {
             foreignKeyName: "acquisition_programs_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -145,12 +148,14 @@ export type Database = {
           {
             foreignKeyName: "appointment_events_v2_organization_id_client_id_appointmen_fkey"
             columns: ["organization_id", "client_id", "appointment_id"]
+            isOneToOne: false
             referencedRelation: "appointments_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "appointment_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -197,24 +202,28 @@ export type Database = {
           {
             foreignKeyName: "appointment_participants_v2_organization_id_client_id_appo_fkey"
             columns: ["organization_id", "client_id", "appointment_id"]
+            isOneToOne: false
             referencedRelation: "appointments_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "appointment_participants_v2_organization_id_client_id_fami_fkey"
             columns: ["organization_id", "client_id", "family_person_id"]
+            isOneToOne: false
             referencedRelation: "client_people_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "appointment_participants_v2_organization_id_professional_u_fkey"
             columns: ["organization_id", "professional_user_id"]
+            isOneToOne: false
             referencedRelation: "memberships"
             referencedColumns: ["organization_id", "user_id"]
           },
           {
             foreignKeyName: "appointment_participants_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -264,12 +273,14 @@ export type Database = {
           {
             foreignKeyName: "appointment_reminders_v2_organization_id_client_id_appoint_fkey"
             columns: ["organization_id", "client_id", "appointment_id"]
+            isOneToOne: false
             referencedRelation: "appointments_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "appointment_reminders_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -319,18 +330,21 @@ export type Database = {
           {
             foreignKeyName: "appointment_series_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "appointment_series_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "appointment_series_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -407,30 +421,35 @@ export type Database = {
           {
             foreignKeyName: "appointments_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "appointments_v2_organization_id_client_id_linked_session_i_fkey"
             columns: ["organization_id", "client_id", "linked_session_id"]
+            isOneToOne: false
             referencedRelation: "clinical_session_v2_state"
             referencedColumns: ["organization_id", "client_id", "session_id"]
           },
           {
             foreignKeyName: "appointments_v2_organization_id_client_id_series_id_fkey"
             columns: ["organization_id", "client_id", "series_id"]
+            isOneToOne: false
             referencedRelation: "appointment_series_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "appointments_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "appointments_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -480,6 +499,7 @@ export type Database = {
           {
             foreignKeyName: "assessments_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -520,24 +540,28 @@ export type Database = {
           {
             foreignKeyName: "attachment_events_v2_attachment_id_fkey"
             columns: ["attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_records"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attachment_events_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attachment_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "attachment_events_v2_version_id_attachment_id_fkey"
             columns: ["version_id", "attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_versions"
             referencedColumns: ["id", "attachment_id"]
           },
@@ -599,36 +623,42 @@ export type Database = {
           {
             foreignKeyName: "attachment_records_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attachment_records_commercial_document_fkey"
             columns: ["organization_id", "commercial_document_id"]
+            isOneToOne: false
             referencedRelation: "commercial_documents_v2"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "attachment_records_current_version_fkey"
             columns: ["current_version_id", "id"]
+            isOneToOne: false
             referencedRelation: "attachment_versions"
             referencedColumns: ["id", "attachment_id"]
           },
           {
             foreignKeyName: "attachment_records_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "attachment_records_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attachment_records_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -690,12 +720,14 @@ export type Database = {
           {
             foreignKeyName: "attachment_versions_attachment_id_fkey"
             columns: ["attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_records"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "attachment_versions_supersedes_version_id_attachment_id_fkey"
             columns: ["supersedes_version_id", "attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_versions"
             referencedColumns: ["id", "attachment_id"]
           },
@@ -736,6 +768,7 @@ export type Database = {
           {
             foreignKeyName: "audit_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -791,6 +824,7 @@ export type Database = {
           {
             foreignKeyName: "behavior_plans_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -837,18 +871,21 @@ export type Database = {
           {
             foreignKeyName: "chat_conversations_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "chat_conversations_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "chat_conversations_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -880,12 +917,14 @@ export type Database = {
           {
             foreignKeyName: "chat_message_attachments_v2_attachment_version_id_attachme_fkey"
             columns: ["attachment_version_id", "attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_versions"
             referencedColumns: ["id", "attachment_id"]
           },
           {
             foreignKeyName: "chat_message_attachments_v2_conversation_id_message_id_fkey"
             columns: ["conversation_id", "message_id"]
+            isOneToOne: false
             referencedRelation: "chat_messages_v2"
             referencedColumns: ["conversation_id", "id"]
           },
@@ -929,18 +968,21 @@ export type Database = {
           {
             foreignKeyName: "chat_messages_v2_conversation_id_author_user_id_fkey"
             columns: ["conversation_id", "author_user_id"]
+            isOneToOne: false
             referencedRelation: "chat_participants_v2"
             referencedColumns: ["conversation_id", "user_id"]
           },
           {
             foreignKeyName: "chat_messages_v2_organization_id_client_id_conversation_id_fkey"
             columns: ["organization_id", "client_id", "conversation_id"]
+            isOneToOne: false
             referencedRelation: "chat_conversations_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "chat_messages_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -984,18 +1026,21 @@ export type Database = {
           {
             foreignKeyName: "chat_participants_v2_conversation_id_fkey"
             columns: ["conversation_id"]
+            isOneToOne: false
             referencedRelation: "chat_conversations_v2"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "chat_participants_v2_organization_id_client_id_conversatio_fkey"
             columns: ["organization_id", "client_id", "conversation_id"]
+            isOneToOne: false
             referencedRelation: "chat_conversations_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "chat_participants_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1036,18 +1081,21 @@ export type Database = {
           {
             foreignKeyName: "chat_read_states_v2_conversation_id_user_id_fkey"
             columns: ["conversation_id", "user_id"]
+            isOneToOne: true
             referencedRelation: "chat_participants_v2"
             referencedColumns: ["conversation_id", "user_id"]
           },
           {
             foreignKeyName: "chat_read_states_v2_organization_id_client_id_conversation_fkey"
             columns: ["organization_id", "client_id", "conversation_id"]
+            isOneToOne: false
             referencedRelation: "chat_conversations_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "chat_read_states_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1094,12 +1142,14 @@ export type Database = {
           {
             foreignKeyName: "client_context_profiles_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_context_profiles_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1173,24 +1223,28 @@ export type Database = {
           {
             foreignKeyName: "client_people_v2_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_people_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "client_people_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_people_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1255,30 +1309,35 @@ export type Database = {
           {
             foreignKeyName: "client_profiles_v2_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_profiles_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "client_profiles_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_profiles_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "client_profiles_v2_photo_attachment_fkey"
             columns: ["photo_attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_records"
             referencedColumns: ["id"]
           },
@@ -1340,24 +1399,28 @@ export type Database = {
           {
             foreignKeyName: "client_siblings_v2_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_siblings_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "client_siblings_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_siblings_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1407,12 +1470,14 @@ export type Database = {
           {
             foreignKeyName: "clients_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clients_test_batch_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1447,6 +1512,7 @@ export type Database = {
           {
             foreignKeyName: "clinic_admin_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1496,12 +1562,14 @@ export type Database = {
           {
             foreignKeyName: "clinic_subscription_events_v2_organization_id_subscription_fkey"
             columns: ["organization_id", "subscription_id"]
+            isOneToOne: false
             referencedRelation: "clinic_subscriptions_v2"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinic_subscription_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1554,18 +1622,21 @@ export type Database = {
           {
             foreignKeyName: "clinic_subscriptions_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinic_subscriptions_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinic_subscriptions_v2_plan_version_id_fkey"
             columns: ["plan_version_id"]
+            isOneToOne: false
             referencedRelation: "commercial_plan_versions_v2"
             referencedColumns: ["id"]
           },
@@ -1609,12 +1680,14 @@ export type Database = {
           {
             foreignKeyName: "clinical_audit_events_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_audit_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1676,18 +1749,21 @@ export type Database = {
           {
             foreignKeyName: "clinical_history_entries_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_entries_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_entries_supersedes_id_fkey"
             columns: ["supersedes_id"]
+            isOneToOne: false
             referencedRelation: "clinical_history_entries"
             referencedColumns: ["id"]
           },
@@ -1731,24 +1807,28 @@ export type Database = {
           {
             foreignKeyName: "clinical_history_events_v2_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_events_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinical_history_events_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1760,6 +1840,7 @@ export type Database = {
               "client_id",
               "organization_id",
             ]
+            isOneToOne: false
             referencedRelation: "clinical_history_versions_v2"
             referencedColumns: [
               "id",
@@ -1838,24 +1919,28 @@ export type Database = {
           {
             foreignKeyName: "clinical_history_versions_v2_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_versions_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinical_history_versions_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_versions_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -1867,6 +1952,7 @@ export type Database = {
               "client_id",
               "organization_id",
             ]
+            isOneToOne: false
             referencedRelation: "clinical_history_versions_v2"
             referencedColumns: [
               "id",
@@ -1909,6 +1995,7 @@ export type Database = {
           {
             foreignKeyName: "clinical_record_events_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -1958,24 +2045,28 @@ export type Database = {
           {
             foreignKeyName: "clinical_session_v2_events_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinical_session_v2_events_organization_id_client_id_sessi_fkey"
             columns: ["organization_id", "client_id", "session_id"]
+            isOneToOne: false
             referencedRelation: "clinical_session_v2_state"
             referencedColumns: ["organization_id", "client_id", "session_id"]
           },
           {
             foreignKeyName: "clinical_session_v2_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_session_v2_events_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -2034,24 +2125,28 @@ export type Database = {
           {
             foreignKeyName: "clinical_session_v2_state_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinical_session_v2_state_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_session_v2_state_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "clinical_session_v2_state_session_id_client_id_fkey"
             columns: ["session_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id", "client_id"]
           },
@@ -2092,6 +2187,7 @@ export type Database = {
           {
             foreignKeyName: "clinical_sessions_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -2138,12 +2234,14 @@ export type Database = {
           {
             foreignKeyName: "commercial_document_events_v2_organization_id_document_id_fkey"
             columns: ["organization_id", "document_id"]
+            isOneToOne: false
             referencedRelation: "commercial_documents_v2"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "commercial_document_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -2223,6 +2321,7 @@ export type Database = {
           {
             foreignKeyName: "commercial_documents_attachment_scope_fkey"
             columns: ["attachment_record_id", "organization_id", "id"]
+            isOneToOne: false
             referencedRelation: "attachment_records"
             referencedColumns: [
               "id",
@@ -2233,30 +2332,35 @@ export type Database = {
           {
             foreignKeyName: "commercial_documents_v2_attachment_version_id_attachment_r_fkey"
             columns: ["attachment_version_id", "attachment_record_id"]
+            isOneToOne: false
             referencedRelation: "attachment_versions"
             referencedColumns: ["id", "attachment_id"]
           },
           {
             foreignKeyName: "commercial_documents_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "commercial_documents_v2_organization_id_predecessor_id_fkey"
             columns: ["organization_id", "predecessor_id"]
+            isOneToOne: false
             referencedRelation: "commercial_documents_v2"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "commercial_documents_v2_organization_id_subscription_id_fkey"
             columns: ["organization_id", "subscription_id"]
+            isOneToOne: false
             referencedRelation: "clinic_subscriptions_v2"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "commercial_documents_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -2318,6 +2422,7 @@ export type Database = {
           {
             foreignKeyName: "commercial_plan_versions_v2_plan_id_fkey"
             columns: ["plan_id"]
+            isOneToOne: false
             referencedRelation: "commercial_plans_v2"
             referencedColumns: ["id"]
           },
@@ -2379,36 +2484,42 @@ export type Database = {
           {
             foreignKeyName: "consent_events_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_events_consent_record_id_fkey"
             columns: ["consent_record_id"]
+            isOneToOne: false
             referencedRelation: "consent_records"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_events_org_client_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "consent_events_org_test_batch_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "consent_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_events_same_record_fkey"
             columns: ["organization_id", "client_id", "consent_record_id"]
+            isOneToOne: false
             referencedRelation: "consent_records"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
@@ -2476,42 +2587,49 @@ export type Database = {
           {
             foreignKeyName: "consent_records_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_records_evidence_attachment_fkey"
             columns: ["evidence_attachment_id"]
+            isOneToOne: false
             referencedRelation: "attachment_records"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_records_org_client_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "consent_records_org_test_batch_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "consent_records_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_records_supersedes_id_fkey"
             columns: ["supersedes_id"]
+            isOneToOne: false
             referencedRelation: "consent_records"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_records_supersedes_same_student_fkey"
             columns: ["organization_id", "client_id", "supersedes_id"]
+            isOneToOne: false
             referencedRelation: "consent_records"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
@@ -2573,18 +2691,21 @@ export type Database = {
           {
             foreignKeyName: "family_access_links_v2_organization_id_client_id_family_pe_fkey"
             columns: ["organization_id", "client_id", "family_person_id"]
+            isOneToOne: false
             referencedRelation: "client_people_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "family_access_links_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "family_access_links_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -2613,18 +2734,21 @@ export type Database = {
           {
             foreignKeyName: "family_publication_recipients_organization_id_client_id_fa_fkey"
             columns: ["organization_id", "client_id", "family_person_id"]
+            isOneToOne: false
             referencedRelation: "client_people_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "family_publication_recipients_organization_id_client_id_pu_fkey"
             columns: ["organization_id", "client_id", "publication_id"]
+            isOneToOne: false
             referencedRelation: "family_publications_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "family_publication_recipients_v2_publication_id_fkey"
             columns: ["publication_id"]
+            isOneToOne: false
             referencedRelation: "family_publications_v2"
             referencedColumns: ["id"]
           },
@@ -2653,6 +2777,7 @@ export type Database = {
           {
             foreignKeyName: "family_publication_resources_v2_publication_id_fkey"
             columns: ["publication_id"]
+            isOneToOne: false
             referencedRelation: "family_publications_v2"
             referencedColumns: ["id"]
           },
@@ -2699,24 +2824,28 @@ export type Database = {
           {
             foreignKeyName: "family_publications_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "family_publications_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "family_publications_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "family_publications_v2_predecessor_id_fkey"
             columns: ["predecessor_id"]
+            isOneToOne: false
             referencedRelation: "family_publications_v2"
             referencedColumns: ["id"]
           },
@@ -2760,6 +2889,7 @@ export type Database = {
           {
             foreignKeyName: "guardians_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -2794,6 +2924,7 @@ export type Database = {
           {
             foreignKeyName: "memberships_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -2912,30 +3043,35 @@ export type Database = {
           {
             foreignKeyName: "program_lifecycle_events_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_program_id_fkey"
             columns: ["program_id"]
+            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_program_scope_fkey"
             columns: ["organization_id", "client_id", "program_id"]
+            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_program_version_id_fkey"
             columns: ["program_version_id"]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
@@ -2947,6 +3083,7 @@ export type Database = {
               "program_id",
               "program_version_id",
             ]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: [
               "organization_id",
@@ -3001,12 +3138,14 @@ export type Database = {
           {
             foreignKeyName: "program_result_goal_revisions__organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "program_result_goal_revisions_organization_id_client_id_pr_fkey"
             columns: ["organization_id", "client_id", "program_id", "goal_id"]
+            isOneToOne: false
             referencedRelation: "program_result_goals_v2"
             referencedColumns: [
               "organization_id",
@@ -3018,6 +3157,7 @@ export type Database = {
           {
             foreignKeyName: "program_result_goal_revisions_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3079,24 +3219,28 @@ export type Database = {
           {
             foreignKeyName: "program_result_goals_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "program_result_goals_v2_organization_id_client_id_program__fkey"
             columns: ["organization_id", "client_id", "program_id"]
+            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "program_result_goals_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_result_goals_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -3158,30 +3302,35 @@ export type Database = {
           {
             foreignKeyName: "program_versions_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_versions_organization_client_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "program_versions_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_versions_program_client_type_fkey"
             columns: ["program_id", "client_id", "program_type"]
+            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id", "client_id", "program_type"]
           },
           {
             foreignKeyName: "program_versions_supersedes_version_id_fkey"
             columns: ["supersedes_version_id"]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
@@ -3231,24 +3380,28 @@ export type Database = {
           {
             foreignKeyName: "programs_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "programs_current_version_fkey"
             columns: ["current_version_id"]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "programs_organization_client_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "programs_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3289,18 +3442,21 @@ export type Database = {
           {
             foreignKeyName: "session_acquisition_trials_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_acquisition_trials_goal_client_fkey"
             columns: ["goal_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "acquisition_goals"
             referencedColumns: ["id", "client_id"]
           },
           {
             foreignKeyName: "session_acquisition_trials_session_client_fkey"
             columns: ["session_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id", "client_id"]
           },
@@ -3347,18 +3503,21 @@ export type Database = {
           {
             foreignKeyName: "session_behavior_measurements_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_behavior_measurements_plan_client_fkey"
             columns: ["behavior_plan_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "behavior_plans"
             referencedColumns: ["id", "client_id"]
           },
           {
             foreignKeyName: "session_behavior_measurements_session_client_fkey"
             columns: ["session_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id", "client_id"]
           },
@@ -3408,24 +3567,28 @@ export type Database = {
           {
             foreignKeyName: "session_program_record_revisi_organization_id_client_id_re_fkey"
             columns: ["organization_id", "client_id", "record_id"]
+            isOneToOne: false
             referencedRelation: "session_program_records_v2"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "session_program_record_revisio_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "session_program_record_revisions_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "session_program_record_revisions_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3478,18 +3641,21 @@ export type Database = {
           {
             foreignKeyName: "session_program_records_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_program_records_program_version_id_fkey"
             columns: ["program_version_id"]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_program_records_session_id_fkey"
             columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id"]
           },
@@ -3557,6 +3723,7 @@ export type Database = {
           {
             foreignKeyName: "session_program_records_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
@@ -3568,6 +3735,7 @@ export type Database = {
               "program_id",
               "program_version_id",
             ]
+            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: [
               "organization_id",
@@ -3579,24 +3747,28 @@ export type Database = {
           {
             foreignKeyName: "session_program_records_v2_organization_id_client_id_progr_fkey"
             columns: ["organization_id", "client_id", "program_id"]
+            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["organization_id", "client_id", "id"]
           },
           {
             foreignKeyName: "session_program_records_v2_organization_id_client_id_sessi_fkey"
             columns: ["organization_id", "client_id", "session_id"]
+            isOneToOne: false
             referencedRelation: "clinical_session_v2_state"
             referencedColumns: ["organization_id", "client_id", "session_id"]
           },
           {
             foreignKeyName: "session_program_records_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_program_records_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -3634,6 +3806,7 @@ export type Database = {
           {
             foreignKeyName: "siblings_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -3677,12 +3850,14 @@ export type Database = {
           {
             foreignKeyName: "student_access_audit_events_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_access_audit_events_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3735,12 +3910,14 @@ export type Database = {
           {
             foreignKeyName: "student_assignments_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_assignments_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3796,24 +3973,28 @@ export type Database = {
           {
             foreignKeyName: "student_authorization_decisions_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_request_id_fkey"
             columns: ["request_id"]
+            isOneToOne: false
             referencedRelation: "student_authorization_requests"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_supersedes_decision_id_fkey"
             columns: ["supersedes_decision_id"]
+            isOneToOne: false
             referencedRelation: "student_authorization_decisions"
             referencedColumns: ["id"]
           },
@@ -3866,12 +4047,14 @@ export type Database = {
           {
             foreignKeyName: "student_authorization_requests_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_requests_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3924,24 +4107,28 @@ export type Database = {
           {
             foreignKeyName: "student_external_access_v2_invitation_id_fkey"
             columns: ["invitation_id"]
+            isOneToOne: true
             referencedRelation: "student_share_invitations_v2"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_external_access_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "student_external_access_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_external_access_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -3991,24 +4178,28 @@ export type Database = {
           {
             foreignKeyName: "student_share_events_v2_invitation_id_fkey"
             columns: ["invitation_id"]
+            isOneToOne: false
             referencedRelation: "student_share_invitations_v2"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_share_events_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "student_share_events_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_share_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -4076,18 +4267,21 @@ export type Database = {
           {
             foreignKeyName: "student_share_invitations_v2_organization_id_client_id_fkey"
             columns: ["organization_id", "client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "student_share_invitations_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_share_invitations_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -4137,18 +4331,21 @@ export type Database = {
           {
             foreignKeyName: "support_ticket_events_v2_organization_id_actor_user_id_fkey"
             columns: ["organization_id", "actor_user_id"]
+            isOneToOne: false
             referencedRelation: "memberships"
             referencedColumns: ["organization_id", "user_id"]
           },
           {
             foreignKeyName: "support_ticket_events_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "support_ticket_events_v2_organization_id_ticket_id_fkey"
             columns: ["organization_id", "ticket_id"]
+            isOneToOne: false
             referencedRelation: "support_tickets_v2"
             referencedColumns: ["organization_id", "id"]
           },
@@ -4189,18 +4386,21 @@ export type Database = {
           {
             foreignKeyName: "support_ticket_messages_v2_organization_id_author_user_id_fkey"
             columns: ["organization_id", "author_user_id"]
+            isOneToOne: false
             referencedRelation: "memberships"
             referencedColumns: ["organization_id", "user_id"]
           },
           {
             foreignKeyName: "support_ticket_messages_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "support_ticket_messages_v2_organization_id_ticket_id_fkey"
             columns: ["organization_id", "ticket_id"]
+            isOneToOne: false
             referencedRelation: "support_tickets_v2"
             referencedColumns: ["organization_id", "id"]
           },
@@ -4247,18 +4447,21 @@ export type Database = {
           {
             foreignKeyName: "support_tickets_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "support_tickets_v2_organization_id_requester_user_id_fkey"
             columns: ["organization_id", "requester_user_id"]
+            isOneToOne: false
             referencedRelation: "memberships"
             referencedColumns: ["organization_id", "user_id"]
           },
           {
             foreignKeyName: "support_tickets_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -4299,6 +4502,7 @@ export type Database = {
           {
             foreignKeyName: "test_data_batches_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4336,6 +4540,7 @@ export type Database = {
           {
             foreignKeyName: "test_data_cleanup_log_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4388,18 +4593,21 @@ export type Database = {
           {
             foreignKeyName: "user_notifications_v2_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_notifications_v2_organization_id_test_run_id_fkey"
             columns: ["organization_id", "test_run_id"]
+            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "user_notifications_v2_share_event_id_fkey"
             columns: ["share_event_id"]
+            isOneToOne: false
             referencedRelation: "student_share_events_v2"
             referencedColumns: ["id"]
           },
