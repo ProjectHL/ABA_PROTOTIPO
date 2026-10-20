@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Alert, Button, TextInput, Card, Text, Stack, Group, PasswordInput, Title } from '@mantine/core'
 import { createFirstAdminAction } from '@/modules/auth/actions'
 import { Command } from 'lucide-react'
@@ -11,7 +10,6 @@ const meetsPolicy = (password: string) =>
     password.length >= 12 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)
 
 export default function SetupPage() {
-    const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [name, setName] = useState('')
     const [organization, setOrganization] = useState('')
@@ -46,8 +44,11 @@ export default function SetupPage() {
                 setLoading(false)
                 return
             }
-            router.replace('/dashboard')
-            router.refresh()
+            // The session cookie was just set by the server action. A full
+            // navigation guarantees it is sent with the next document request;
+            // a client-side transition can race the cookie and land on a page
+            // that renders without a session until the user reloads.
+            window.location.replace('/dashboard')
         } catch {
             setMessage('No se pudo completar la configuración. Revisa la conexión y vuelve a intentar.')
             setLoading(false)
