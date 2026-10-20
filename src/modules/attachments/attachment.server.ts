@@ -1,7 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { loadIdentity } from '@/features/team/identity.server';
 import { readCommandResult } from '@/domain/commands/result';
 import {
@@ -9,6 +10,8 @@ import {
   verifyAttachmentUpload, type AttachmentCommand, type AttachmentResource, type AttachmentVersion,
 } from '@/domain/attachments/attachment';
 import { attachmentCommandEnvelope, type AttachmentCommandEnvelope } from './contracts';
+import { putObject } from '@/lib/storage';
+import { verifyStoredAttachment } from './verify.server';
 
 const uuid = z.uuid();
 type RpcResult = { data: unknown; error: { code?: string; message: string } | null };
@@ -24,9 +27,9 @@ async function activeSession(clinicId: string | null) {
   if (clinicId && identity.active.id !== uuid.parse(clinicId)) {
     throw new Error('La clínica cambió. Conserva el borrador y vuelve a abrir el recurso original; no se envió el comando.');
   }
-  const db = await createClient();
-  const { data: { user }, error } = await db.auth.getUser();
-  if (error || !user || user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
+  const db = dbAsUser((await requireSessionUser()).id);
+  const user = await requireSessionUser();
+  if (user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
   return { db, userId: user.id, clinicId: identity.active.id, isAdmin: identity.active.role === 'admin' };
 }
 
@@ -49,7 +52,8 @@ async function authorizeResource(resource: AttachmentResource, capability: 'stud
   const client = await db.from('clients').select('id').eq('id', resource.studentId).eq('organization_id', clinicId).maybeSingle();
   if (client.error || !client.data) throw new Error('Recurso no disponible en esta clínica.');
   const capabilities = await db.rpc('get_student_capabilities', { p_client_id: resource.studentId });
-  if (capabilities.error || !capabilities.data?.includes(capability)) throw new Error('No tienes permiso vigente para este recurso.');
+  const granted = capabilities.data as string[] | null;
+  if (capabilities.error || !granted?.includes(capability)) throw new Error('No tienes permiso vigente para este recurso.');
   return { db, clinicId };
 }
 
@@ -108,18 +112,24 @@ export async function reserveAndUploadAttachment(raw: unknown, form: FormData): 
     // Never overwrite it or widen SELECT policies: the verifier resolves whether
     // the exact reserved object exists with the expected bytes. Without a valid
     // confirmation receipt the caller must retain the same operation for retry.
-    await db.storage.from(reserved.bucket).upload(reserved.objectKey, bytes, {
-      contentType: request.reservation.upload.mimeType, upsert: false,
-    });
+    try {
+      await putObject(reserved.bucket, reserved.objectKey, bytes, db.userId);
+    } catch (error) {
+      // A duplicate object means a previous attempt already stored these bytes.
+      // The verifier decides whether they match; never overwrite.
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    }
   }
   // Only the constrained verifier can transition pending-upload to available. It
   // validates the caller JWT and real object bytes with its restricted credential;
   // browser and ordinary user RPC calls cannot bypass that boundary.
-  const verification = await db.functions.invoke('verify-attachment-upload', { body: {
-    organizationId: clinicId, reservation: request.reservation, confirmation: request.confirmation,
-  } });
-  if (verification.error || !verification.data) throw new Error('Resultado de verificación desconocido; conserva las mismas operaciones para reintentar.');
-  return readAttachmentEnvelope(verification.data, request.confirmation.resource, request.confirmation);
+  const verification = await verifyStoredAttachment({
+    userId: db.userId!,
+    organizationId: clinicId,
+    reservation: request.reservation,
+    confirmation: request.confirmation,
+  });
+  return readAttachmentEnvelope(verification, request.confirmation.resource, request.confirmation);
 }
 
 export async function archiveAttachment(raw: unknown): Promise<AttachmentCommandEnvelope> {

@@ -1,14 +1,16 @@
 'use server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { loadIdentity } from './identity.server';
+import { resendClinicInvitation } from './invitation.service';
 import { deliveryReceipt,teamInvitation,resendInvitationCommand,resolveDeliveryCommand,type DeliveryReceipt,type ResendInvitationCommand } from './invitation.types';
 async function clinic(clinicId:string){
   const id=z.uuid().parse(clinicId);const ctx=await loadIdentity();
   if(ctx.active?.id!==id)throw new Error('La clínica cambió. No se envió la operación antigua a otra clínica.');
   if(ctx.active.role!=='admin')throw new Error('Administración activa de esta clínica requerida.');
-  const db=await createClient();const user=await db.auth.getUser();
-  if(user.error||user.data.user?.id!==ctx.userId)throw new Error('La identidad cambió o la sesión caducó. Conserva la operación y vuelve a iniciar sesión.');
+  const user=await requireSessionUser();const db=dbAsUser(user.id);
+  if(user.id!==ctx.userId)throw new Error('La identidad cambió o la sesión caducó. Conserva la operación y vuelve a iniciar sesión.');
   return {db,id};
 }
 function match(raw:unknown,command:ResendInvitationCommand):DeliveryReceipt{
@@ -30,11 +32,10 @@ export async function queryTeamInvitationDelivery(raw:unknown){
   return result.data===null?null:match(result.data,c);
 }
 export async function resendTeamInvitation(raw:unknown){
-  const c=resendInvitationCommand.parse(raw);const {db}=await clinic(c.clinicId);
-  const result=await db.functions.invoke('resend-clinic-invitation',{body:{organizationId:c.clinicId,invitationId:c.invitationId,operationId:c.operationId,idempotencyKey:c.idempotencyKey}});
-  if(result.error)throw new Error('No se recibió un comprobante de reenvío. La operación puede seguir pendiente o incierta; consulta su estado con los mismos IDs. No se afirma correo enviado.');
-  const envelope=z.object({delivery:deliveryReceipt}).strict().parse(result.data);
-  return match(envelope.delivery,c);
+  const c=resendInvitationCommand.parse(raw);const {id}=await clinic(c.clinicId);
+  const actor=await requireSessionUser();
+  const delivery=await resendClinicInvitation({actorId:actor.id,organizationId:id,invitationId:c.invitationId,operationId:c.operationId,idempotencyKey:c.idempotencyKey});
+  return match(delivery,c);
 }
 export async function resolveTeamInvitationDelivery(raw:unknown){
   const c=resolveDeliveryCommand.parse(raw);const {db}=await clinic(c.clinicId);

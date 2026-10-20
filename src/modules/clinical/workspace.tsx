@@ -3,14 +3,14 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert,Badge,Button,Container,Group,Modal,Paper,Select,SimpleGrid,Stack,Tabs,Text,Textarea,TextInput,Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { createClient } from '@/lib/supabase/client';
+import { signOutAction } from '@/modules/auth/actions';
 import { SessionResultsPanel } from '@/modules/program-session';
 import type { ProgramSessionPageData } from '@/modules/program-session';
 import { ProgramManagementV2 } from '@/features/programs';
 import { clinicalCommand,selectClinic } from './actions';
 import { type ClinicalCommand,type StudentInput } from './contracts';
 import type { WorkspaceData } from './page';
-import type { Json } from '@/lib/supabase/database.types';
+import type { Json } from '@/lib/db/database.types';
 
 type Run=(command:ClinicalCommand,confirmation?:{title:string;message:string})=>Promise<Json|undefined>;
 const field=(form:FormData,key:string)=>String(form.get(key)??'');
@@ -41,7 +41,7 @@ export function ClinicalWorkspace({data,programSession,initialTab='record'}:{dat
         <Group justify="space-between"><div><Title order={1}>ABA Clínico</Title><Text size="sm" c="dimmed">{data.email} · {data.active?roles[data.active.role as keyof typeof roles]??'Sin perfil':''}</Text></div>
             <Button variant="outline" disabled={busy} onClick={async()=>{
                 setBusy(true);
-                try{const {error}=await createClient().auth.signOut();if(error){setError('No se pudo cerrar la sesión. Reintenta.');return;}router.replace('/login');router.refresh();}
+                try{await signOutAction();router.replace('/login');router.refresh();}
                 catch{setError('No se pudo cerrar la sesión. Reintenta.');}finally{setBusy(false);}
             }}>Cerrar sesión</Button></Group>
         <Select label="Clínica activa" placeholder="Selecciona tu clínica" value={data.active?.id??null} data={data.choices.map(c=>({value:c.id,label:c.name}))} onChange={async id=>{

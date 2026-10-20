@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 
 export type StudentCapability =
     | 'student.view'
@@ -20,17 +21,14 @@ export type StudentCapability =
     | 'authorization.revoke';
 
 export async function getStudentCapabilities(studentId: string): Promise<string[] | null> {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const currentUser=await getSessionUser();if(!currentUser)return null;const db=dbAsUser(currentUser.id);
 
-    if (!user) return null;
-
-    const { data, error } = await supabase.rpc('get_student_capabilities', {
+    const { data, error } = await db.rpc('get_student_capabilities', {
         p_client_id: studentId,
     });
 
     if (error) return null;
-    return data;
+    return data as unknown as string[] | null;
 }
 
 export async function hasStudentCapability(

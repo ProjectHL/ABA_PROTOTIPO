@@ -17,7 +17,7 @@ flowchart TD
   Web <--> Offline[(IndexedDB)]
 ```
 
-Frontend y backend web forman una aplicación Next.js. Supabase proporciona Auth, PostgreSQL/PostgREST, Storage, Realtime y Edge Functions. La autorización efectiva se aplica en servidor y base de datos; esconder un botón no concede ni revoca permisos. Realtime notifica cambios y provoca una nueva lectura autorizada.
+Frontend y backend web forman una aplicación Next.js. PostgreSQL 17 es la única dependencia de datos: aloja el esquema, las funciones SQL y las políticas RLS. La aplicación implementa sesiones, invitaciones, recuperación de contraseña y almacenamiento privado de archivos. La autorización efectiva se aplica en servidor y base de datos; esconder un botón no concede ni revoca permisos. Los cambios entre usuarios se descubren por sondeo periódico, que siempre provoca una lectura autorizada.
 
 | Ubicación | Responsabilidad |
 |---|---|
@@ -25,10 +25,12 @@ Frontend y backend web forman una aplicación Next.js. Supabase proporciona Auth
 | `src/views/`, `src/features/` | Pantallas y funcionalidades |
 | `src/domain/` | Contratos, validaciones, estados y reglas |
 | `src/modules/` | Adaptadores, Server Actions y paneles funcionales |
-| `src/lib/supabase/` | Clientes, sesión y tipos de base de datos |
-| `supabase/migrations/` | Esquema, funciones SQL, RLS y grants |
-| `supabase/functions/` | Invitaciones, reenvíos y verificación de archivos |
-| `deploy/` | Construcción y operación del servicio web |
+| `src/lib/db/` | Pool, cliente de consultas por rol y tipos de base de datos |
+| `src/lib/auth/` | Sesiones, contraseñas, tokens de un solo uso y correo |
+| `src/lib/storage/` | Objetos privados en volumen (adjuntos y avatares) |
+| `db/bootstrap.sql` | Roles, esquema `auth`, shim de Storage y publicación |
+| `db/migrations/` | Esquema, funciones SQL, RLS y grants |
+| `infra/` | Construcción y operación del servicio web |
 
 Las migraciones son la fuente del esquema y de sus permisos. Los tipos generados facilitan el consumo desde TypeScript; no reemplazan las restricciones SQL. Los módulos históricos que siguen teniendo consumidores forman parte de la compatibilidad y no deben eliminarse únicamente por su nombre.
 
@@ -48,7 +50,7 @@ El nombre, profesión y avatar son datos de presentación, no roles de seguridad
 
 ## Datos clínicos
 
-El modelo agrupa clínicas y membresías; fichas y antecedentes; asignaciones; programas y versiones; sesiones y registros; colaboración; publicaciones familiares; agenda; archivos y recibos. Las relaciones concretas están en las migraciones y en `src/lib/supabase/database.types.ts`.
+El modelo agrupa clínicas y membresías; fichas y antecedentes; asignaciones; programas y versiones; sesiones y registros; colaboración; publicaciones familiares; agenda; archivos y recibos. Las relaciones concretas están en las migraciones y en `src/lib/db/database.types.ts`.
 
 Los programas publicados conservan versiones. Las sesiones y capturas referencian su contexto de programa y mantienen estados explícitos. Las cinco dimensiones de medición son porcentaje, frecuencia, intervalo, duración y latencia. Los cálculos y exportaciones deben respetar la semántica de cada dimensión, sus pausas y sus ventanas de observación.
 

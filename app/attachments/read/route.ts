@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
+import { getObject } from '@/lib/storage';
 import { attachmentResourceSchema, attachmentVersionSchema } from '@/domain/attachments/attachment';
 
 export const runtime = 'nodejs';
@@ -29,9 +31,9 @@ export async function GET(request: Request) {
     if (!identity.active || identity.active.role === 'family' || identity.active.role === 'external') throw new Error('unavailable');
     const clinicId = resource.kind === 'professional' ? identity.active.id : resource.clinicId;
     if (identity.active.id !== clinicId) throw new Error('unavailable');
-    const db = await createClient();
-    const { data: { user }, error } = await db.auth.getUser();
-    if (error || !user || user.id !== identity.userId) throw new Error('unavailable');
+    const user = await requireSessionUser();
+    const db = dbAsUser(user.id);
+    if (user.id !== identity.userId) throw new Error('unavailable');
     const read = async () => {
       const result = await db.rpc('aba_attachment_read_v2', {
         p_organization_id: clinicId,
@@ -45,14 +47,12 @@ export async function GET(request: Request) {
       return version;
     };
     const version = await read();
-    const download = await db.storage.from(version.bucket).download(version.objectKey);
-    if (download.error || !download.data) throw new Error('unavailable');
-    const bytes = await download.data.arrayBuffer();
+    const bytes = await getObject(version.bucket, version.objectKey);
     if (bytes.byteLength !== version.upload.byteLength ||
       createHash('sha256').update(Buffer.from(bytes)).digest('hex') !== version.upload.sha256) throw new Error('unavailable');
     const current = await read();
     if (current.objectKey !== version.objectKey || current.upload.sha256 !== version.upload.sha256 || Date.now() >= input.expiresAt) throw new Error('unavailable');
-    return new Response(bytes, { headers: {
+    return new Response(new Uint8Array(bytes), { headers: {
       ...headers,
       'Content-Type': version.upload.mimeType,
       'Content-Length': String(bytes.byteLength),

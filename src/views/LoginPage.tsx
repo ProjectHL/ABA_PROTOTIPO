@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { Alert, Button, TextInput, Card, Text, Stack, Group, PasswordInput, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { createClient } from '@/lib/supabase/client'
+import { signInAction } from '@/modules/auth/actions'
 import { getSafeRedirect } from '@/lib/security/redirect'
 import { LogIn, Command } from "lucide-react"
 import { AccessInformation } from '@/features/team/AccessInformation'
@@ -23,20 +23,15 @@ export default function LoginPage() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        const supabase = createClient()
-        let error
         try {
-            const result = await supabase.auth.signInWithPassword({ email: email.trim(), password })
-            error = result.error
-            if (!error && (!result.data.session || !result.data.user || result.data.session.user.id !== result.data.user.id || result.data.user.email?.toLowerCase() !== email.trim().toLowerCase())) throw new Error('Sesión no confirmada')
+            const result = await signInAction({ email: email.trim(), password })
+            if (!result.ok) {
+                notifications.show({ title: 'No fue posible iniciar sesión', message: result.message, color: 'red' })
+                setLoading(false)
+                return
+            }
         } catch {
-            notifications.show({ title: 'Conexión no disponible', message: 'No se confirmó el inicio de sesión. Revisa el servicio local y vuelve a intentar.', color: 'red' })
-            setLoading(false)
-            return
-        }
-
-        if (error) {
-            notifications.show({ title: 'No fue posible iniciar sesión', message: 'Revisa tu correo y contraseña o recupera el acceso.', color: 'red' })
+            notifications.show({ title: 'Conexión no disponible', message: 'No se confirmó el inicio de sesión. Revisa el servicio y vuelve a intentar.', color: 'red' })
             setLoading(false)
             return
         }

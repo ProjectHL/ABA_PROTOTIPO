@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { commandResultSchema, readCommandResult, type CommandResult } from '@/domain/commands/result';
 import { commercialInquirySchema, supportPageDataSchema, ticketCommandRequestSchema, type SupportPageData } from './contracts';
 
@@ -27,7 +28,7 @@ function transportFailure(error: RpcResult['error']): never {
 export async function saveTicketV2(raw: unknown): Promise<CommandResult> {
   const request = ticketCommandRequestSchema.parse(raw);
   await activeClinic(request.clinicId);
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_support_ticket_command_v2', { p_organization_id: request.clinicId, p_command: request.command });
   if (result.error) transportFailure(result.error);
   const parsed = commandResultSchema.safeParse(result.data);
@@ -39,7 +40,7 @@ export async function saveTicketV2(raw: unknown): Promise<CommandResult> {
 
 export async function loadSupportPageData(clinicIdRaw: string): Promise<SupportPageData> {
   const { clinicId, identity } = await activeClinic(clinicIdRaw);
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_support_ticket_read_v2', { p_organization_id: clinicId });
   if (result.error) throw new Error('No se pudo recuperar el soporte autorizado.');
   const page = supportPageDataSchema.parse(result.data);
@@ -50,7 +51,7 @@ export async function loadSupportPageData(clinicIdRaw: string): Promise<SupportP
 /** Public path for the landing: the database boundary must rate-limit and accept only non-clinical contact information. */
 export async function submitCommercialInquiryV2(raw: unknown): Promise<CommandResult> {
   const inquiry = commercialInquirySchema.parse(raw);
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_commercial_inquiry_v2', { p_inquiry: inquiry });
   if (result.error) {
     if (result.error.code === '42901') throw new Error('Demasiadas solicitudes. Espera antes de repetir con la misma operación.');

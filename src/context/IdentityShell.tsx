@@ -4,7 +4,7 @@ import { AppShell,Burger,Group,NavLink,Text,Avatar,Menu,Box,Badge,Stack,Button,S
 import { useDisclosure,useMediaQuery } from '@mantine/hooks';
 import { Home,Users,FolderOpen,FileCheck,LogOut,Edit,HelpCircle,Sparkles,Mail,ChevronRight,Building2,Stethoscope,CalendarDays,HeartHandshake } from 'lucide-react';
 import { usePathname,useRouter,useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { signOutAction } from '@/modules/auth/actions';
 import { useIdentity } from './IdentityContext';
 import { ProfileSettings } from '@/features/team/ProfileSettings';
 import { saveProfessionalProfile } from '@/features/team/identity.server';
@@ -61,8 +61,7 @@ export function IdentityShell({children,slots={}}:{children:ReactNode;slots?:Ide
   const run=async(action:()=>Promise<void>)=>{setActionError(null);setBusy(true);try{await action();}catch(cause){setActionError(cause instanceof Error?cause.message:'No se confirmó la acción.');}finally{setBusy(false);}};
   const signOut=()=>run(async()=>{
     if(slots.beforeSignOut && !await slots.beforeSignOut())return;
-    const {error:logoutError}=await createClient().auth.signOut();
-    if(logoutError)throw new Error('No se cerró la sesión; vuelve a intentar.');
+    await signOutAction();
     await refresh();router.replace('/login');router.refresh();
   });
   if(loading&&!identity)return <Stack align="center" p="xl"><Loader/><Text>Verificando identidad y permisos…</Text></Stack>;

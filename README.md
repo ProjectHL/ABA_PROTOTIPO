@@ -7,11 +7,11 @@ Aplicación clínica multiclínica para gestionar fichas, profesionales, program
 - [Desarrollo](docs/DEVELOPMENT.md): entorno, comandos y contribuciones.
 - [Arquitectura](docs/ARCHITECTURE.md): frontend, backend, datos, perfiles y flujos.
 - [Pruebas](docs/TESTING.md): cobertura mantenida, CI y aceptación de usuario.
-- [Despliegue](deploy/README.md): contenedores y configuración del servicio web.
+- [Despliegue](infra/README.md): contenedores y configuración del servicio web.
 
 ## Stack
 
-Node.js 22, Next.js 16, React 19, TypeScript, Mantine, Zod y Supabase (PostgreSQL, Auth, Storage, Realtime y Edge Functions). Vitest y Playwright cubren pruebas automatizadas. Las versiones exactas están en `package-lock.json`.
+Node.js 22, Next.js 16, React 19, TypeScript, Mantine, Zod y PostgreSQL 17. La autenticación, el almacenamiento privado y los correos se resuelven dentro de la aplicación; no hay un backend externo obligatorio. Vitest y Playwright cubren pruebas automatizadas. Las versiones exactas están en `package-lock.json`.
 
 ## Inicio de desarrollo
 

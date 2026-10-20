@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
     output: 'standalone',
     poweredByHeader: false,
+    serverExternalPackages: ['pg', '@node-rs/argon2', 'nodemailer'],
     experimental: {
         serverActions: {
             // Transport ceiling: 20 MiB file plus bounded multipart metadata.

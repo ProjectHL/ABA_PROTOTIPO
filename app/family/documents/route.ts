@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
+import { getObject } from '@/lib/storage';
 import { loadIdentity } from '@/features/team/identity.server';
 
 export const runtime = 'nodejs';
@@ -14,9 +16,9 @@ export async function GET(request: Request) {
     const input = z.object({ clinicId: z.uuid(), publicationId: z.uuid(), versionId: z.uuid() }).strict().parse(Object.fromEntries(new URL(request.url).searchParams));
     const identity = await loadIdentity();
     if (identity.active?.id !== input.clinicId || identity.active.role !== 'family') throw new Error('unavailable');
-    const db = await createClient();
-    const { data: { user }, error } = await db.auth.getUser();
-    if (error || !user || user.id !== identity.userId) throw new Error('unavailable');
+    const user = await requireSessionUser();
+    const db = dbAsUser(user.id);
+    if (user.id !== identity.userId) throw new Error('unavailable');
     const read = async () => {
       const result = await db.rpc('aba_family_document_read_v2', { p_organization_id: input.clinicId, p_publication_id: input.publicationId, p_version_id: input.versionId });
       if (result.error) throw new Error('unavailable');
@@ -25,14 +27,12 @@ export async function GET(request: Request) {
       return access;
     };
     const access = await read();
-    const download = await db.storage.from(access.bucket).download(access.objectKey);
-    if (download.error || !download.data) throw new Error('unavailable');
-    const bytes = await download.data.arrayBuffer();
+    const bytes = await getObject(access.bucket, access.objectKey);
     if (bytes.byteLength !== access.byteLength || createHash('sha256').update(Buffer.from(bytes)).digest('hex') !== access.sha256) throw new Error('unavailable');
     // Fail closed when a link/publication changes while Storage is being read.
     await read();
     const name = Array.from(access.name, character => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127 || character === '/' || character === '\\' ? '_' : character).join('');
-    return new Response(bytes, { headers: { ...headers, 'Content-Type': access.mimeType, 'Content-Length': String(bytes.byteLength), 'Content-Disposition': `attachment; filename="documento"; filename*=UTF-8''${encodeURIComponent(name).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16))}` } });
+    return new Response(new Uint8Array(bytes), { headers: { ...headers, 'Content-Type': access.mimeType, 'Content-Length': String(bytes.byteLength), 'Content-Disposition': `attachment; filename="documento"; filename*=UTF-8''${encodeURIComponent(name).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16))}` } });
   } catch {
     return Response.json({ error: 'Documento no disponible o acceso revocado. Consulta de nuevo el portal.' }, { status: 403, headers });
   }

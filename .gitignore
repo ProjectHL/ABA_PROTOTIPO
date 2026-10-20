@@ -15,7 +15,6 @@ dist-ssr
 playwright-report
 test-results
 *.tsbuildinfo
-supabase/.temp
 *.local
 # Isolated development state, credentials, local stack and portable runtime.
 .aba.local/
@@ -23,7 +22,7 @@ supabase/.temp
 .env
 .env.*
 !.env.example
-!deploy/.env.example
+!infra/.env.example
 
 # Editor directories and files
 .vscode/*
@@ -70,9 +69,8 @@ CLAUDE.md
 !/docs/TESTING.md
 /postman/
 /scripts/local/
-/deploy/local.*
+/infra/local.*
 /playwright.*.config.ts
-!/playwright.local.config.ts
 /tests/e2e/r5.*
 /tests/e2e/qa004.*
 /tests/local/*
@@ -80,8 +78,4 @@ CLAUDE.md
 !/tests/local/offline-queue.test.ts
 !/tests/local/offline-sync-engine.test.ts
 !/tests/local/session-display-clock.test.mjs
-/scripts/generate-local-supabase-types.mjs
-/scripts/install-local-schema.ps1
-/scripts/inventory-original-ui.mjs
 /scripts/test-data-runbook.sql
-/scripts/check-staging-auth-preflight.mjs

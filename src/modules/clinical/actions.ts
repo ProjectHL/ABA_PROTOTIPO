@@ -3,7 +3,9 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { commandSchema,uuid } from './contracts';
 import { clinicalContext } from './context';
-import type { Json } from '@/lib/supabase/database.types';
+import type { Json } from '@/lib/db/database.types';
+import { requireSessionUser } from '@/lib/auth/session';
+import { inviteClinicMember } from '@/features/team/invitation.service';
 
 export async function selectClinic(id:string) {
     const ctx=await clinicalContext();
@@ -50,7 +52,11 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
             if(!session.data) return {error:'Sesión no disponible.'};
             result=await rpc('mvp_finish_session',{p_session_id:c.sessionId});break;
         }
-        case 'invite': result=await db.functions.invoke('invite-clinic-member',{body:{organizationId:active.id,operationId:c.operationId,email:c.email,role:c.role}});break;
+        case 'invite': {
+            const actor=await requireSessionUser();
+            const envelope=await inviteClinicMember({actorId:actor.id,organizationId:active.id,operationId:c.operationId,email:c.email,role:c.role});
+            result={data:envelope as unknown as Json,error:null};break;
+        }
         case 'member': result=await rpc('mvp_set_member',{p_organization_id:active.id,p_user_id:c.userId,p_role:c.role,p_status:c.status});break;
         case 'assignment': result=await db.rpc('set_student_assignment',{p_client_id:c.clientId,p_user_id:c.userId,p_role:c.role,p_status:c.status});break;
     }

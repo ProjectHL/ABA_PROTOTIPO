@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { readCommandResult } from '@/domain/commands/result';
 import { loadIdentity } from '@/features/team/identity.server';
 import {
@@ -19,9 +20,9 @@ async function sessionForClinic(clinicId: string) {
   if (identity.active?.id !== expectedClinicId) {
     throw new Error('La clínica cambió. Conserva el borrador y vuelve a abrir la operación en su clínica original; no se envió el comando.');
   }
-  const db = await createClient();
-  const { data: { user }, error } = await db.auth.getUser();
-  if (error || !user || user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
+  const db = dbAsUser((await requireSessionUser()).id);
+  const user = await requireSessionUser();
+  if (user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
   return { db, user, clinicId: expectedClinicId, role: identity.active.role };
 }
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Json } from '@/lib/supabase/database.types';
+import type { Json } from '@/lib/db/database.types';
 import { clinicalContext } from '@/modules/clinical/context';
 import { programSessionCommandSchema, programSessionUuid } from './contracts';
 

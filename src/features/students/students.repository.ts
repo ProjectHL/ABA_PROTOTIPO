@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
-import { type Database } from '@/lib/supabase/database.types';
+import { type Database } from '@/lib/db/database.types';
 import { type StudentProfile } from './student.types';
 
 export type ClientRow = Pick<Database['public']['Tables']['clients']['Row'],
@@ -55,15 +54,4 @@ export function mapClientToStudentProfile(client: ClientRow): StudentProfile {
         version: null,
         status: client.status === 'active' ? 'active' : 'archived',
     };
-}
-
-export async function listStudents(): Promise<StudentProfile[]> {
-    const supabase = createClient();
-    const { data, error } = await supabase
-        .from('clients')
-        .select('id, clinical_id, initials, birth_date, status, created_at')
-        .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data ?? []).map(mapClientToStudentProfile);
 }

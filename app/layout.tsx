@@ -4,7 +4,6 @@ import '@mantine/dates/styles.css';
 import '@/index.css';
 import { type Metadata } from 'next';
 import { AppProviders } from '@/components/AppProviders';
-import { RecoveryHashBridge } from '@/modules/clinical/recovery-hash-bridge';
 
 export const metadata: Metadata = {
     title: 'ABA Clínico',
@@ -17,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="es">
-            <body><AppProviders><RecoveryHashBridge />{children}</AppProviders></body>
+            <body><AppProviders>{children}</AppProviders></body>
         </html>
     );
 }

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { clinicalContext } from './context';
 import { uuid } from './contracts';
 import { ClinicalWorkspace } from './workspace';
-import type { Database } from '@/lib/supabase/database.types';
+import type { Database } from '@/lib/db/database.types';
 import { loadProgramSessionPageData } from '@/modules/program-session/program-session.server';
 import type { ProgramSessionPageData } from '@/modules/program-session/ports';
 
@@ -51,8 +51,9 @@ export async function ClinicalPage({studentId,programId,initialTab}:{studentId?:
             data.student=students.data.find(s=>s.id===studentId)??null;
             if(!data.student) notFound();
             const capabilities=await db.rpc('get_student_capabilities',{p_client_id:studentId});
-            if(capabilities.error || !capabilities.data.includes('student.view')) notFound();
-            data.capabilities=capabilities.data;
+            const granted=(capabilities.data as string[]|null)??[];
+            if(capabilities.error || !granted.includes('student.view')) notFound();
+            data.capabilities=granted;
             const [guardians,siblings,context,history,consents,programs,versions,sessions,records,assignments]=await Promise.all([
                 db.from('guardians').select(guardianColumns).eq('client_id',studentId).order('position'),
                 db.from('siblings').select(siblingColumns).eq('client_id',studentId).order('position'),

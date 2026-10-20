@@ -1,0 +1,91 @@
+# Dokploy-ready stack: Next.js standalone + PostgreSQL 17 + private volume.
+#
+# Dokploy terminates TLS and routes the public domain to `app:3000`, so this
+# file publishes no host ports. For a local run use docker-compose.local.yml.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aba}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-aba}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Applies db/bootstrap.sql and every pending db/migrations/*.sql exactly once.
+  # Runs to completion before the app starts; a failed migration stops the stack.
+  migrate:
+    image: postgres:17-alpine
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aba}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-aba}
+    volumes:
+      - ../db:/db:ro
+      - ./migrate.sh:/migrate.sh:ro
+    entrypoint: ["sh", "/migrate.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  app:
+    image: aba-clinico:${ABA_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      secrets:
+        - next_server_actions_encryption_key
+    restart: unless-stopped
+    init: true
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aba}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-aba}
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET to at least 32 random bytes}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?set the public application origin}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-ABA Clínico <no-reply@aba.local>}
+      STORAGE_ROOT: /data/storage
+      ABA_TEST_RUN_ID: ${ABA_TEST_RUN_ID:-}
+    volumes:
+      - storage_data:/data/storage
+    expose: ["3000"]
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  postgres_data:
+  storage_data:
+
+secrets:
+  next_server_actions_encryption_key:
+    environment: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY

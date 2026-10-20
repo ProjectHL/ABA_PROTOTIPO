@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { commandResultSchema, readCommandResult, type CommandResult } from '@/domain/commands/result';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { listAuthorizedStudents } from '@/modules/students/student.server';
 import { clinicAccessRequestCreateCommand, clinicAccessRequestDecisionCommand, clinicStudentShareCommand, collaborationPageData, type CollaborationPageData } from './contracts';
 
@@ -13,9 +14,9 @@ type Rpc = (name: string, args: Record<string, unknown>) => PromiseLike<RpcResul
 
 async function authenticated() {
   const identity = await loadIdentity();
-  const db = await createClient();
-  const { data: { user }, error } = await db.auth.getUser();
-  if (error || !user || user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
+  const db = dbAsUser((await requireSessionUser()).id);
+  const user = await requireSessionUser();
+  if (user.id !== identity.userId) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
   return { db, identity };
 }
 

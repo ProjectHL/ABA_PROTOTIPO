@@ -2,15 +2,16 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
+import { putObject } from '@/lib/storage';
 import { readCommandResult } from '@/domain/commands/result';
 import { identityDto,teamMember,saveProfileCommand,professionalRole, type IdentityDto } from './identity.types';
 import { deliveryReceipt } from './invitation.types';
+import { inviteClinicMember } from './invitation.service';
 async function authorized() {
-  const db=await createClient();
-  const {data:{user},error}=await db.auth.getUser();
-  if(error || !user) throw new Error('Tu sesión caducó. Inicia sesión nuevamente.');
-  return {db,user};
+  const user=await requireSessionUser();
+  return {db:dbAsUser(user.id),user};
 }
 export async function loadIdentity():Promise<IdentityDto> {
   const {db,user}=await authorized();
@@ -72,11 +73,9 @@ export async function inviteTeamMember(raw:unknown) {
   const command=z.object({clinicId:z.uuid(),email:z.email().max(254),role:professionalRole,operationId:z.uuid()}).strict().parse(raw);
   const ctx=await expectedClinic(command.clinicId);
   if(ctx.active?.role!=='admin') throw new Error('Administración de clínica requerida.');
-  const {db}=await authorized();
-  const result=await db.functions.invoke('invite-clinic-member',{body:{organizationId:ctx.active.id,email:command.email,role:command.role,operationId:command.operationId}});
-  if(result.error || !result.data) throw new Error('No se obtuvo comprobante de membresía. Conserva la misma operación y consulta el equipo antes de repetir; no se afirma correo enviado. Si ya es miembro, usa el reenvío explícito, no otra invitación.');
+  const data=await inviteClinicMember({actorId:ctx.userId,organizationId:ctx.active.id,email:command.email,role:command.role,operationId:command.operationId});
   const receipt=z.object({operationId:z.uuid(),requestedOperationId:z.uuid(),status:z.literal('completed'),userId:z.uuid(),role:professionalRole,
-    invited:z.boolean(),replayed:z.boolean(),alreadyAccepted:z.boolean(),delivery:deliveryReceipt.nullable(),deliveryError:z.enum(['outcome-not-confirmed','initial-owner-required']).nullable()}).strict().parse(result.data);
+    invited:z.boolean(),replayed:z.boolean(),alreadyAccepted:z.boolean(),delivery:deliveryReceipt.nullable(),deliveryError:z.enum(['outcome-not-confirmed','initial-owner-required']).nullable()}).strict().parse(data);
   if(receipt.role!==command.role||receipt.requestedOperationId!==command.operationId)throw new Error('El servidor no confirmó la operación y el perfil solicitados. No se presenta como invitación enviada.');
   if(receipt.delivery&&(receipt.delivery.organizationId!==command.clinicId||receipt.delivery.invitationId!==receipt.operationId||receipt.delivery.operationId!==receipt.operationId||receipt.delivery.idempotencyKey!==receipt.operationId))throw new Error('El recibo de correo no corresponde a la invitación canónica y su clínica.');
   if(receipt.invited&&(!receipt.delivery||receipt.delivery.state!=='sent'||receipt.delivery.confirmationSource!=='auth'))throw new Error('El servidor no aportó un comprobante de aceptación Auth del correo.');
@@ -94,20 +93,14 @@ export async function uploadProfileAvatar(targetId:string,form:FormData,clinicId
   const jpg=bytes[0]===255 && bytes[1]===216 && bytes[2]===255;
   if((file.type==='image/png'&&!png)||(file.type==='image/jpeg'&&!jpg)) throw new Error('Contenido de avatar inválido.');
   const objectPath=`${target}/${crypto.randomUUID()}.${png?'png':'jpg'}`;
-  const {db}=await authorized();
-  const result=await db.storage.from('profile-avatars').upload(objectPath,bytes,{contentType:file.type,upsert:false});
-  if(result.error) throw new Error('No se cargó el avatar. Los campos del perfil permanecen sin guardar.');
+  await authorized();
+  await putObject('profile-avatars',objectPath,bytes,target);
   return objectPath;
 }
 export async function profileAvatarUrl(objectPath:string|null) {
   if(!objectPath) return '';
-  const {db}=await authorized();
-  const result=await db.storage.from('profile-avatars').createSignedUrl(objectPath,300);
-  if(result.error) throw new Error('Avatar no disponible o acceso revocado.');
-  const url=new URL(result.data.signedUrl);
-  const internal=new URL(process.env.SUPABASE_INTERNAL_URL??process.env.NEXT_PUBLIC_SUPABASE_URL!);
-  if(url.origin===internal.origin) {const browser=new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!);url.host=browser.host;url.protocol=browser.protocol;}
-  return url.toString();
+  await authorized();
+  return `/api/avatars/${objectPath.split('/')[0]}?v=${encodeURIComponent(objectPath)}`;
 }
 export async function loadTeamAssignments(userId:string,clinicId:string) {
   const target=z.uuid().parse(userId);const ctx=await expectedClinic(clinicId);

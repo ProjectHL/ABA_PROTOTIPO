@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { commandResultSchema, readCommandResult, type CommandResult } from '@/domain/commands/result';
 import { calendarCommandRequestSchema, calendarPageDataSchema, type CalendarPageData } from './contracts';
 
@@ -29,7 +30,7 @@ function transportFailure(error: RpcResult['error']): never {
 export async function saveAppointmentV2(raw: unknown): Promise<CommandResult> {
   const request = calendarCommandRequestSchema.parse(raw);
   await activeClinic(request.clinicId);
-  const db = await createClient();
+  const db = dbAsUser((await requireSessionUser()).id);
   const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_calendar_command_v2', { p_organization_id: request.clinicId, p_command: request.command });
   if (result.error) transportFailure(result.error);
@@ -45,7 +46,7 @@ export async function saveAppointmentV2(raw: unknown): Promise<CommandResult> {
 export async function loadCalendarPageData(clinicIdRaw: string): Promise<CalendarPageData> {
   const clinicId = z.uuid().parse(clinicIdRaw);
   const identity = await activeClinic(clinicId);
-  const db = await createClient();
+  const db = dbAsUser((await requireSessionUser()).id);
   const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_calendar_read_v2', { p_organization_id: clinicId });
   if (result.error) throw new Error('No se pudo recuperar la agenda autorizada.');
@@ -56,7 +57,7 @@ export async function loadCalendarPageData(clinicIdRaw: string): Promise<Calenda
 export async function loadCalendarSessions(clinicIdRaw: string, studentIdRaw: string) {
   const clinicId = z.uuid().parse(clinicIdRaw); const studentId = z.uuid().parse(studentIdRaw);
   await activeClinic(clinicId);
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_calendar_linkable_sessions_v2', { p_organization_id: clinicId, p_student_id: studentId });
   if (result.error) throw new Error('No se pudieron leer las sesiones finalizadas autorizadas.');
   return z.array(z.object({ id: z.uuid(), capturedAt: z.iso.datetime({ offset: true }) }).strict()).parse(result.data);

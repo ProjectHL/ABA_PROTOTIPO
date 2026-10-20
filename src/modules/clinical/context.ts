@@ -1,11 +1,12 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 
 export async function clinicalContext() {
-    const db=await createClient();
-    const {data:{user},error}=await db.auth.getUser();
-    if(error || !user) redirect('/login');
+    const currentUser=await getSessionUser();if(!currentUser)redirect('/login');const db=dbAsUser(currentUser.id);
+    const user=currentUser;
+    
     const memberships=await db.from('memberships').select('organization_id,role,status').eq('user_id',user.id).eq('status','active');
     if(memberships.error) throw new Error('No se pudo verificar tu membresía.');
     const organizations=await db.from('organizations').select('id,name').eq('status','active');

@@ -1,0 +1,9 @@
+# Local override: publishes app and database ports on the host.
+#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.local.yml up --build
+services:
+  app:
+    ports:
+      - "3000:3000"
+  db:
+    ports:
+      - "5432:5432"

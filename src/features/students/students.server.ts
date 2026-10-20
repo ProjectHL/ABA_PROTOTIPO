@@ -1,12 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { mapClientToStudentProfile, type ClientRow } from './students.repository';
 import { type StudentProfile } from './student.types';
 
 const studentColumns = 'id, clinical_id, initials, birth_date, status, created_at';
 
 export async function listStudentsOnServer(): Promise<StudentProfile[]> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const db = dbAsUser((await requireSessionUser()).id);
+    const { data, error } = await db
         .from('clients')
         .select(studentColumns)
         .order('created_at', { ascending: false });
@@ -16,8 +17,8 @@ export async function listStudentsOnServer(): Promise<StudentProfile[]> {
 }
 
 export async function getStudentOnServer(studentId: string): Promise<StudentProfile | null> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    const db = dbAsUser((await requireSessionUser()).id);
+    const { data, error } = await db
         .from('clients')
         .select(studentColumns)
         .eq('id', studentId)

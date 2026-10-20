@@ -1,13 +1,14 @@
 name: CI
 on: [push, pull_request]
 permissions: { contents: read }
+
 jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      # Configuración sintética para que Next/Playwright no dependan de un .env.local del checkout.
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      # Synthetic values so Next/Playwright never read a developer .env.local.
+      AUTH_SECRET: ci-only-secret-with-at-least-32-bytes
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -19,28 +20,41 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run build
-  supabase-local:
+
+  database:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aba
+          POSTGRES_PASSWORD: aba
+          POSTGRES_DB: aba
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U aba -d aba"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run supabase:start
-      - run: npm run supabase:reset
-      - run: npm run supabase:test:invitation
-      - run: npm run supabase:test:invitation-failures
-      - run: npm run supabase:test:authorization
-      - run: npm run test:e2e:local-auth
-      - run: npm run supabase:types:check
-      - if: always()
-        run: npm run supabase:stop
+      - name: Apply bootstrap and all migrations
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: postgresql://aba:aba@127.0.0.1:5432/aba
+      - name: Re-run is a no-op
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: postgresql://aba:aba@127.0.0.1:5432/aba
+
   container-build:
     runs-on: ubuntu-latest
     env:
-      # Valor sintético de 32 bytes para CI; no reutilizar en ningún despliegue.
+      # Synthetic 32-byte value for CI; never reuse it in a deployment.
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
     steps:
       - uses: actions/checkout@v5
@@ -50,8 +64,5 @@ jobs:
           context: .
           push: false
           tags: aba-clinico:ci
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co
-            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_ci_placeholder
           secret-envs: |
             next_server_actions_encryption_key=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY

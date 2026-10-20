@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { commandResultSchema, readCommandResult, type CommandResult } from '@/domain/commands/result';
 import { programDraftCommandV2Schema, type ProgramDraftCommandV2 } from '@/domain/programs/design-v2';
 import { captureCommandV2Schema, type CaptureCommandV2 } from '@/domain/measurements/measurement-v2';
@@ -37,7 +38,7 @@ function transportError(error: RpcResult['error']): never {
 }
 
 async function invoke(clinicId: string, rpcName: string, command: { operationId: string; idempotencyKey: string }, resourceId: string): Promise<CommandResult> {
-  const db = await createClient();
+  const db = dbAsUser((await requireSessionUser()).id);
   const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc(rpcName, { p_clinic_id: clinicId, p_command: command });
   if (result.error) transportError(result.error);
@@ -77,7 +78,7 @@ async function readProgramSessionPageData(clinicIdRaw: string, studentIdRaw: str
   const identity=await loadIdentity();if(identity.active?.id!==clinicId)throw new Error('La clínica cambió; vuelve a abrir la ficha.');
   if(expectedActorId && identity.userId!==z.uuid().parse(expectedActorId))throw new Error('La identidad cambió; no se revalidó esta operación.');
   const student=await getAuthorizedProgramStudent(studentId,clinicId);if(!student)return null;
-  const db=await createClient();const rpc=db.rpc.bind(db) as unknown as Rpc;
+  const db=dbAsUser((await requireSessionUser()).id);const rpc=db.rpc.bind(db) as unknown as Rpc;
   const result=await rpc('read_program_session_v2',{p_clinic_id:clinicId,p_student_id:studentId});
   if(result.error)throw new Error('No se pudieron recuperar programas, sesiones y registros autorizados.');
   const snapshot=snapshotResultSchema.parse(result.data);if(snapshot.actorId!==identity.userId)throw new Error('La lectura no corresponde a la identidad autenticada.');

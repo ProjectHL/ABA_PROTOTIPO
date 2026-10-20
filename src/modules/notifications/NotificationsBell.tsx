@@ -4,7 +4,6 @@ import { ActionIcon, Alert, Badge, Button, Group, Indicator, Popover, Stack, Tex
 import { Bell, CheckCheck, RotateCcw } from 'lucide-react';
 import { notifications as toast } from '@mantine/notifications';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { useIdentity } from '@/context/IdentityContext';
 import { loadNotifications, setNotificationRead } from './notifications.server';
 import { notificationStateCommand, type NotificationDto, type NotificationStateCommand } from './contracts';
@@ -61,11 +60,6 @@ export function NotificationsBell({ beforeNavigate, leaveGuard }: { beforeNaviga
     const refreshSequence = sequence;
     const recover = () => { if (navigator.onLine && document.visibilityState === 'visible') void refresh(); };
     recover();
-    const db = createClient();
-    const channel = db.channel(`notifications:${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'user_notifications_v2', filter: `user_id=eq.${userId}` }, recover).subscribe(status => {
-      if (status === 'SUBSCRIBED') recover();
-      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setError('Realtime interrumpido; abre la campana para recuperar el estado persistido.');
-    });
     window.addEventListener('online', recover);
     window.addEventListener('focus', recover);
     document.addEventListener('visibilitychange', recover);
@@ -77,7 +71,6 @@ export function NotificationsBell({ beforeNavigate, leaveGuard }: { beforeNaviga
       window.removeEventListener('online', recover);
       window.removeEventListener('focus', recover);
       document.removeEventListener('visibilitychange', recover);
-      void db.removeChannel(channel);
     };
   }, [userId, refresh]);
   const mutate = async (row: NotificationDto, read: boolean, retained?: NotificationStateCommand) => {

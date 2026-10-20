@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { loadIdentity } from '@/features/team/identity.server';
-import { createClient } from '@/lib/supabase/server';
+import { requireSessionUser } from '@/lib/auth/session';
+import { dbAsUser } from '@/lib/db';
 import { commandResultSchema, readCommandResult, type CommandResult } from '@/domain/commands/result';
 import { commercialDocumentCommandSchema, commercialPageDataSchema, subscriptionCommandRequestSchema, type CommercialPageData } from './contracts';
 
@@ -31,7 +32,7 @@ function transportFailure(error: RpcResult['error']): never {
 }
 
 async function invoke(clinicId: string, rpcName: string, command: { operationId: string; idempotencyKey: string }, resourceId: string) {
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc(rpcName, { p_organization_id: clinicId, p_command: command });
   if (result.error) transportFailure(result.error);
   const parsed = commandResultSchema.safeParse(result.data);
@@ -57,7 +58,7 @@ export async function saveCommercialDocumentV2(raw: unknown): Promise<CommandRes
 
 export async function loadCommercialPageData(clinicIdRaw: string): Promise<CommercialPageData> {
   const { clinicId, identity } = await activeClinic(clinicIdRaw);
-  const db = await createClient(); const rpc = db.rpc.bind(db) as unknown as Rpc;
+  const db = dbAsUser((await requireSessionUser()).id); const rpc = db.rpc.bind(db) as unknown as Rpc;
   const result = await rpc('aba_commercial_read_v2', { p_organization_id: clinicId });
   if (result.error) throw new Error('No se pudo recuperar la gestión comercial autorizada.');
   const page = commercialPageDataSchema.parse(result.data);

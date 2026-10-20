@@ -4,7 +4,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, Button, Group, Modal, NumberInput, Paper, Select, SimpleGrid, Stack, Table, Text, TextInput, Textarea, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import type { Json } from '@/lib/supabase/database.types';
+import type { Json } from '@/lib/db/database.types';
 import type { SessionRecord, WorkspaceData } from '@/modules/clinical/page';
 import { programSessionCommand } from './actions';
 import { measurementMetric, programMeasurement, type ProgramDesign, type ProgramSessionCommand } from './contracts';
