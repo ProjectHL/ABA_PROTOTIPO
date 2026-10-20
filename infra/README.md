@@ -78,6 +78,18 @@ La sonda debe devolver `{"status":"ok","service":"aba-clinico"}`. Complete luego
 un smoke autenticado con el usuario UAT: invitación, definición de contraseña,
 apertura de una ficha sintética y cierre de sesión.
 
+## Primer acceso
+
+La base arranca sin usuarios y no hay registro público. Cree el primer administrador una sola vez, dentro de la imagen desplegada:
+
+```sh
+docker compose --env-file infra/.env -f infra/docker-compose.yml run --rm --no-deps \
+  -e ADMIN_PASSWORD='UnaClave12!Segura' app node /app/create-admin.mjs \
+  --email admin@clinica.test --name 'Nombre Apellido' --org 'Clínica Demo'
+```
+
+Es idempotente. Después entre por `/login` e invite al resto desde Equipo.
+
 ## Migraciones
 
 `migrate` es idempotente: registra cada archivo aplicado en

@@ -6,6 +6,18 @@ Usar Node.js 22 y npm según `package.json`. `npm ci` reproduce las dependencias
 
 Crear `.env.local` desde `.env.example`, sin versionarlo. `DATABASE_URL` apunta a PostgreSQL; `AUTH_SECRET` (32 bytes o más) firma las cookies de sesión. `SMTP_*` habilita invitaciones y recuperación; sin SMTP en desarrollo el mensaje se imprime en consola. `STORAGE_ROOT` define el volumen privado de archivos.
 
+## Primer acceso
+
+No hay registro público: las cuentas nacen por invitación de un administrador. En una base recién migrada no existe ningún usuario, así que el primero se crea desde la consola:
+
+```sh
+DATABASE_URL=postgresql://... npm run user:create -- \
+  --email admin@clinica.test --password 'UnaClave12!Segura' \
+  --name 'Nombre Apellido' --org 'Clínica Demo'
+```
+
+El comando es idempotente: si el usuario ya existe actualiza la contraseña y confirma el correo; si la organización ya existe la reutiliza. También acepta `ADMIN_PASSWORD` en el entorno en lugar de `--password`, para no dejar la clave en el historial de shell. Ese administrador entra por `/login` y desde Equipo invita al resto.
+
 Para un entorno nuevo y desechable, cree una base vacía y aplique `npm run db:migrate`. El script ejecuta `db/bootstrap.sql` (roles, esquema `auth`, shim de Storage) y las migraciones pendientes de `db/migrations/`, registrando cada versión en `public.schema_migrations`. Es idempotente. No apuntar pruebas de escritura a producción ni ejecutar un reset sobre volúmenes con trabajo que deba conservarse. La CI crea y prepara su propio entorno efímero.
 
 Las invitaciones y la recuperación de contraseña requieren SMTP y `NEXT_PUBLIC_APP_URL` correctos para el entorno. El correo impreso en consola durante desarrollo no constituye entrega por Internet. Las invitaciones se procesan en `src/features/team/invitation.service.ts` y la verificación de adjuntos en `src/modules/attachments/verify.server.ts`.
