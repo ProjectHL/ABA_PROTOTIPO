@@ -6,18 +6,39 @@ services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
-    # Hard RAM ceiling for the container. This workload uses a few hundred MB;
-    # raise it only if pg_stat_activity shows real memory pressure.
-    mem_limit: ${DB_MEMORY_LIMIT:-5g}
-    # Postgres uses /dev/shm for parallel query workers; the 64 MB default is
-    # too small once work_mem and parallel workers kick in.
-    shm_size: 256mb
+    # Hard RAM ceiling. 256 MB is enough for this data volume only with the
+    # tuned settings below; raise it if pg_stat_activity shows memory pressure.
+    mem_limit: ${DB_MEMORY_LIMIT:-256m}
+    # /dev/shm is a tmpfs charged to the container memory limit, so keep it small.
+    shm_size: 64mb
+    # Defaults assume 128 MB shared_buffers and 100 connections, which alone
+    # exceed the container limit. These values fit comfortably in 256 MB.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=30
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - effective_cache_size=192MB
+      - -c
+      - max_wal_size=512MB
+      - -c
+      - min_wal_size=64MB
+      - -c
+      - temp_file_limit=1GB
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-aba}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-aba}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # Set DB_DATA_DIR to a loopback ext4 mount to enforce the disk quota
+      # (see db-disk-quota.sh). Without it the named volume has no size cap.
+      - ${DB_DATA_DIR:-postgres_data}:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
