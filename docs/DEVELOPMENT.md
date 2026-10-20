@@ -22,6 +22,18 @@ Para un entorno nuevo y desechable, cree una base vacía y aplique `npm run db:m
 
 Las invitaciones y la recuperación de contraseña requieren SMTP y `NEXT_PUBLIC_APP_URL` correctos para el entorno. El correo impreso en consola durante desarrollo no constituye entrega por Internet. Las invitaciones se procesan en `src/features/team/invitation.service.ts` y la verificación de adjuntos en `src/modules/attachments/verify.server.ts`.
 
+## Datos de demostración
+
+Solo para desarrollo y pruebas. `npm run seed:demo` carga seis fichas clínicas ficticias (DEMO-001 a DEMO-006) y dos cuentas de ejemplo, reutilizando la primera clínica activa con administrador:
+
+```sh
+DATABASE_URL=postgresql://... npm run seed:demo
+```
+
+Imprime las credenciales (`clinico@demo.test` y `lector@demo.test`, clave `Demo1234!Segura` o la que indique `DEMO_PASSWORD`). El clínico queda asignado como terapeuta de las seis fichas; el perfil de lectura no recibe asignaciones, así que sirve para comprobar que no ve datos clínicos.
+
+El seed vive en `db/seed/demo.sql` y no lo ejecuta `npm run db:migrate`: las migraciones solo leen `db/bootstrap.sql` y `db/migrations/`. Es idempotente (los estudiantes usan identificadores fijos) y aborta si no hay clínica con administrador. Se niega a correr con `APP_ENV=production`; dentro de la imagen de despliegue, donde `NODE_ENV=production`, exige `--force` o `DEMO_DATA=yes`. Aun así, la regla operativa es no ejecutarlo nunca contra el ambiente productivo.
+
 ## Comandos habituales
 
 | Comando | Uso |
@@ -32,6 +44,7 @@ Las invitaciones y la recuperación de contraseña requieren SMTP y `NEXT_PUBLIC
 | `npm test` | Suite Vitest |
 | `npm run test:db` | Pruebas de base incluidas en Vitest |
 | `npm run test:e2e` | Recorrido público con Playwright |
+| `npm run seed:demo` | Datos ficticios para desarrollo y pruebas |
 | `npm run build -- --webpack` | Construcción de la aplicación |
 | `npm start` | Servir una construcción existente |
 

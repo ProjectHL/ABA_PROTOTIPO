@@ -18,7 +18,8 @@
     "test:e2e": "playwright test",
     "db:migrate": "node scripts/db-migrate.mjs",
     "env:init": "node scripts/gen-env.mjs",
-    "user:create": "node scripts/create-admin.mjs"
+    "user:create": "node scripts/create-admin.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@mantine/core": "^7.15.2",

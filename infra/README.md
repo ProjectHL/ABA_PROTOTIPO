@@ -146,3 +146,13 @@ correctiva hacia adelante.
 - UAT profesional con datos sintéticos y aceptación registrada.
 - Limpieza por lote y gate final de publicación definidos en
   `../OPERACION_POC.md`.
+
+## Datos de demostración
+
+Nunca en producción. Para un ambiente de test, con la clínica ya configurada:
+
+```sh
+docker compose --env-file .env exec app node seed-demo.mjs --force
+```
+
+Carga seis fichas ficticias y las cuentas `clinico@demo.test` / `lector@demo.test`. La imagen incluye `seed-demo.mjs` y `seed/demo.sql`; el script se niega a correr con `APP_ENV=production`.

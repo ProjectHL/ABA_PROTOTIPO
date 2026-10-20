@@ -22,6 +22,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # One-time bootstrap of the first clinic administrator.
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/create-admin.mjs ./create-admin.mjs
+# Synthetic demo data, only for development and test environments.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/seed-demo.mjs ./seed-demo.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/db/seed ./seed
 USER nextjs
 EXPOSE 3000
 CMD ["node","server.js"]
