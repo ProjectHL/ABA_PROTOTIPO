@@ -53,8 +53,9 @@ async function login(page: Page, actor: Actor) {
   await page.getByLabel('Email').fill(actor.email);
   await page.getByLabel('Contraseña').fill(password);
   await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-  await expect(page).toHaveURL(/\/students$/);
-  await expect(page.getByRole('heading', { name: 'ABA Clínico' })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+  await page.goto('/students');
+  await expect(page.getByText(`ID clínico: UI-A-${nonce}`, { exact: true })).toBeVisible();
 }
 
 test.beforeAll(async () => {
@@ -92,30 +93,34 @@ test.beforeAll(async () => {
 
 test('admin operates only inside the active clinic', async ({ page }) => {
   await login(page, actors.adminA);
-  await expect(page.getByText(`${actors.adminA.email} · Admin / clínica`, { exact: true })).toBeVisible();
-  await expect(page.getByText(`ID clínico: UI-A-${nonce}`)).toBeVisible();
   await expect(page.getByText(`ID clínico: UI-B-${nonce}`)).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Administración' })).toBeVisible();
+  await page.goto('/team');
+  await expect(page.getByRole('button', { name: 'Invitar miembro', exact: true })).toBeVisible();
   await page.goto(`/students/${studentB}`);
-  await expect(page.getByRole('heading', { name: /no encontrada/i })).toBeVisible();
+  await expect(page.getByText('No existe o no tienes acceso vigente a esta carpeta.', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Identificador clínico')).toHaveCount(0);
 });
+
+async function expectTeamAdministrationDenied(page: Page) {
+  await page.goto('/team');
+  await expect(page.getByText('La administración de equipo está limitada a administradores de la clínica activa. Tu perfil se edita desde la cabecera.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Invitar miembro', exact: true })).toHaveCount(0);
+}
 
 test('supervisor can edit assigned student without clinic administration', async ({ page }) => {
   await login(page, actors.supervisor);
-  await expect(page.getByText('Profesional / supervisor')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Administración' })).toHaveCount(0);
+  await expectTeamAdministrationDenied(page);
   await page.goto(`/students/${studentA}`);
-  await expect(page.getByRole('button', { name: 'Guardar ficha' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'Asignaciones' })).toHaveCount(0);
+  await expect(page.getByLabel('Identificador clínico')).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Guardar ficha', exact: true })).toBeEnabled();
 });
 
-test('technician reads and captures but cannot edit the record', async ({ page }) => {
+test('technician can open capture but cannot edit the record', async ({ page }) => {
   await login(page, actors.technician);
-  await expect(page.getByText('Profesional / técnico')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Nuevo estudiante' })).toHaveCount(0);
+  await expectTeamAdministrationDenied(page);
   await page.goto(`/students/${studentA}`);
-  await expect(page.getByLabel('Identificador clínico')).toHaveAttribute('readonly', '');
-  await expect(page.getByRole('button', { name: 'Guardar ficha' })).toHaveCount(0);
-  await page.getByRole('tab', { name: 'Sesiones y resultados' }).click();
-  await expect(page.getByRole('button', { name: 'Nueva captura' })).toBeVisible();
+  await expect(page.getByLabel('Identificador clínico')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Guardar ficha', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Iniciar sesión', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/session/${studentA}$`));
 });

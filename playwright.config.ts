@@ -2,6 +2,9 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // R5 suites require private, opt-in Desktop fixtures and have dedicated configs.
+  // Authenticated coverage runs separately against the disposable CI Supabase stack.
+  testMatch: 'public.spec.ts',
   fullyParallel: false,
   use: {
     baseURL: 'http://localhost:3000',
