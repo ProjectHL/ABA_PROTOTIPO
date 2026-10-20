@@ -4,30 +4,57 @@ Plataforma de gestión clínica ABA construida con Next.js, TypeScript, Mantine 
 
 ## Requisitos
 
-- Node.js 20.9 o superior
-- Acceso al proyecto Supabase de staging
+- Node.js 22.23.2 y npm 10.9.8 (runtime portátil con comprobación SHA-256 mediante scripts/local/install-node.ps1).
+- Docker Desktop con motor Linux operativo y Supabase CLI versionado del repositorio.
+- Desarrollo sobre Supabase local; staging/VPS no son requisitos para construir el producto local.
 
 ## Inicio local
 
-```bash
-npm install
-copy .env.example .env.local
-npm run dev
+```powershell
+powershell -NoProfile -File scripts/local/install-node.ps1
+$env:PATH = "$PWD/.runtime.local/node-v22.23.2-win-x64;$env:PATH"
+npm ci
+npm run local:configure
+npm run local:start -- -SkipWeb
+npm run local:schema
+# Aplicación explícita de las migraciones revisadas, solo por el orquestador:
+npm run local:schema -- -Apply
+npm run local:types
+# Crear un lote sintético explícito según scripts/local/README.md antes del uso clínico.
+npm run local:start
+npm run local:status
 ```
 
-El proyecto local ya incluye `.env.local` para el entorno de staging. Nunca subas ese archivo al repositorio.
+La reintegración técnica R1–R4 está en curso según `SPEC_REINTEGRACION_TOTAL_ABA_LOCAL.md`.
+R1 y P1/R2 están aceptados técnicamente; R3/R4 conservan pendientes explícitos y R5 aún no ha ejecutado QA funcional. El bloque anterior no acredita producto completo ni QA aprobado.
+El chat profesional, familiar y sus adjuntos están fuera del release actual y se conservan como upgrade posterior; consulte [docs/DECISION_CHAT_UPGRADE_POSTERIOR.md](docs/DECISION_CHAT_UPGRADE_POSTERIOR.md).
+`local:configure` crea `.aba.local/stack` y se niega a sobrescribir una configuración existente.
+`local:schema` sincroniza migraciones comprobando SHA-256 y muestra el plan; sin `-Apply` no las ejecuta.
+No copiar secretos de staging al entorno local. Los fixtures se crean por lote explícito después del esquema.
+No ejecutar reset como arranque o cierre de pruebas. QA integral se realiza exclusivamente
+después de integración (R5); los resultados históricos no aprueban el producto reintegrado.
+
+Puede existir un `.env.local` histórico de staging: se conserva y no debe usarse para este flujo.
+El entorno generado `.aba.local/browser.env` está ignorado por Git y no contiene claves privilegiadas.
+El stack histórico `aba_prototipo` y el nuevo `aba-reintegration-local` usan los mismos puertos:
+detener uno conservando volúmenes antes de iniciar el otro; nunca usar `stop --no-backup` ni `stop --all`.
+Docker/Next local usa http://localhost:3000, Studio http://127.0.0.1:54323 y correo http://127.0.0.1:54324.
 
 ## Comandos
 
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run test:db
-npm run test:e2e
-npm run build
-npm run start
+```powershell
+npm run local:typecheck
+npm run local:stop
 ```
+
+Las suites `test`, `test:db` y `test:e2e` son históricas; no ejecutarlas durante R0–R4.
+El build y la validación integral del producto conectado se coordinan en R4/R5 según la spec maestra.
+
+Documentación operativa vigente:
+
+- `scripts/local/README.md`: preparación, arranque, parada, fixtures y respaldo del entorno local.
+- `OPERACION_POC.md`: controles del operador para ensayo y corte clínico.
+- `docs/GUIA_USUARIO_LOCAL.md`: navegación y flujos permitidos para usuarios del release actual.
 
 ## Arquitectura
 
@@ -39,7 +66,7 @@ npm run start
 
 ## Supabase
 
-La aplicación usa las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. La clave publicable puede estar en el navegador; la seguridad de los datos depende de las políticas RLS. No uses una clave `service_role` en componentes de cliente ni variables `NEXT_PUBLIC_`.
+La aplicación usa las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Servidor/proxy pueden usar `SUPABASE_INTERNAL_URL` para alcanzar la API desde Docker, conservando el namespace de sesión del host público. La clave publicable puede estar en el navegador; la seguridad de los datos depende de las políticas RLS. No uses una clave `service_role` en componentes de cliente ni variables `NEXT_PUBLIC_`.
 
 El espacio clínico en `src/modules/clinical/` consulta y escribe Supabase mediante capacidades por estudiante. Incluye ficha ampliada, programas versionados y captura de porcentaje, frecuencia e intervalos. Las migraciones recuperadas y las pruebas PostgreSQL aisladas viven en `supabase/migrations/` y `tests/database/`.
 

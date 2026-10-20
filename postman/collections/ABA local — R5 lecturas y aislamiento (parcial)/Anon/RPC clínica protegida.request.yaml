@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_dashboard_read_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}"
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Anon rechazado',()=>pm.expect([401,403]).to.include(pm.response.code));
+    language: text/javascript
+order: 1000

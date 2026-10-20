@@ -1,673 +1,88 @@
-import { useState } from 'react';
-import {
-    Container,
-    Title,
-    Text,
-    Table,
-    Badge,
-    Button,
-    Group,
-    Stack,
-    Tabs,
-    Accordion,
-    Avatar,
-    Tooltip,
-    ActionIcon,
-    Modal,
-    Select,
-    TextInput
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { Eye, X, RotateCcw, Settings, Trash2, Send, Share2, FolderOpen } from 'lucide-react';
+'use client';
+import { useCallback,useEffect,useMemo,useRef,useState } from 'react';
+import { Accordion,Alert,Avatar,Badge,Button,Container,Group,Loader,Modal,Select,Stack,Table,Tabs,Text,Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { Check,ExternalLink,FolderOpen,RotateCcw,Send,Settings,Share2,X } from 'lucide-react';
 import { MainLayout } from '@/components/MainLayout';
-import { supervisorProfile, studentsData as mockStudents, type StudentProfile } from '@/api/mockData';
-import { mockSharedAccess, type SharedAccess } from '@/api/invitationsData';
+import { useIdentity } from '@/context/IdentityContext';
+import { useNavigate } from '@/lib/navigation';
+import { studentShareCommandSchema,type StudentShareCommand,type StudentShareLevel } from '@/domain/collaboration/student-share';
 import ShareStudentModal from '@/features/students/ShareStudentModal';
+import { loadCollaborationPageData,saveStudentShare } from '@/modules/collaboration/collaboration.server';
+import type { CollaborationInvitation,CollaborationPageData } from '@/modules/collaboration/contracts';
+import type { AuthorizedStudentSummary } from '@/modules/students/contracts';
+import { FamilyInvitationsPanel } from '@/modules/family/FamilyInvitationsPanel';
+import { AccessRequestsPanel } from '@/modules/collaboration/AccessRequestsPanel';
 
-export default function SharedAccessPage() {
-    const [supervisor] = useState(supervisorProfile);
-    const [sharedAccess, setSharedAccess] = useState<SharedAccess[]>(mockSharedAccess);
-    const [selectedAccess, setSelectedAccess] = useState<SharedAccess | null>(null);
-
-    // Estado para compartir desde lista de estudiantes
-    const [shareModalOpened, { open: openShareModal, close: closeShareModal }] = useDisclosure(false);
-    const [studentToShare, setStudentToShare] = useState<StudentProfile | null>(null);
-
-    // Modales
-    const [detailsOpened, { open: openDetails, close: closeDetails }] = useDisclosure(false);
-    const [changeAccessOpened, { open: openChangeAccess, close: closeChangeAccess }] = useDisclosure(false);
-    const [revokeOpened, { open: openRevoke, close: closeRevoke }] = useDisclosure(false);
-    const [, { open: openEditSupervisor }] = useDisclosure(false);
-
-    // Estado para cambiar nivel de acceso
-    const [newAccessLevel, setNewAccessLevel] = useState<string | null>(null);
-
-    // ==================== HANDLERS ====================
-
-    const handleOpenShare = (student: StudentProfile) => {
-        setStudentToShare(student);
-        openShareModal();
-    };
-
-    const handleShareSubmit = (email: string, accessLevel: string, message?: string) => {
-        if (!studentToShare) return;
-
-        const newInvitation: SharedAccess = {
-            id: `inv-${Date.now()}`,
-            sharedBy: supervisor.id,
-            sharedWith: email,
-            studentId: studentToShare.id,
-            studentName: studentToShare.fullName,
-            professionalName: undefined,
-            professionalTitle: undefined,
-            sharedDate: new Date().toISOString(),
-            accessLevel: accessLevel as 'full' | 'read-only' | 'programs-only',
-            status: 'pending',
-            message,
-        };
-
-        setSharedAccess((prev) => [newInvitation, ...prev]);
-
-        // También actualizamos el mock global para consistencia
-        mockSharedAccess.unshift(newInvitation);
-    };
-
-    const handleCancel = (accessId: string) => {
-        setSharedAccess((prev) => prev.filter((acc) => acc.id !== accessId));
-        notifications.show({
-            title: 'Invitación Cancelada',
-            message: 'La invitación ha sido eliminada',
-            color: 'orange',
-            autoClose: false,
-        });
-    };
-
-    const handleResend = (access: SharedAccess) => {
-        // Crear nueva invitación (nuevo ID)
-        const newInvitation: SharedAccess = {
-            ...access,
-            id: `inv-${Date.now()}`,
-            sharedDate: new Date().toISOString(),
-            status: 'pending',
-        };
-
-        setSharedAccess((prev) => [newInvitation, ...prev]);
-
-        notifications.show({
-            title: 'Invitación Reenviada',
-            message: `Nueva invitación enviada a ${access.sharedWith}`,
-            color: 'blue',
-            autoClose: false,
-        });
-    };
-
-    const handleViewDetails = (access: SharedAccess) => {
-        setSelectedAccess(access);
-        openDetails();
-    };
-
-    const handleOpenChangeAccess = (access: SharedAccess) => {
-        setSelectedAccess(access);
-        setNewAccessLevel(access.accessLevel);
-        openChangeAccess();
-    };
-
-    const handleSaveAccessLevel = () => {
-        if (!selectedAccess || !newAccessLevel) return;
-
-        setSharedAccess((prev) =>
-            prev.map((acc) =>
-                acc.id === selectedAccess.id
-                    ? { ...acc, accessLevel: newAccessLevel as 'full' | 'read-only' | 'programs-only' }
-                    : acc
-            )
-        );
-
-        notifications.show({
-            title: 'Nivel de Acceso Actualizado',
-            message: 'El nivel de acceso ha sido modificado correctamente',
-            color: 'green',
-            autoClose: false,
-        });
-
-        closeChangeAccess();
-    };
-
-    const handleOpenRevoke = (access: SharedAccess) => {
-        setSelectedAccess(access);
-        openRevoke();
-    };
-
-    const handleConfirmRevoke = () => {
-        if (!selectedAccess) return;
-
-        setSharedAccess((prev) => prev.filter((acc) => acc.id !== selectedAccess.id));
-
-        notifications.show({
-            title: 'Acceso Removido Satisfactoriamente',
-            message: `El acceso de ${selectedAccess.professionalName || selectedAccess.sharedWith} ha sido revocado`,
-            color: 'red',
-            autoClose: false,
-        });
-
-        closeRevoke();
-    };
-
-    // ==================== HELPERS ====================
-
-    const getAccessBadgeColor = (access: string) => {
-        switch (access) {
-            case 'full':
-                return 'blue';
-            case 'read-only':
-                return 'yellow';
-            case 'programs-only':
-                return 'violet';
-            default:
-                return 'gray';
-        }
-    };
-
-    const getAccessLabel = (access: string) => {
-        switch (access) {
-            case 'full':
-                return 'Acceso Completo';
-            case 'read-only':
-                return 'Solo Lectura';
-            case 'programs-only':
-                return 'Solo Programas';
-            default:
-                return access;
-        }
-    };
-
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'pending':
-                return <Badge color="orange">Pendiente</Badge>;
-            case 'accepted':
-                return <Badge color="green">Aceptada</Badge>;
-            case 'rejected':
-                return <Badge color="red">Rechazada</Badge>;
-            default:
-                return <Badge color="gray">{status}</Badge>;
-        }
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        });
-    };
-
-    // ==================== FILTROS ====================
-
-    const allInvitations = sharedAccess;
-    const activeAccess = sharedAccess.filter((acc) => acc.status === 'accepted');
-
-    // Agrupar accesos activos por estudiante
-    const groupedByStudent = activeAccess.reduce((acc, access) => {
-        if (!acc[access.studentId]) {
-            acc[access.studentId] = {
-                studentName: access.studentName,
-                accesses: [],
-            };
-        }
-        acc[access.studentId].accesses.push(access);
-        return acc;
-    }, {} as Record<string, { studentName: string; accesses: SharedAccess[] }>);
-
-    // ==================== RENDER ====================
-
-    return (
-        <MainLayout supervisor={supervisor} onEditProfile={openEditSupervisor}>
-            <Container size="xl">
-                <Stack gap="xl">
-                    {/* Header */}
-                    <div>
-                        <Title order={2}>Accesos Compartidos</Title>
-                        <Text c="dimmed" size="sm" mt={4}>
-                            Gestiona las invitaciones enviadas, accesos activos y comparte nuevas carpetas
-                        </Text>
-                    </div>
-
-                    {/* Tabs */}
-                    <Tabs defaultValue="share" variant="pills">
-                        <Tabs.List>
-                            <Tabs.Tab value="share" leftSection={<FolderOpen size={16} />}>
-                                Repertorio General
-                            </Tabs.Tab>
-                            <Tabs.Tab value="sent" leftSection={<Send size={16} />}>
-                                Invitaciones Enviadas
-                                <Badge ml="xs" size="sm" variant="filled">
-                                    {allInvitations.length}
-                                </Badge>
-                            </Tabs.Tab>
-                            <Tabs.Tab value="active" leftSection={<Settings size={16} />}>
-                                Accesos Activos
-                                <Badge ml="xs" size="sm" variant="filled" color="green">
-                                    {activeAccess.length}
-                                </Badge>
-                            </Tabs.Tab>
-                        </Tabs.List>
-
-                        {/* TAB 1: Repertorio General (Lista de Estudiantes) */}
-                        <Tabs.Panel value="share" pt="lg">
-                            <Table.ScrollContainer minWidth={800}>
-                                <Table striped highlightOnHover verticalSpacing="sm">
-                                    <Table.Thead>
-                                        <Table.Tr>
-                                            <Table.Th>Estudiantes</Table.Th>
-                                            <Table.Th>Diagnóstico / Edad</Table.Th>
-                                            <Table.Th>Estado de Sesión</Table.Th>
-                                            <Table.Th>Acciones</Table.Th>
-                                        </Table.Tr>
-                                    </Table.Thead>
-                                    <Table.Tbody>
-                                        {mockStudents.map((student) => (
-                                            <Table.Tr key={student.id}>
-                                                <Table.Td>
-                                                    <Group gap="sm">
-                                                        <Avatar src={student.avatar} radius="xl" size="sm" />
-                                                        <Text size="sm" fw={500}>
-                                                            {student.fullName}
-                                                        </Text>
-                                                    </Group>
-                                                </Table.Td>
-                                                <Table.Td>
-                                                    <Stack gap={2}>
-                                                        <Text size="sm">
-                                                            {student.diagnosis}
-                                                        </Text>
-                                                        <Text size="xs" c="dimmed">
-                                                            {student.age} años • RUT: {student.identityNumber}
-                                                        </Text>
-                                                    </Stack>
-                                                </Table.Td>
-                                                <Table.Td>
-                                                    <Badge
-                                                        variant="light"
-                                                        color={student.hasActiveSession ? 'green' : 'gray'}
-                                                        size="sm"
-                                                    >
-                                                        {student.hasActiveSession ? 'Activa' : 'Inactiva'}
-                                                    </Badge>
-                                                </Table.Td>
-                                                <Table.Td>
-                                                    <Button
-                                                        leftSection={<Share2 size={16} />}
-                                                        variant="light"
-                                                        size="xs"
-                                                        onClick={() => handleOpenShare(student)}
-                                                    >
-                                                        Compartir
-                                                    </Button>
-                                                </Table.Td>
-                                            </Table.Tr>
-                                        ))}
-                                    </Table.Tbody>
-                                </Table>
-                            </Table.ScrollContainer>
-                        </Tabs.Panel>
-
-                        {/* TAB 2: Invitaciones Enviadas */}
-                        <Tabs.Panel value="sent" pt="lg">
-                            {allInvitations.length === 0 ? (
-                                <Text c="dimmed" ta="center" py="xl">
-                                    No hay invitaciones enviadas
-                                </Text>
-                            ) : (
-                                <Table.ScrollContainer minWidth={800}>
-                                    <Table striped highlightOnHover>
-                                        <Table.Thead>
-                                            <Table.Tr>
-                                                <Table.Th>Profesional</Table.Th>
-                                                <Table.Th>Estudiante</Table.Th>
-                                                <Table.Th>Tipo de Acceso</Table.Th>
-                                                <Table.Th>Estado</Table.Th>
-                                                <Table.Th>Fecha de Envío</Table.Th>
-                                                <Table.Th>Acciones</Table.Th>
-                                            </Table.Tr>
-                                        </Table.Thead>
-                                        <Table.Tbody>
-                                            {allInvitations.map((access) => (
-                                                <Table.Tr key={access.id}>
-                                                    <Table.Td>
-                                                        <Group gap="sm">
-                                                            <Avatar color="blue" radius="xl" size="sm">
-                                                                {access.professionalName?.charAt(0) || access.sharedWith.charAt(0).toUpperCase()}
-                                                            </Avatar>
-                                                            <div>
-                                                                <Text size="sm" fw={500}>
-                                                                    {access.professionalName || access.sharedWith}
-                                                                </Text>
-                                                                {access.professionalTitle && (
-                                                                    <Text size="xs" c="dimmed">
-                                                                        {access.professionalTitle}
-                                                                    </Text>
-                                                                )}
-                                                            </div>
-                                                        </Group>
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Text size="sm" fw={500}>
-                                                            {access.studentName}
-                                                        </Text>
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Badge
-                                                            variant="light"
-                                                            color={getAccessBadgeColor(access.accessLevel)}
-                                                        >
-                                                            {getAccessLabel(access.accessLevel)}
-                                                        </Badge>
-                                                    </Table.Td>
-                                                    <Table.Td>{getStatusBadge(access.status)}</Table.Td>
-                                                    <Table.Td>
-                                                        <Text size="xs" c="dimmed">
-                                                            {formatDate(access.sharedDate)}
-                                                        </Text>
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Group gap="xs">
-                                                            <Tooltip label="Ver detalles">
-                                                                <ActionIcon
-                                                                    variant="subtle"
-                                                                    color="gray"
-                                                                    onClick={() => handleViewDetails(access)}
-                                                                >
-                                                                    <Eye size={18} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                            {access.status === 'pending' && (
-                                                                <Tooltip label="Cancelar invitación">
-                                                                    <ActionIcon
-                                                                        variant="subtle"
-                                                                        color="red"
-                                                                        onClick={() => handleCancel(access.id)}
-                                                                    >
-                                                                        <X size={18} />
-                                                                    </ActionIcon>
-                                                                </Tooltip>
-                                                            )}
-                                                            {access.status === 'rejected' && (
-                                                                <Tooltip label="Reenviar invitación">
-                                                                    <ActionIcon
-                                                                        variant="subtle"
-                                                                        color="blue"
-                                                                        onClick={() => handleResend(access)}
-                                                                    >
-                                                                        <RotateCcw size={18} />
-                                                                    </ActionIcon>
-                                                                </Tooltip>
-                                                            )}
-                                                        </Group>
-                                                    </Table.Td>
-                                                </Table.Tr>
-                                            ))}
-                                        </Table.Tbody>
-                                    </Table>
-                                </Table.ScrollContainer>
-                            )}
-                        </Tabs.Panel>
-
-                        {/* TAB 2: Accesos Activos (Agrupados por Estudiante) */}
-                        <Tabs.Panel value="active" pt="lg">
-                            {activeAccess.length === 0 ? (
-                                <Text c="dimmed" ta="center" py="xl">
-                                    No hay accesos activos
-                                </Text>
-                            ) : (
-                                <Accordion variant="separated">
-                                    {Object.entries(groupedByStudent).map(([studentId, { studentName, accesses }]) => (
-                                        <Accordion.Item key={studentId} value={studentId}>
-                                            <Accordion.Control>
-                                                <Group justify="space-between" pr="md">
-                                                    <Text fw={600}>{studentName}</Text>
-                                                    <Badge size="lg" variant="filled" color="green">
-                                                        {accesses.length} {accesses.length === 1 ? 'profesional' : 'profesionales'}
-                                                    </Badge>
-                                                </Group>
-                                            </Accordion.Control>
-                                            <Accordion.Panel>
-                                                <Table striped>
-                                                    <Table.Thead>
-                                                        <Table.Tr>
-                                                            <Table.Th>Profesional</Table.Th>
-                                                            <Table.Th>Tipo de Acceso</Table.Th>
-                                                            <Table.Th>Fecha de Aceptación</Table.Th>
-                                                            <Table.Th>Acciones</Table.Th>
-                                                        </Table.Tr>
-                                                    </Table.Thead>
-                                                    <Table.Tbody>
-                                                        {accesses.map((access) => (
-                                                            <Table.Tr key={access.id}>
-                                                                <Table.Td>
-                                                                    <Group gap="sm">
-                                                                        <Avatar color="green" radius="xl" size="sm">
-                                                                            {access.professionalName?.charAt(0) || access.sharedWith.charAt(0).toUpperCase()}
-                                                                        </Avatar>
-                                                                        <div>
-                                                                            <Text size="sm" fw={500}>
-                                                                                {access.professionalName || access.sharedWith}
-                                                                            </Text>
-                                                                            {access.professionalTitle && (
-                                                                                <Text size="xs" c="dimmed">
-                                                                                    {access.professionalTitle}
-                                                                                </Text>
-                                                                            )}
-                                                                        </div>
-                                                                    </Group>
-                                                                </Table.Td>
-                                                                <Table.Td>
-                                                                    <Badge
-                                                                        variant="light"
-                                                                        color={getAccessBadgeColor(access.accessLevel)}
-                                                                    >
-                                                                        {getAccessLabel(access.accessLevel)}
-                                                                    </Badge>
-                                                                </Table.Td>
-                                                                <Table.Td>
-                                                                    <Text size="xs" c="dimmed">
-                                                                        {formatDate(access.sharedDate)}
-                                                                    </Text>
-                                                                </Table.Td>
-                                                                <Table.Td>
-                                                                    <Group gap="xs">
-                                                                        <Tooltip label="Cambiar nivel de acceso">
-                                                                            <ActionIcon
-                                                                                variant="subtle"
-                                                                                color="blue"
-                                                                                onClick={() => handleOpenChangeAccess(access)}
-                                                                            >
-                                                                                <Settings size={18} />
-                                                                            </ActionIcon>
-                                                                        </Tooltip>
-                                                                        <Tooltip label="Revocar acceso">
-                                                                            <ActionIcon
-                                                                                variant="subtle"
-                                                                                color="red"
-                                                                                onClick={() => handleOpenRevoke(access)}
-                                                                            >
-                                                                                <Trash2 size={18} />
-                                                                            </ActionIcon>
-                                                                        </Tooltip>
-                                                                    </Group>
-                                                                </Table.Td>
-                                                            </Table.Tr>
-                                                        ))}
-                                                    </Table.Tbody>
-                                                </Table>
-                                            </Accordion.Panel>
-                                        </Accordion.Item>
-                                    ))}
-                                </Accordion>
-                            )}
-                        </Tabs.Panel>
-                    </Tabs>
-                </Stack>
-            </Container>
-
-            {/* Modal: Ver Detalles */}
-            <Modal
-                opened={detailsOpened}
-                onClose={closeDetails}
-                title="Detalles de la Invitación"
-                size="md"
-            >
-                {selectedAccess && (
-                    <Stack gap="md">
-                        <Group>
-                            <Avatar color="blue" size="lg" radius="xl">
-                                {selectedAccess.professionalName?.charAt(0) || selectedAccess.sharedWith.charAt(0).toUpperCase()}
-                            </Avatar>
-                            <div>
-                                <Text fw={600} size="lg">
-                                    {selectedAccess.professionalName || 'Profesional no registrado'}
-                                </Text>
-                                <Text size="sm" c="dimmed">
-                                    {selectedAccess.professionalTitle || selectedAccess.sharedWith}
-                                </Text>
-                            </div>
-                        </Group>
-
-                        <TextInput
-                            label="Email"
-                            value={selectedAccess.sharedWith}
-                            readOnly
-                        />
-
-                        <TextInput
-                            label="Estudiante"
-                            value={selectedAccess.studentName}
-                            readOnly
-                        />
-
-                        <div>
-                            <Text size="sm" fw={600} mb={4}>
-                                Tipo de Acceso:
-                            </Text>
-                            <Badge color={getAccessBadgeColor(selectedAccess.accessLevel)} size="lg">
-                                {getAccessLabel(selectedAccess.accessLevel)}
-                            </Badge>
-                        </div>
-
-                        <div>
-                            <Text size="sm" fw={600} mb={4}>
-                                Estado:
-                            </Text>
-                            {getStatusBadge(selectedAccess.status)}
-                        </div>
-
-                        <TextInput
-                            label="Fecha de Envío"
-                            value={formatDate(selectedAccess.sharedDate)}
-                            readOnly
-                        />
-
-                        {selectedAccess.message && (
-                            <div>
-                                <Text size="sm" fw={600} mb={4}>
-                                    Mensaje:
-                                </Text>
-                                <Text size="sm" p="sm" bg="gray.0" style={{ borderRadius: '4px' }}>
-                                    {selectedAccess.message}
-                                </Text>
-                            </div>
-                        )}
-                    </Stack>
-                )}
-            </Modal>
-
-            {/* Modal: Cambiar Nivel de Acceso */}
-            <Modal
-                opened={changeAccessOpened}
-                onClose={closeChangeAccess}
-                title="Cambiar Nivel de Acceso"
-                size="md"
-            >
-                {selectedAccess && (
-                    <Stack gap="md">
-                        <Text size="sm">
-                            Modificar el nivel de acceso de <strong>{selectedAccess.professionalName || selectedAccess.sharedWith}</strong> a <strong>{selectedAccess.studentName}</strong>
-                        </Text>
-
-                        <div>
-                            <Text size="sm" fw={600} mb="xs">
-                                Nivel Actual:
-                            </Text>
-                            <Badge color={getAccessBadgeColor(selectedAccess.accessLevel)} size="lg">
-                                {getAccessLabel(selectedAccess.accessLevel)}
-                            </Badge>
-                        </div>
-
-                        <Select
-                            label="Nuevo Nivel de Acceso"
-                            placeholder="Seleccione un nivel"
-                            data={[
-                                { value: 'full', label: '🔵 Acceso Completo - Ver y editar todo' },
-                                { value: 'read-only', label: '🟡 Solo Lectura - Ver sin editar' },
-                                { value: 'programs-only', label: '🟣 Solo Programas - Acceso limitado a programas' },
-                            ]}
-                            value={newAccessLevel}
-                            onChange={setNewAccessLevel}
-                            required
-                        />
-
-                        <Group justify="flex-end" mt="md">
-                            <Button variant="subtle" onClick={closeChangeAccess}>
-                                Cancelar
-                            </Button>
-                            <Button onClick={handleSaveAccessLevel} disabled={!newAccessLevel}>
-                                Guardar Cambios
-                            </Button>
-                        </Group>
-                    </Stack>
-                )}
-            </Modal>
-
-            {/* Modal: Confirmar Revocar Acceso */}
-            <Modal
-                opened={revokeOpened}
-                onClose={closeRevoke}
-                title="Revocar Acceso"
-                size="md"
-            >
-                {selectedAccess && (
-                    <Stack gap="md">
-                        <Text size="sm">
-                            ¿Estás seguro de revocar el acceso de <strong>{selectedAccess.professionalName || selectedAccess.sharedWith}</strong> a <strong>{selectedAccess.studentName}</strong>?
-                        </Text>
-
-                        <Text size="sm" c="red" fw={600}>
-                            ⚠️ Esta acción no se puede deshacer
-                        </Text>
-
-                        <Group justify="flex-end" mt="md">
-                            <Button variant="subtle" onClick={closeRevoke}>
-                                Cancelar
-                            </Button>
-                            <Button color="red" onClick={handleConfirmRevoke}>
-                                Revocar Acceso
-                            </Button>
-                        </Group>
-                    </Stack>
-                )}
-            </Modal>
-            {/* Modal de Compartir Nuevo (Tab Repertorio) */}
-            {studentToShare && (
-                <ShareStudentModal
-                    opened={shareModalOpened}
-                    onClose={closeShareModal}
-                    studentId={studentToShare.id}
-                    studentName={studentToShare.fullName}
-                    onShare={handleShareSubmit}
-                />
-            )}
-        </MainLayout>
-    );
+type Tab='share'|'requests'|'sent'|'received'|'active';
+export default function SharedAccessPage({initialTab='share'}:{initialTab?:Tab}) {
+  const {identity}=useIdentity();
+  return <SharedAccessContent key={`${identity?.userId??'signed-out'}:${identity?.active?.id??'no-clinic'}`} initialTab={initialTab}/>;
+}
+function SharedAccessContent({initialTab}:{initialTab:Tab}) {
+  const {identity,error:identityError,refresh:refreshIdentity,selectClinic}=useIdentity();
+  const navigate=useNavigate();const userId=identity?.userId??null;const clinicId=identity?.active?.id??null;
+  const [storedData,setData]=useState<CollaborationPageData|null>(null);const [error,setError]=useState<string|null>(null);const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);
+  const [student,setStudent]=useState<AuthorizedStudentSummary|null>(null);const [levelTarget,setLevelTarget]=useState<CollaborationInvitation|null>(null);const [nextLevel,setNextLevel]=useState<StudentShareLevel|null>(null);
+  const data=storedData?.actorId===userId&&storedData.clinicId===clinicId?storedData:null;
+  const [detailId,setDetailId]=useState<string|null>(null);
+  const detail=data?.invitations.find(row=>row.id===detailId)??null;
+  const pending=useRef<StudentShareCommand|null>(null);const pendingClinic=useRef<string|null>(null);const busyRef=useRef(false);const [unknown,setUnknown]=useState(false);const [reviewRequired,setReviewRequired]=useState(false);
+  const loadSequence=useRef(0);
+  const familyLeaveGuard=useRef<(()=>boolean)|null>(null);const [familyPending,setFamilyPending]=useState(false);
+  const requestLeaveGuard=useRef<(() => boolean)|null>(null);
+  const canLeave=()=>{if(busyRef.current||pending.current){notifications.show({title:'Operación pendiente',color:'yellow',message:'Recupera primero el recibo de la invitación.'});return false;}if((student||levelTarget)&&!window.confirm('¿Descartar el borrador de acceso compartido?'))return false;if(familyLeaveGuard.current&&!familyLeaveGuard.current())return false;return requestLeaveGuard.current?.()??true;};
+  const allowLeave=async()=>canLeave();
+  useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(busyRef.current||pending.current||student||levelTarget){event.preventDefault();event.returnValue='';}};const link=(event:MouseEvent)=>{if(event.target instanceof Element&&event.target.closest('a[href]')&&!canLeave()){event.preventDefault();event.stopPropagation();}};window.addEventListener('beforeunload',warn);document.addEventListener('click',link,true);return()=>{window.removeEventListener('beforeunload',warn);document.removeEventListener('click',link,true);};});
+  const readLatest=useCallback(async()=>{const sequence=++loadSequence.current;const latest=await loadCollaborationPageData(clinicId);if(sequence!==loadSequence.current)throw new Error('La consulta fue sustituida por otra más reciente. Recupera la bandeja vigente antes de continuar.');setData(latest);setError(null);return latest;},[clinicId]);
+  const refresh=useCallback(async()=>{const sequence=loadSequence.current+1;try{await readLatest();}catch(cause){if(sequence===loadSequence.current)setError(cause instanceof Error?cause.message:'No se pudo cargar la colaboración.');}finally{if(sequence===loadSequence.current)setLoading(false);}},[readLatest]);
+  // Context changes trigger the initial read; command/consult refreshes are explicit.
+  useEffect(()=>{if(userId)void refresh();},[userId,refresh]);
+  const execute=async(command:StudentShareCommand,success:string)=>{
+    if(busyRef.current||reviewRequired&&!pending.current)return false;
+    if(familyLeaveGuard.current&&!familyLeaveGuard.current())return false;
+    if(requestLeaveGuard.current&&!requestLeaveGuard.current())return false;
+    if(pending.current&&JSON.stringify(pending.current)!==JSON.stringify(command)){notifications.show({title:'Operación pendiente',color:'yellow',message:'Reintenta primero la operación exacta cuyo resultado es desconocido.'});return false;}
+    const commandClinicId=pending.current?pendingClinic.current:data?.invitations.find(row=>row.id===command.invitationId)?.clinicId??clinicId;
+    if(!commandClinicId)return false;
+    pending.current=command;pendingClinic.current=commandClinicId;busyRef.current=true;setBusy(true);setUnknown(false);
+    try{const result=await saveStudentShare({clinicId:commandClinicId,command});
+      if(result.status!=='acknowledged'){pending.current=null;pendingClinic.current=null;setReviewRequired(result.status==='conflict');notifications.show({title:'Cambio no confirmado',color:'yellow',message:result.message});return false;}
+      pending.current=null;pendingClinic.current=null;notifications.show({title:success,color:'green',message:result.replayed?'Se recuperó el recibo previo.':'El servidor confirmó el cambio.'});
+      try{await refreshIdentity();await readLatest();}catch{setReviewRequired(true);setError('Cambio confirmado por recibo. Falló el refresco; vuelve a consultar, no repitas la escritura.');}
+      return true;
+    }catch(cause){setUnknown(true);notifications.show({title:'Resultado desconocido',color:'red',message:cause instanceof Error?cause.message:'Reintenta exactamente la misma operación.'});return false;}
+    finally{busyRef.current=false;setBusy(false);}
+  };
+  const consult=async()=>{if(busyRef.current||pending.current)return;busyRef.current=true;setBusy(true);try{await refreshIdentity();const latest=await readLatest();if(levelTarget){const current=latest.invitations.find(row=>row.id===levelTarget.id);if(!current||current.status!=='accepted'){setError('El acceso ya no está activo. Se conserva tu nivel elegido; no se recreará.');return;}setLevelTarget(current);}setReviewRequired(false);}catch(cause){setError(cause instanceof Error?cause.message:'No se pudo consultar la identidad y versión vigentes.');}finally{busyRef.current=false;setBusy(false);}};
+  const recovery=<>{unknown&&<Alert color="yellow" title="Resultado desconocido">Se conserva el comando y su clínica originales.<Button loading={busy} onClick={()=>{const command=pending.current;if(command)void execute(command,'Operación recuperada').then(ok=>{if(ok){setStudent(null);setLevelTarget(null);}});}}>Reintentar operación exacta</Button></Alert>}{reviewRequired&&<Alert color="yellow" title="Conflicto conocido">Tu borrador se conserva; consulta antes de confirmar con una nueva operación.<Button loading={busy} onClick={()=>void consult()}>Consultar versión vigente</Button></Alert>}</>;
+  const commandFor=(row:CollaborationInvitation,action:Exclude<StudentShareCommand['action'],'invite'>,extra:Record<string,unknown>={})=>studentShareCommandSchema.parse(pending.current?.invitationId===row.id&&pending.current.action===action?pending.current:{operationId:crypto.randomUUID(),idempotencyKey:crypto.randomUUID(),invitationId:row.id,studentId:row.studentId,expectedVersion:row.version,action,...extra});
+  const sent=useMemo(()=>data?.invitations.filter(row=>row.direction==='sent')??[],[data]);const received=useMemo(()=>data?.invitations.filter(row=>row.direction==='received')??[],[data]);const active=useMemo(()=>sent.filter(row=>row.status==='accepted'),[sent]);
+  const activeGroups=useMemo(()=>{const groups=new Map<string,{key:string;studentName:string;invitations:CollaborationInvitation[]}>();for(const row of active){const key=row.clinicId+':'+row.studentId;const group=groups.get(key);if(group)group.invitations.push(row);else groups.set(key,{key,studentName:row.studentName,invitations:[row]});}return [...groups.values()];},[active]);
+  const openStudent=async(row:CollaborationInvitation)=>{try{if(!canLeave())return;if(identity?.active?.id!==row.clinicId)await selectClinic(row.clinicId);navigate(`/students/${row.studentId}`);}catch(cause){notifications.show({title:'Ficha no disponible',color:'red',message:cause instanceof Error?cause.message:'No se pudo seleccionar el contexto autorizado.'});}};
+  const levelLabel=(level:StudentShareLevel)=>level==='full-read'?'Lectura completa':level==='program-results'?'Programas y resultados':'Edición clínica';
+  const status=(value:CollaborationInvitation['status'])=><Badge color={value==='accepted'?'green':value==='pending'?'orange':value==='revoked'?'red':'gray'}>{value}</Badge>;
+  const rows=(items:CollaborationInvitation[],mode:'sent'|'received'|'active')=><Table.ScrollContainer minWidth={820}><Table striped highlightOnHover><Table.Thead><Table.Tr><Table.Th>Ficha</Table.Th><Table.Th>Profesional</Table.Th><Table.Th>Nivel</Table.Th><Table.Th>Estado</Table.Th><Table.Th>Actualizada</Table.Th><Table.Th>Acciones</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{items.map(row=><Table.Tr key={`${mode}:${row.id}`}><Table.Td><Text fw={600}>{row.studentName}</Text></Table.Td><Table.Td>{row.recipientEmail}</Table.Td><Table.Td><Badge variant="light">{levelLabel(row.level)}</Badge></Table.Td><Table.Td>{status(row.status)}</Table.Td><Table.Td>{new Date(row.updatedAt).toLocaleString('es-CL')}</Table.Td><Table.Td><Group gap="xs">
+    <Button size="xs" variant="subtle" onClick={()=>setDetailId(row.id)}>Ver detalle</Button>
+    {mode==='received'&&row.status==='pending'&&<><Button size="xs" color="green" leftSection={<Check size={14}/>} loading={busy} disabled={unknown||reviewRequired} onClick={()=>void execute(commandFor(row,'accept'),'Invitación aceptada')}>Aceptar</Button><Button size="xs" color="red" variant="light" leftSection={<X size={14}/>} disabled={busy||unknown||reviewRequired} onClick={()=>void execute(commandFor(row,'reject'),'Invitación rechazada')}>Rechazar</Button></>}
+    {mode==='received'&&row.status==='accepted'&&<Button size="xs" variant="light" leftSection={<ExternalLink size={14}/>} onClick={()=>void openStudent(row)}>Abrir ficha</Button>}
+    {mode==='sent'&&row.status==='pending'&&<><Button size="xs" variant="light" leftSection={<RotateCcw size={14}/>} disabled={busy||unknown||reviewRequired} onClick={()=>void execute(commandFor(row,'resend'),'Invitación reenviada')}>Reenviar</Button><Button size="xs" color="red" variant="subtle" disabled={busy||unknown||reviewRequired} onClick={()=>void execute(commandFor(row,'cancel'),'Invitación cancelada')}>Cancelar</Button></>}
+    {mode==='active'&&<><Button size="xs" variant="light" leftSection={<Settings size={14}/>} disabled={busy||unknown||reviewRequired} onClick={()=>{setLevelTarget(row);setNextLevel(row.level);}}>Cambiar nivel</Button><Button size="xs" color="red" variant="light" disabled={busy||unknown||reviewRequired} onClick={()=>{if(window.confirm('¿Revocar este acceso a la ficha?'))void execute(commandFor(row,'revoke',{reason:'Revocación confirmada por responsable',confirmation:true}),'Acceso revocado');}}>Revocar</Button></>}
+  </Group></Table.Td></Table.Tr>)}</Table.Tbody></Table></Table.ScrollContainer>;
+  return <MainLayout slots={{beforeNavigate:allowLeave,beforeNativeNavigate:canLeave,beforeSignOut:allowLeave,beforeClinicChange:allowLeave}}><Container size="xl"><Stack gap="xl"><div><Title order={2}>Accesos compartidos</Title><Text c="dimmed">Invitaciones externas y solicitudes internas por ficha, sin membresía general implícita.</Text></div>{recovery}{identityError&&<Alert color="yellow">{identityError}</Alert>}{error&&<Alert color="red">{error}<Button variant="subtle" onClick={()=>void refresh()}>Reintentar</Button></Alert>}{loading&&!data?<Loader/>:<Tabs defaultValue={initialTab} variant="pills"><Tabs.List><Tabs.Tab value="share" leftSection={<FolderOpen size={16}/>}>Compartir</Tabs.Tab><Tabs.Tab value="requests">Solicitudes <Badge ml="xs" color="orange">{data?.accessRequests.filter(item=>item.direction==='incoming'&&item.status==='pending').length??0}</Badge></Tabs.Tab><Tabs.Tab value="sent" leftSection={<Send size={16}/>}>Enviadas <Badge ml="xs">{sent.length}</Badge></Tabs.Tab><Tabs.Tab value="received">Recibidas <Badge ml="xs">{received.length}</Badge></Tabs.Tab><Tabs.Tab value="active" leftSection={<Settings size={16}/>}>Activas <Badge ml="xs" color="green">{active.length}</Badge></Tabs.Tab></Tabs.List>
+    <Tabs.Panel value="share" pt="lg">{!clinicId?<Alert color="blue">Selecciona una clínica para compartir nuevas fichas. Puedes aceptar invitaciones en la pestaña Recibidas sin membresía previa.</Alert>:data?.manageableStudents.length?<Table><Table.Thead><Table.Tr><Table.Th>Ficha</Table.Th><Table.Th>Identificador</Table.Th><Table.Th>Acción</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{data.manageableStudents.map(item=><Table.Tr key={item.id}><Table.Td><Group><Avatar>{item.initials.slice(0,2)}</Avatar><Text fw={600}>{item.displayName}</Text></Group></Table.Td><Table.Td>{item.clinicalId}</Table.Td><Table.Td><Button size="xs" leftSection={<Share2 size={14}/>} disabled={busy||unknown||reviewRequired} onClick={()=>setStudent(item)}>Compartir</Button></Table.Td></Table.Tr>)}</Table.Tbody></Table>:<Alert color="gray">No hay fichas sobre las que tengas capacidad vigente para gestionar accesos.</Alert>}</Tabs.Panel>
+    <Tabs.Panel value="requests" pt="lg"><AccessRequestsPanel blocked={busy||unknown||familyPending} clinicId={clinicId} requests={data?.accessRequests??[]} requestableStudents={data?.requestableStudents??[]} onChanged={async()=>{await readLatest();}} leaveGuard={requestLeaveGuard}/></Tabs.Panel>
+    <Tabs.Panel value="sent" pt="lg">{sent.length?rows(sent,'sent'):<Text c="dimmed">No hay invitaciones enviadas.</Text>}</Tabs.Panel><Tabs.Panel value="received" pt="lg"><Stack>{received.length?rows(received,'received'):<Text c="dimmed">No hay invitaciones profesionales recibidas.</Text>}<FamilyInvitationsPanel leaveGuard={familyLeaveGuard} onPendingChange={setFamilyPending} beforeCommand={()=>!busyRef.current&&!pending.current&&(requestLeaveGuard.current?.()??true)}/></Stack></Tabs.Panel><Tabs.Panel value="active" pt="lg">{activeGroups.length?<Accordion variant="separated">{activeGroups.map(group=>{const professionals=new Set(group.invitations.map(row=>row.acceptedBy)).size;return <Accordion.Item key={group.key} value={group.key}><Accordion.Control><Group justify="space-between" pr="md"><Text fw={600}>{group.studentName}</Text><Badge color="green">{professionals} {professionals===1?'profesional':'profesionales'}</Badge></Group></Accordion.Control><Accordion.Panel>{rows(group.invitations,'active')}</Accordion.Panel></Accordion.Item>;})}</Accordion>:<Text c="dimmed">No hay accesos activos.</Text>}</Tabs.Panel></Tabs>}</Stack></Container>
+    <ShareStudentModal key={student?.id??'no-student'} pending={unknown} recovery={recovery} opened={!!student} onClose={()=>{if(!busyRef.current&&!pending.current)setStudent(null);}} studentName={student?.displayName??''} busy={busy} onShare={async value=>{if(!student||!clinicId)return false;const prior=pending.current;const command=studentShareCommandSchema.parse(prior?.action==='invite'&&prior.studentId===student.id&&prior.recipientEmail===value.email&&prior.level===value.level&&prior.message===value.message?prior:{operationId:crypto.randomUUID(),idempotencyKey:crypto.randomUUID(),invitationId:crypto.randomUUID(),studentId:student.id,expectedVersion:0,action:'invite',recipientEmail:value.email,level:value.level,message:value.message});return execute(command,'Invitación confirmada');}}/>
+    <Modal opened={!!levelTarget} onClose={()=>{if(!busyRef.current&&!pending.current)setLevelTarget(null);}} title="Cambiar nivel de acceso"><Stack>{recovery}<Select disabled={busy||unknown} value={nextLevel} onChange={value=>setNextLevel(value as StudentShareLevel|null)} data={[{value:'full-read',label:'Lectura clínica completa'},{value:'program-results',label:'Programas y resultados'},{value:'clinical-edit',label:'Edición clínica de esta ficha'}]}/><Group justify="flex-end"><Button variant="subtle" onClick={()=>setLevelTarget(null)} disabled={busy||unknown||reviewRequired}>Cancelar</Button><Button loading={busy} disabled={unknown||reviewRequired} onClick={()=>{if(levelTarget&&nextLevel&&!unknown&&!reviewRequired)void execute(commandFor(levelTarget,'change-level',{level:nextLevel,reason:'Nivel actualizado por responsable'}),'Nivel actualizado').then(ok=>{if(ok)setLevelTarget(null);});}}>Guardar</Button></Group></Stack></Modal>
+    <Modal opened={!!detail} onClose={()=>setDetailId(null)} title="Detalle de invitación"><Stack>{detail&&<>
+      <Text fw={600}>{detail.studentName}</Text><Text size="sm">Destinatario: {detail.recipientEmail}</Text>
+      <Group>{status(detail.status)}<Badge variant="light">{levelLabel(detail.level)}</Badge></Group>
+      <Text size="sm">Creada: {new Date(detail.createdAt).toLocaleString('es-CL')}</Text>
+      <Text size="sm">Actualizada: {new Date(detail.updatedAt).toLocaleString('es-CL')} · Versión {detail.version}</Text>
+      <Title order={6}>Mensaje de la invitación</Title><Text style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{detail.message||'Sin mensaje adicional.'}</Text>
+      <Text size="xs" c="dimmed">Consultar o cerrar este detalle no modifica el acceso.</Text>
+      <Group justify="flex-end"><Button variant="subtle" onClick={()=>setDetailId(null)}>Cerrar</Button></Group>
+    </>}</Stack></Modal>
+  </MainLayout>;
 }

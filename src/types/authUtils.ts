@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'supervisor' | 'therapist' | 'family';
+export type UserRole = 'admin' | 'supervisor' | 'therapist' | 'external' | 'family';
 
 export interface RoleContextType {
     currentRole: UserRole | null;

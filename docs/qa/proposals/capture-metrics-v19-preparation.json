@@ -1,0 +1,65 @@
+{
+  "status": "PREPARED_NOT_EXECUTED",
+  "candidate": "V19",
+  "createdAt": "2026-10-11T15:30:55.980Z",
+  "buildId": "A7t-LPX5vzBg-DMDbF8_z",
+  "files": [
+    {
+      "file": "tests/e2e/r5.capture-metrics-v19.spec.mjs",
+      "sha256": "c4f1516a750919c233afb551e65e7d9c56c6e2b3a2554cd3fbf4c21f775157ed"
+    },
+    {
+      "file": "playwright.capture-metrics-v19.config.ts",
+      "sha256": "f66f88bd0049e229b299ec318fa924c8d3a8780864337f9911622fe22fcf4b15"
+    }
+  ],
+  "sources": "docs/qa/proposals/capture-pending-v17-preparation.json: four hashed terminal journals,20 final submitted V9/V10 records",
+  "guards": [
+    "Explicit ABA_QA_CAPTURE_METRICS_V19=1",
+    "Desktopcwd exact",
+    "web/build metadata and host BUILD_ID match",
+    "docker inspect exact candidate running and active container BUILD_ID match",
+    "fresh journal/safe filenames; serial single worker/retries0",
+    "adminA actual fixture user/batch and local API URL",
+    "all original DTO fields and current entire program-session snapshot unchanged",
+    "browser command write interceptor aborts before serverexecution"
+  ],
+  "oracles": [
+    "No production engine helper import",
+    "percentage response-count denominator excludesnull includesNR,25 for four phases",
+    "frequency sum millisecond observationwindows; gaps excluded",
+    "interval positive/observed, notplanned, same3methods",
+    "duration closedepisodes summedexactly and averageperclosed",
+    "latency average onlyresponded, NR/pendingcounts independent"
+  ],
+  "comparison": {
+    "csvNumeric": "abs1e-9 or relative1e-12 tolerance for float arithmetic only",
+    "ui": "es-CL max2fractiondigits, exact displayed rounded string plus unit; domainCSV fullprecision and allsummaryfield checks",
+    "payload": "exact JSON including revisionhistory phase actor version timestamps"
+  },
+  "checks": {
+    "nodeSyntax": "PASS",
+    "focalLint": "PASS",
+    "typecheck": "PASS Docker tsc --noEmit --incremental false exit0",
+    "authExecuted": false,
+    "browserExecuted": false,
+    "functionalTestsExecuted": false
+  },
+  "execution": {
+    "serialAuthRequired": true,
+    "suggestedCommands": [
+      "Set TEMP/TMP to ABA .aba.local/qa/runtime-tmp as existing harness.",
+      "Set ABA_QA_CAPTURE_METRICS_V19=1; local Node node_modules/@playwright/test/cli.js test --config playwright.capture-metrics-v19.config.ts --project desktop",
+      "After desktop terminal and Authreleased run same --project mobile.",
+      "No unconditional repeat: retained journal blocks duplicate run. Inspect diagnostic then prepare exact resume or separate justified regression filename."
+    ],
+    "artifacts": ".aba.local/qa/capture-metrics-v19-{desktop,mobile}-{journal,safe}.json; CSV under configured outputDir"
+  },
+  "limits": [
+    "Only20retained submitted final records; no historical draft/openwindow/nullpending live proof",
+    "No offline discard,V1controls,capture interactions, roleB, negativepermissions",
+    "No PDF render, visualbaseline, chartgeometry or allQA003/004/015 acceptance",
+    "Programresults use authorized read_program_session_v2 and browser result rendering/export; no separate nonexistent reportRPC claimed",
+    "If retained DTO changed stop; do not accept weakening tuple or altering original fixtures"
+  ]
+}

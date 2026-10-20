@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-10-10T15:21:30.712Z",
+  "candidate": {
+    "container": "aba-local-qa-v13",
+    "buildId": "rFuUzZbqYsCB2mKTHX09X"
+  },
+  "baselineRef": "dc1b0c4",
+  "route": "/shared-access",
+  "profiles": [
+    "admin-a UI",
+    "externo authorized RPC capabilities",
+    "admin-b authorized RPC capabilities"
+  ],
+  "checks": [
+    "Two groups with two and one professionals; expand/collapse without writes",
+    "Detail close, level cancel, native revoke dismiss without writes",
+    "Desktop and mobile actual level changes: four correlated ACK total, restored minimal level and capabilities",
+    "Mobile actual closure: three revoke ACK; original invitations, clinical detail and programs preserved",
+    "New fixture student logically archived only; zero physical deletes",
+    "Final expanded visual captures inspected after animation; original grouped composition restored"
+  ],
+  "artifacts": [
+    ".aba.local/qa/shared-group-v13-UI-desktop-safe.json",
+    ".aba.local/qa/shared-group-v13-visual-desktop/safe.json",
+    ".aba.local/qa/shared-group-v13-UI-mobile-safe.json",
+    ".aba.local/qa/shared-group-v13-visual-mobile/safe.json",
+    ".aba.local/qa/shared-group-v13-close-safe.json"
+  ],
+  "limits": [
+    "Desktop resumed exact first ACK after selector failure; not a clean combined run",
+    "Mobile executed separately; preliminary zero-command journal reconciled against desktop completion",
+    "Fixture creation and acceptance used ordinary RPC, not UI proof of invitation creation",
+    "Global QA003, QA004, QA015 remain open"
+  ],
+  "source": {
+    "path": "src/views/SharedAccessPage.tsx",
+    "sha256": "1100dbdb4c9b69e1d206a99c0f6a94b2bd6aa8adce694b166af1a32e7bfb4c76"
+  }
+}

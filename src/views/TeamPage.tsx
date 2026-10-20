@@ -1,98 +1,19 @@
-import { useState } from 'react';
-import { Container, Title, Text, Modal, Stack } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+'use client';
+import { useCallback,useEffect,useRef,useState } from 'react';
+import { Container,Title,Text,Stack,Alert,Button,Loader } from '@mantine/core';
 import { MainLayout } from '@/components/MainLayout';
+import { useIdentity } from '@/context/IdentityContext';
 import { TeamManagement } from '@/features/team/TeamManagement';
-import { ProfileSettings } from '@/features/team/ProfileSettings';
-import { supervisorProfile, therapistsData, type UserProfile } from '@/api/mockData';
-import { notifications } from '@mantine/notifications';
-
+import { loadTeam } from '@/features/team/identity.server';
+import type { TeamMember } from '@/features/team/identity.types';
 export default function TeamPage() {
-    const [supervisor, setSupervisor] = useState(supervisorProfile);
-    const [teamMembers, setTeamMembers] = useState<UserProfile[]>(therapistsData);
-    const [editSupervisorOpened, { open: openEditSupervisor, close: closeEditSupervisor }] = useDisclosure(false);
-
-    // Función para actualizar el perfil del supervisor
-    const handleUpdateSupervisor = async (values: Partial<UserProfile>) => {
-        try {
-            // Aquí iría la llamada a la API
-            // await api.updateProfile(supervisor.id, values);
-
-            setSupervisor({ ...supervisor, ...values });
-            closeEditSupervisor();
-
-            notifications.show({
-                title: 'Perfil actualizado',
-                message: 'Los cambios se guardaron correctamente',
-                color: 'green',
-            });
-        } catch (_error) {
-            notifications.show({
-                title: 'Error',
-                message: 'No se pudo actualizar el perfil',
-                color: 'red',
-            });
-        }
-    };
-
-    // Función para actualizar miembros del equipo
-    const handleUpdateMember = async (id: string, values: Partial<UserProfile>) => {
-        try {
-            // Aquí iría la llamada a la API
-            // await api.updateTeamMember(id, values);
-
-            setTeamMembers(
-                teamMembers.map((member) =>
-                    member.id === id ? { ...member, ...values } : member
-                )
-            );
-
-            notifications.show({
-                title: 'Miembro actualizado',
-                message: 'Los cambios se guardaron correctamente',
-                color: 'green',
-            });
-        } catch (_error) {
-            notifications.show({
-                title: 'Error',
-                message: 'No se pudo actualizar el miembro',
-                color: 'red',
-            });
-        }
-    };
-
-    return (
-        <MainLayout supervisor={supervisor} onEditProfile={openEditSupervisor}>
-            <Container size="xl">
-                <Stack gap="xl">
-                    {/* Header */}
-                    <div>
-                        <Title order={2}>Gestión de Equipo Terapéutico</Title>
-                        <Text c="dimmed" size="sm">
-                            Administra los perfiles de tu equipo y supervisa su desempeño
-                        </Text>
-                    </div>
-
-                    {/* Team Management Component */}
-                    <TeamManagement
-                        members={teamMembers}
-                        onUpdateMember={handleUpdateMember}
-                    />
-                </Stack>
-            </Container>
-
-            {/* Modal para editar perfil del supervisor */}
-            <Modal
-                opened={editSupervisorOpened}
-                onClose={closeEditSupervisor}
-                title={<Text fw={600} size="lg">Editar Mi Perfil</Text>}
-                size="lg"
-            >
-                <ProfileSettings
-                    profile={supervisor}
-                    onSave={handleUpdateSupervisor}
-                />
-            </Modal>
-        </MainLayout>
-    );
+  const {identity,verified,refresh:refreshIdentity}=useIdentity();const [members,setMembers]=useState<TeamMember[]>([]);const [error,setError]=useState<string|null>(null);const [loading,setLoading]=useState(true);const sequence=useRef(0);
+  const scope=`${identity?.userId??''}:${identity?.active?.id??''}`;
+  const clinicId=identity?.active?.id??'';
+  const previousScope=useRef(scope);
+  const refresh=useCallback(async()=>{const request=++sequence.current;setLoading(true);setError(null);try{const result=await loadTeam(clinicId);if(request===sequence.current)setMembers(result);}catch(cause){if(request===sequence.current)setError(cause instanceof Error?cause.message:'No se pudo actualizar el equipo. Los cambios ya confirmados siguen guardados.');}finally{if(request===sequence.current)setLoading(false);}},[clinicId]);
+  useEffect(()=>{if(previousScope.current!==scope){sequence.current++;setMembers([]);setError(null);previousScope.current=scope;}},[scope]);
+  useEffect(()=>{if(!verified||!clinicId||identity?.active?.role!=='admin')return;const cleanupSequence=sequence;const timer=setTimeout(()=>void refresh(),0);return()=>{clearTimeout(timer);cleanupSequence.current++;};},[refresh,verified,clinicId,identity?.active?.role]);
+  return <MainLayout><Container size="xl"><Stack gap="xl"><div><Title order={2}>Gestión de Equipo Terapéutico</Title><Text c="dimmed" size="sm">Administra los perfiles de tu equipo y supervisa su desempeño</Text></div>
+    {identity?.active?.role!=='admin'?<Alert color="yellow">La administración de equipo está limitada a administradores de la clínica activa. Tu perfil se edita desde la cabecera.</Alert>:<>{loading&&<Loader size="sm"/>}{error&&<Alert color="red">{error}<Button variant="subtle" onClick={()=>void refresh()}>Reintentar lectura</Button></Alert>}<TeamManagement key={scope} clinicId={clinicId} members={previousScope.current===scope?members:[]} onRefresh={refresh} onIdentityRefresh={refreshIdentity}/></>}</Stack></Container></MainLayout>;
 }

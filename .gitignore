@@ -17,6 +17,9 @@ test-results
 *.tsbuildinfo
 supabase/.temp
 *.local
+# Isolated development state, credentials, local stack and portable runtime.
+.aba.local/
+.runtime.local/
 .env
 .env.*
 !.env.example
@@ -34,7 +37,10 @@ supabase/.temp
 *.sw?
 
 # Agent and documentation files (local only)
-.agent/
+.agent/*
+!.agent/README.md
+!.agent/GUIA_TECNICA_ABA_PARA_DEV_E_IA.md
+!.agent/INVENTARIO_TECNICO_ABA.json
 .gemini/
 AGENT.md
 ARCHITECTURE.md
@@ -45,3 +51,8 @@ MIGRACION_MANTINE.md
 PENDING_TASKS.md
 PLAN_REVISION_GERENCIA.md
 REPORT.md
+# Local Pi runtime state
+.atl/
+
+# Local Postman Cloud workspace linkage (collections remain versioned).
+.postman/

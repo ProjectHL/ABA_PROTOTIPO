@@ -9,8 +9,6 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
     const supervisor=randomUUID(), technician=randomUUID(), future=randomUUID();
     const invitedProfessional=randomUUID();
     let clientA: { id: string; updated_at: string }, clientB: { id: string };
-    let program: { id: string; program_id: string };
-    const sessionId=randomUUID(), recordId=randomUUID();
     const payload={clinical_id:'DUMMY-001',initials:'A.B.',birth_date:'2015-01-01',primary_language:'Español',guardians:[{initials:'M.B.',relationship:'Madre'}],siblings:[]};
     const command=async (org:string, client:string|null, version:string|null, value=payload, testRun:string|null=null) => {
         const r=await db.query<{ value: typeof clientA & {test_run_id:string|null} }>('select public.mvp_save_student($1,$2,$3,$4::jsonb,$5) value',[org,client,version,JSON.stringify(value),testRun]);
@@ -150,33 +148,30 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
                 .rejects.toMatchObject({code:'22023'});
         });
     });
-    it('creates and activates a versioned program with audit',async()=>{
+    it('keeps legacy program write RPCs closed after V2 cutover',async()=>{
         const design={kind:'acquisition',goal:'Identificar',skillArea:'Lenguaje',antecedent:'Tarjeta',steps:['Presentar'],teachingProcedure:'Ensayo',sets:['Set A'],promptLevels:['Independiente'],errorCorrection:'Modelar',masteryCriterion:'80%'};
         await asUser(db,adminA,async()=>{
-            program=(await db.query<{value: typeof program}>("select to_jsonb(create_program_draft($1,'acquisition','Programa dummy',$2::jsonb)) value",[clientA.id,JSON.stringify(design)])).rows[0].value;
-            await db.query("select transition_program($1,$2,'active')",[program.program_id,program.id]);
+            await expect(db.query("select create_program_draft($1,'acquisition','Programa dummy',$2::jsonb)",
+                [clientA.id,JSON.stringify(design)])).rejects.toMatchObject({code:'42501'});
+            await expect(db.query("select transition_program($1,$2,'active')",[randomUUID(),randomUUID()]))
+                .rejects.toMatchObject({code:'42501'});
         });
     });
-    const save=(value:unknown,version:number,submit:boolean, client=clientA.id)=>db.query<{value:{version:number;submitted:boolean}}>(
-        "select mvp_save_record($1,$2,$3,$4,'percentage',$5::jsonb,$6,$7) value",[recordId,sessionId,client,program.id,JSON.stringify(value),version,submit]);
-    it('saves draft, retries idempotently, refuses empty/mismatched recordings',async()=>{
+    it('keeps legacy capture and session-finish RPCs closed',async()=>{
+        const save=(client:string)=>db.query(
+            "select mvp_save_record($1,$2,$3,$4,'percentage',$5::jsonb,$6,$7)",
+            [randomUUID(),randomUUID(),client,randomUUID(),JSON.stringify({trials:[true,false]}),0,false],
+        );
         await asUser(db,technician,async()=>{
-            await expect(save({trials:[]},0,false)).rejects.toMatchObject({code:'22023'});
-            expect((await save({trials:[true,false]},0,false)).rows[0].value.version).toBe(1);
-            expect((await save({trials:[true,false]},0,false)).rows[0].value.version).toBe(1);
-            await expect(save({trials:[true]},0,false)).rejects.toMatchObject({code:'40001'});
-            await expect(db.query('select mvp_finish_session($1)',[sessionId])).rejects.toMatchObject({code:'22023'});
+            await expect(save(clientA.id)).rejects.toMatchObject({code:'42501'});
+            await expect(db.query('select mvp_finish_session($1)',[randomUUID()])).rejects.toMatchObject({code:'42501'});
         });
-        await asUser(db,adminB,()=>expect(save({trials:[true]},0,false,clientB.id)).rejects.toBeDefined());
+        await asUser(db,adminB,()=>expect(save(clientB.id)).rejects.toMatchObject({code:'42501'}));
     });
-    it('submits and finishes without duplicate records; disallows direct bypass',async()=>{
+    it('disallows direct session DML bypass after V2 cutover',async()=>{
         await asUser(db,technician,async()=>{
-            expect((await save({trials:[true,false]},1,true)).rows[0].value.submitted).toBe(true);
-            await db.query('select mvp_finish_session($1)',[sessionId]);
-            await db.query('select mvp_finish_session($1)',[sessionId]);
-            expect((await db.query('select id from session_program_records')).rows).toHaveLength(1);
-            await expect(db.query("update clinical_sessions set status='draft' where id=$1",[sessionId])).rejects.toMatchObject({code:'42501'});
-            await expect(save({trials:[false]},2,true)).rejects.toMatchObject({code:'40001'});
+            await expect(db.query("update clinical_sessions set status='draft' where id=$1",[randomUUID()]))
+                .rejects.toMatchObject({code:'42501'});
         });
     });
     it('anonymous cannot call clinical commands',async()=>{

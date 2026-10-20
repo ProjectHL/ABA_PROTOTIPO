@@ -1,30 +1,28 @@
-import { useState } from 'react'
-import { Button, Container, Text, Group, Stack, Badge, Paper } from '@mantine/core'
-import { Rocket, Shield, Zap, ArrowRight, Github, Twitter, Layers } from "lucide-react"
+import { Anchor, Button, Container, Text, Group, Stack, Badge, Paper } from '@mantine/core'
+import { Rocket, Shield, Zap, ArrowRight, Layers } from "lucide-react"
 import { useNavigate } from '@/lib/navigation'
 
 export default function LandingPage() {
-    const [isHovered, setIsHovered] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const features = [
         {
             id: 'speed',
             icon: <Zap size={24} color="var(--mantine-color-yellow-6)" />,
-            title: "Ultra Velocidad",
-            desc: "Optimizado con Vite y Mantine UI para una experiencia de desarrollo instantánea."
+            title: "Registro estructurado",
+            desc: "Las fichas, programas y sesiones conservan datos originales; un mensaje visual no reemplaza una confirmación persistida."
         },
         {
             id: 'security',
             icon: <Shield size={24} color="var(--mantine-color-blue-6)" />,
-            title: "Arquitectura Sólida",
-            desc: "Estructura basada en principios de ingeniería de software para escalabilidad total."
+            title: "Acceso controlado",
+            desc: "La clínica activa y los permisos por recurso delimitan los datos y acciones de cada identidad."
         },
         {
             id: 'design',
             icon: <Layers size={24} color="var(--mantine-color-violet-6)" />,
-            title: "UI Premium",
-            desc: "Componentes Mantine UI integrados con un diseño visual vanguardista y moderno."
+            title: "Soporte local",
+            desc: "Las consultas se gestionan mediante tickets locales. No se ofrece IA ni atención humana 24/7."
         }
     ];
 
@@ -91,9 +89,9 @@ export default function LandingPage() {
                             </Text>
                         </Group>
                         <Group gap="xl" visibleFrom="md">
-                            <Text size="sm" fw={500} c="dimmed" style={{ cursor: 'pointer' }}>Características</Text>
-                            <Text size="sm" fw={500} c="dimmed" style={{ cursor: 'pointer' }}>Componentes</Text>
-                            <Text size="sm" fw={500} c="dimmed" style={{ cursor: 'pointer' }}>Documentación</Text>
+                            <Anchor size="sm" fw={500} href="#caracteristicas">Características</Anchor>
+                            <Anchor size="sm" fw={500} href="#entorno-local">Entorno local</Anchor>
+                            <Anchor size="sm" fw={500} href="/help">Documentación local</Anchor>
                             <Button variant="outline" radius="xl" onClick={() => navigate('/login')}>
                                 Ingresar
                             </Button>
@@ -118,7 +116,7 @@ export default function LandingPage() {
                             marginRight: '8px'
                         }} />}
                     >
-                        V7 MANTINE SYSTEM READY
+                        ENTORNO LOCAL PARA EVALUACIÓN
                     </Badge>
 
                     <Text
@@ -131,13 +129,12 @@ export default function LandingPage() {
                             WebkitTextFillColor: 'transparent'
                         }}
                     >
-                        Construyendo el futuro de la <br />
-                        <span style={{ color: 'var(--mantine-color-blue-6)' }}>Experiencia Digital</span>
+                        Herramientas ABA para la <br />
+                        <span style={{ color: 'var(--mantine-color-blue-6)' }}>práctica clínica organizada</span>
                     </Text>
 
                     <Text size="xl" c="dimmed" maw={700}>
-                        Un ecosistema robusto diseñado para la excelencia técnica y estética.
-                        Potenciado por React 19, Mantine UI 7 y los estándares más altos de la industria.
+                        Agenda, fichas, programas y registros en un entorno local con datos sintéticos. Las funciones disponibles se confirman dentro de la aplicación.
                     </Text>
 
                     <Group gap="md" pt="md">
@@ -147,41 +144,39 @@ export default function LandingPage() {
                             rightSection={<ArrowRight size={20} />}
                             onClick={() => navigate('/login')}
                         >
-                            Comenzar Proyecto
+                            Ingresar al entorno
                         </Button>
                         <Button
                             size="lg"
                             radius="xl"
                             variant="default"
-                            rightSection={<Github size={20} />}
+                            rightSection={<ArrowRight size={20} />}
+                            onClick={() => navigate('/support')}
                         >
-                            Ver Repositorio
+                            Contactar soporte
                         </Button>
+                        <Button size="lg" radius="xl" variant="subtle" onClick={() => navigate('/contact')}>
+                            Consulta comercial
+                        </Button>
+                        <Button component="a" href="#caracteristicas" size="lg" radius="xl" variant="subtle">Conocer más</Button>
                     </Group>
                 </Stack>
 
                 {/* Features Grid */}
-                <div style={{
+                <div id="caracteristicas" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                     gap: '2rem',
-                    marginTop: '8rem'
+                    marginTop: '8rem',
+                    scrollMarginTop: '100px'
                 }}>
                     {features.map((feature) => (
                         <Paper
                             key={feature.id}
-                            shadow={isHovered === feature.id ? 'xl' : 'sm'}
+                            shadow="sm"
                             p="xl"
                             radius="xl"
                             withBorder
-                            style={{
-                                cursor: 'pointer',
-                                transition: 'all 0.3s',
-                                transform: isHovered === feature.id ? 'translateY(-8px)' : 'none',
-                                borderColor: isHovered === feature.id ? 'var(--mantine-color-blue-3)' : undefined
-                            }}
-                            onMouseEnter={() => setIsHovered(feature.id)}
-                            onMouseLeave={() => setIsHovered(null)}
                         >
                             <div style={{
                                 padding: '12px',
@@ -201,12 +196,14 @@ export default function LandingPage() {
 
                 {/* Tech Stack Callout */}
                 <Paper
+                    id="entorno-local"
                     shadow="xl"
                     p={60}
                     radius="xl"
                     mt={120}
                     style={{
                         backgroundColor: 'var(--mantine-color-dark-9)',
+                        scrollMarginTop: '100px',
                         color: 'white',
                         position: 'relative',
                         overflow: 'hidden'
@@ -224,9 +221,9 @@ export default function LandingPage() {
                     }} />
                     <Group justify="space-between" align="center" style={{ position: 'relative', zIndex: 1 }} wrap="wrap">
                         <div style={{ maxWidth: '500px' }}>
-                            <Text size="32px" fw={700} mb="md">Todo lo que necesitas está aquí.</Text>
+                            <Text size="32px" fw={700} mb="md">Entorno local de evaluación ABA.</Text>
                             <Text c="gray.5" fs="italic">
-                                "La simplicidad es la sofisticación suprema. Hemos curado cada archivo para que nada se interponga entre tu visión y el resultado."
+                                "Los tickets locales y las solicitudes comerciales no prometen atención inmediata, IA ni soporte humano 24/7."
                             </Text>
                         </div>
                         <Group gap="md">
@@ -250,10 +247,7 @@ export default function LandingPage() {
                         <Text size="sm" c="dimmed">
                             © 2026 ABA PROTOTIPO. Desarrollado con precisión.
                         </Text>
-                        <Group gap="lg">
-                            <Twitter size={20} color="var(--mantine-color-gray-6)" style={{ cursor: 'pointer' }} />
-                            <Github size={20} color="var(--mantine-color-gray-6)" style={{ cursor: 'pointer' }} />
-                        </Group>
+                        <Text size="xs" c="dimmed">No hay enlaces externos configurados para esta demostración local.</Text>
                     </Group>
                 </Container>
             </Paper>

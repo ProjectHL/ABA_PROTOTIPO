@@ -1,0 +1,47 @@
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {createClient} from '@supabase/supabase-js';
+import {test,expect} from '@playwright/test';
+import {localStatus} from '../../scripts/local/write-env.mjs';
+const build='7AtdY0nw3olpUC5PDvk7o',student='bbf1e89c-6b06-4f5c-a62a-1d3fa94122de',batch='2155e99e-bda4-4c68-95cf-b74cacd84ecd';
+const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
+test.skip(process.env.ABA_QA_OFFLINE_SELECTION_V21R1!=='1','Explicit local readonly-server selection test');
+test('V21 selected offline document and student removal preserves other local resources',async({page,context,request},info)=>{
+ test.setTimeout(150000);
+ expect(process.cwd().replaceAll('\\','/')).toBe('C:/Users/Moonlabpc/Desktop/ABA/ABA_PROTOTIPO');
+ const web=JSON.parse(fs.readFileSync('.aba.local/qa/web-v21-safe.json'));expect(web.buildId).toBe(build);
+ expect(fs.readFileSync('.aba.local/qa/next-build-v21-clinical-header/BUILD_ID','utf8').trim()).toBe(build);
+ expect(execFileSync('docker',['exec','aba-local-qa-v21','cat','/workspace/.aba.local/qa/next-build-v21-clinical-header/BUILD_ID'],{encoding:'utf8'}).trim()).toBe(build);
+ expect((await request.get('/api/health')).status()).toBe(200);
+ const second=process.env.ABA_QA_SECOND_STUDENT_B;expect(second).toMatch(/^[a-f0-9-]{36}$/);expect(second).not.toBe(student);
+ const m=JSON.parse(fs.readFileSync('.aba.local/batches/'+batch+'.json')),a=m.accounts.find(x=>x.label==='admin-b'),s=localStatus();expect(s.API_URL).toBe('http://127.0.0.1:54321');expect(m.state).toBe('ready');
+ const db=createClient(s.API_URL,s.ANON_KEY??s.PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+ const rpc=async(n,args)=>{const r=await db.rpc(n,args);expect(r.error).toBeNull();return r.data;};
+ const read=async id=>({clinical:await rpc('aba_student_detail_v2',{p_organization_id:m.clinics.B,p_client_id:id}),programs:await rpc('read_program_session_v2',{p_clinic_id:m.clinics.B,p_student_id:id}),attachments:await rpc('aba_attachment_list_v2',{p_organization_id:m.clinics.B,p_resource:{kind:'student',clinicId:m.clinics.B,studentId:id},p_include_archived:true})});
+ const file='.aba.local/qa/offline-selection-v21r1-'+info.project.name+'-journal.json',safe='.aba.local/qa/offline-selection-v21r1-'+info.project.name+'-safe.json';expect(fs.existsSync(file)).toBe(false);expect(fs.existsSync(safe)).toBe(false);
+ const j={status:'pending',stage:'guard',buildId:build,project:info.project.name,studentId:student,secondStudentId:second,attemptedWrites:0,checks:[]};const save=()=>fs.writeFileSync(file,JSON.stringify(j,null,2)+'\n'),stage=x=>{j.stage=x;save();};save();
+ const storage=()=>page.evaluate(async()=>{const d=await new Promise((resolve,reject)=>{const q=indexedDB.open('aba-offline-v1',3);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});try{const read=store=>new Promise((resolve,reject)=>{const q=d.transaction(store,'readonly').objectStore(store).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});const raw=await read('attachments'),attachments=[];for(const {blob,...entry}of raw){const bytes=await blob.arrayBuffer(),digest=await crypto.subtle.digest('SHA-256',bytes);attachments.push({...entry,blobSize:bytes.byteLength,blobType:blob.type,blobSha256:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')});}return {students:await read('students'),attachments,queue:await read('queue')};}finally{d.close();}});
+ const native=async(button,accept,expected)=>{let calls=0;const h=async dialog=>{calls++;expect(dialog.message()).toContain(expected);if(accept)await dialog.accept();else await dialog.dismiss();};page.on('dialog',h);try{await button.click();}finally{page.off('dialog',h);}expect(calls).toBe(1);};
+ try{
+  const auth=await db.auth.signInWithPassword({email:a.email,password:a.password});expect(auth.error).toBeNull();expect(auth.data.user.id).toBe(a.userId);expect(auth.data.user.app_metadata.aba_fixture_batch).toBe(batch);
+  const before=await read(student),otherBefore=await read(second);expect(before.clinical).not.toBeNull();expect(otherBefore.clinical).not.toBeNull();expect(otherBefore.clinical.clinicalId).toBe('QA-R5-LIMITED-DESKTOP');j.serverBefore={selected:hash(before),other:hash(otherBefore)};
+  const docs=before.attachments.filter(x=>x.state==='available'&&x.upload.purpose==='student-document').sort((a,b)=>a.id.localeCompare(b.id)).slice(0,2);expect(docs).toHaveLength(2);j.selectedVersionIds=docs.map(x=>x.id);save();
+  await page.route('**/*',route=>{const q=route.request();if(q.method()==='POST'&&q.headers()['next-action']&&/operationId|idempotencyKey/.test(q.postData()??'')){j.attemptedWrites++;save();return route.abort('failed');}return route.continue();});
+  await page.goto('/login');await page.getByRole('textbox',{name:'Email',exact:true}).fill(a.email);await page.getByRole('textbox',{name:'Contraseña',exact:true}).fill(a.password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await expect(page).toHaveURL(/\/dashboard$/);
+  stage('download-two-existing-students');
+  for(const id of [second,student]){await page.goto('/session/'+id);await expect(page.getByRole('button',{name:'Descargar ficha',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Descargar ficha',exact:true}).click();await expect(page.getByRole('button',{name:'Quitar offline',exact:true})).toBeEnabled();}
+  let state=await storage();expect(state.students.map(x=>x.studentId).sort()).toEqual([student,second].sort());expect(state.attachments).toEqual([]);expect(state.queue).toEqual([]);
+  await page.goto('/students/'+student);await page.getByRole('tab',{name:'Documentación Legal',exact:true}).click();
+  const row=doc=>page.getByText(doc.upload.fileName,{exact:true}).locator('xpath=ancestor::*[contains(@class,"mantine-Paper-root")][1]').filter({has:page.getByText('v'+doc.version,{exact:true})}).filter({has:page.getByRole('button',{name:'Guardar offline',exact:true}).or(page.getByRole('button',{name:'Quitar offline',exact:true}))});
+  stage('download-two-authorized-documents');
+  for(const doc of docs){expect(before.attachments.filter(x=>x.upload.fileName===doc.upload.fileName&&x.version===doc.version)).toHaveLength(1);const panel=row(doc);await expect(panel).toHaveCount(1);await panel.getByRole('button',{name:'Guardar offline',exact:true}).click();await expect(panel.getByRole('button',{name:'Quitar offline',exact:true})).toBeEnabled();}
+  state=await storage();expect(state.attachments).toHaveLength(2);expect(state.queue).toEqual([]);for(const doc of docs){const cached=state.attachments.find(x=>x.version.id===doc.id);expect(cached.version).toEqual(doc);expect(cached.blobSha256).toBe(doc.upload.sha256);expect(cached.blobSize).toBe(doc.upload.byteLength);expect(cached.scope).toEqual({userId:a.userId,clinicId:m.clinics.B});}
+  const retained=state.attachments.find(x=>x.version.id===docs[1].id),otherCached=state.students.find(x=>x.studentId===second);j.cacheBeforeHash=hash(state);j.retainedDocumentHash=hash(retained);j.otherStudentHash=hash(otherCached);save();
+  stage('offline-document-dismiss-confirm');await context.setOffline(true);await native(row(docs[0]).getByRole('button',{name:'Quitar offline',exact:true}),false,docs[0].upload.fileName);expect(await storage()).toEqual(state);
+  await native(row(docs[0]).getByRole('button',{name:'Quitar offline',exact:true}),true,docs[0].upload.fileName);await expect.poll(async()=>(await storage()).attachments.length).toBe(1);
+  const afterDoc=await storage();expect(afterDoc.attachments).toEqual([retained]);expect(afterDoc.students.find(x=>x.studentId===second)).toEqual(otherCached);expect(afterDoc.students.find(x=>x.studentId===student)).toEqual({...state.students.find(x=>x.studentId===student),selectedAttachmentVersionIds:[docs[1].id]});expect(afterDoc.queue).toEqual([]);expect(await page.evaluate(()=>navigator.onLine)).toBe(false);j.checks.push('real-UI-offline-document-dismiss-preserves-confirm-removes-only-selected','second-attachment-bytes-and-metadata-exact','second-student-download-exact');save();
+  stage('selected-student-dismiss-confirm');await context.setOffline(false);await page.goto('/session/'+student);await native(page.getByRole('button',{name:'Quitar offline',exact:true}),false,'offline');expect(await storage()).toEqual(afterDoc);await native(page.getByRole('button',{name:'Quitar offline',exact:true}),true,'offline');await expect.poll(async()=>(await storage()).students.length).toBe(1);expect(await storage()).toEqual({students:[otherCached],attachments:[],queue:[]});
+  expect(await read(student)).toEqual(before);expect(await read(second)).toEqual(otherBefore);expect(j.attemptedWrites).toBe(0);j.checks.push('selected-student-removal-preserves-second-student','server-clinical-program-and-attachment-DTOs-exact-no-commands');j.status='complete';stage('complete');fs.writeFileSync(safe,JSON.stringify({...j,passed:true,limits:['Fresh browser queue empty: acknowledged/superseded row preservation requires separate retained real receipt test.','Only existing authorized synthetic clinic B records; no server writes or new fixtures.','Other student is explicitly selected by root via ABA_QA_SECOND_STUDENT_B after synthetic provenance verification.']},null,2)+'\n',{flag:'wx'});
+ }catch(e){j.errorType=e.name;j.diagnostic=(e.message??'').slice(0,1800);save();throw e;}finally{await db.auth.signOut({scope:'local'});}
+});

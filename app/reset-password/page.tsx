@@ -1,2 +1,2 @@
-import { PasswordForm } from '@/modules/clinical/password';
-export default function Page(){return <PasswordForm reset/>;}
+import { AuthPasswordForm } from '@/features/team/AuthForms';
+export default function Page() { return <AuthPasswordForm mode="reset" />; }

@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_identity_context"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_b}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const token=pm.variables.get('qa_token_admin_b');
+      if(!token) throw new Error('Iniciar sesión sintética admin-b primero');
+      pm.variables.set('qa_token',token);
+      pm.variables.set('qa_actor_id',pm.variables.get('qa_actor_admin_b'));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200));
+      const data=pm.response.json();
+      pm.test('Usuario correlacionado',()=>pm.expect(data.userId).to.eql(pm.variables.get('qa_actor_id')));
+      pm.test('Clínica propia',()=>pm.expect(data.active.id).to.eql(pm.variables.get('qa_clinic_b')));
+    language: text/javascript
+order: 2000

@@ -1,173 +1,30 @@
+'use client';
 import { useState } from 'react';
-import {
-    SimpleGrid,
-    Card,
-    Avatar,
-    Text,
-    Badge,
-    Button,
-    Group,
-    Stack,
-    TextInput,
-    Select,
-    ActionIcon,
-    Modal
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { Search, Edit, Mail, Calendar } from 'lucide-react';
-import { type UserProfile } from '@/api/mockData';
+import { SimpleGrid,Card,Avatar,Text,Badge,Button,Group,Stack,TextInput,Select,ActionIcon,Modal,Alert } from '@mantine/core';
+import { Search,Edit,Mail,Phone } from 'lucide-react';
 import { ProfileSettings } from './ProfileSettings';
-
-interface TeamManagementProps {
-    members: UserProfile[];
-    onUpdateMember: (id: string, data: Partial<UserProfile>) => Promise<void>;
-}
-
-export function TeamManagement({ members, onUpdateMember }: TeamManagementProps) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [roleFilter, setRoleFilter] = useState<string | null>(null);
-    const [selectedMember, setSelectedMember] = useState<UserProfile | null>(null);
-    const [editModalOpened, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
-
-    // Filtrado de miembros
-    const filteredMembers = members.filter((member) => {
-        const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.profession.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = !roleFilter || member.role === roleFilter;
-        return matchesSearch && matchesRole;
-    });
-
-    const handleEditClick = (member: UserProfile) => {
-        setSelectedMember(member);
-        openEditModal();
-    };
-
-    const handleSave = async (values: Partial<UserProfile>) => {
-        if (selectedMember) {
-            await onUpdateMember(selectedMember.id, values);
-            closeEditModal();
-        }
-    };
-
-    const getRoleBadgeColor = (role: string) => {
-        switch (role) {
-            case 'supervisor':
-                return 'blue';
-            case 'therapist':
-                return 'green';
-            default:
-                return 'gray';
-        }
-    };
-
-    const getRoleLabel = (role: string) => {
-        switch (role) {
-            case 'supervisor':
-                return 'Supervisor';
-            case 'therapist':
-                return 'Terapeuta';
-            default:
-                return role;
-        }
-    };
-
-    return (
-        <Stack gap="lg">
-            {/* Filtros */}
-            <Group grow>
-                <TextInput
-                    placeholder="Buscar por nombre o profesión..."
-                    leftSection={<Search size={16} />}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                />
-                <Select
-                    placeholder="Filtrar por rol"
-                    clearable
-                    data={[
-                        { value: 'supervisor', label: 'Supervisor' },
-                        { value: 'therapist', label: 'Terapeuta' },
-                    ]}
-                    value={roleFilter}
-                    onChange={setRoleFilter}
-                />
-            </Group>
-
-            {/* Grid de Miembros */}
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-                {filteredMembers.map((member) => (
-                    <Card key={member.id} shadow="sm" padding="lg" radius="md" withBorder>
-                        <Card.Section withBorder inheritPadding py="xs">
-                            <Group justify="space-between">
-                                <Badge variant="light" color={getRoleBadgeColor(member.role)}>
-                                    {getRoleLabel(member.role)}
-                                </Badge>
-                                <ActionIcon
-                                    variant="subtle"
-                                    color="gray"
-                                    onClick={() => handleEditClick(member)}
-                                >
-                                    <Edit size={16} />
-                                </ActionIcon>
-                            </Group>
-                        </Card.Section>
-
-                        <Stack gap="md" mt="md">
-                            <Group>
-                                <Avatar src={member.avatar} size={80} radius="md" />
-                                <div style={{ flex: 1 }}>
-                                    <Text fw={600} size="lg">{member.name}</Text>
-                                    <Badge size="sm" variant="outline" color="blue">
-                                        {member.profession}
-                                    </Badge>
-                                    <Text size="sm" c="dimmed" mt={4}>{member.title}</Text>
-                                </div>
-                            </Group>
-
-                            <Text size="sm" c="dimmed" lineClamp={3}>
-                                {member.description}
-                            </Text>
-
-                            <Stack gap="xs">
-                                <Group gap="xs">
-                                    <Mail size={14} color="var(--mantine-color-dimmed)" />
-                                    <Text size="xs" c="dimmed">{member.email}</Text>
-                                </Group>
-                                {member.phone && (
-                                    <Group gap="xs">
-                                        <Calendar size={14} color="var(--mantine-color-dimmed)" />
-                                        <Text size="xs" c="dimmed">{member.phone}</Text>
-                                    </Group>
-                                )}
-                            </Stack>
-
-                            <Button
-                                variant="light"
-                                fullWidth
-                                mt="xs"
-                                onClick={() => handleEditClick(member)}
-                            >
-                                Editar Perfil
-                            </Button>
-                        </Stack>
-                    </Card>
-                ))}
-            </SimpleGrid>
-
-            {/* Modal de Edición */}
-            <Modal
-                opened={editModalOpened}
-                onClose={closeEditModal}
-                title={<Text fw={600} size="lg">Editar Perfil del Miembro</Text>}
-                size="lg"
-            >
-                {selectedMember && (
-                    <ProfileSettings
-                        profile={selectedMember}
-                        onSave={handleSave}
-                    />
-                )}
-            </Modal>
-        </Stack>
-    );
+import { TeamAssignments } from './Assignments';
+import { InvitationDeliveries } from './InvitationDeliveries';
+import { saveProfessionalProfile,setTeamMembership,inviteTeamMember } from './identity.server';
+import type { TeamMember } from './identity.types';
+import { useProfileAvatar } from './useProfileAvatar';
+const roles=[{value:'admin',label:'Administrador'},{value:'supervisor',label:'Supervisor'},{value:'therapist',label:'Técnico / Aplicador'}];
+function MemberAvatar({member}:{member:TeamMember}){const url=useProfileAvatar(member.avatarObjectPath);return <Avatar src={url} color={member.avatarPreset} size={80} radius="md">{member.name.slice(0,2)||'?'}</Avatar>;}
+export function TeamManagement({members,clinicId,onRefresh,onIdentityRefresh}:{members:TeamMember[];clinicId:string;onRefresh:()=>Promise<void>;onIdentityRefresh:()=>Promise<void>}) {
+  const [query,setQuery]=useState('');const [roleFilter,setRoleFilter]=useState<string|null>(null);
+  const [member,setMember]=useState<TeamMember|null>(null);const [editRole,setEditRole]=useState<string|null>(null);
+  const [inviteOpened,setInviteOpened]=useState(false);const [email,setEmail]=useState('');const [inviteRole,setInviteRole]=useState<string|null>('therapist');
+  const [operation,setOperation]=useState<string|null>(null);const [error,setError]=useState<string|null>(null);const [busy,setBusy]=useState(false);const [notice,setNotice]=useState<string|null>(null);
+  const perform=async(action:()=>Promise<void>)=>{setBusy(true);setError(null);setNotice(null);try{await action();}catch(cause){setError(cause instanceof Error?cause.message:'El servidor no confirmó el cambio.');setBusy(false);return;}try{await onIdentityRefresh();await onRefresh();}catch{setError('El cambio fue confirmado, pero no se pudo actualizar la lectura. Reintenta sin repetir la mutación.');}finally{setBusy(false);}};
+  const filtered=members.filter(m=>(!roleFilter||m.role===roleFilter)&&`${m.name} ${m.profession} ${m.email}`.toLowerCase().includes(query.toLowerCase()));
+  return <Stack gap="lg">{error&&<Alert color="red" withCloseButton onClose={()=>setError(null)}>{error}</Alert>}{notice&&<Alert color="green">{notice}</Alert>}
+    <SimpleGrid cols={{base:1,sm:3}}> <TextInput aria-label="Buscar equipo" placeholder="Buscar por nombre o profesión..." leftSection={<Search size={16}/>} value={query} onChange={e=>setQuery(e.currentTarget.value)}/><Select placeholder="Filtrar por rol" clearable data={roles} value={roleFilter} onChange={setRoleFilter}/><Button onClick={()=>setInviteOpened(true)}>Invitar miembro</Button></SimpleGrid>
+    {!filtered.length&&<Text c="dimmed">No hay miembros que coincidan con estos filtros.</Text>}
+    <SimpleGrid cols={{base:1,sm:2,lg:3}} spacing="lg">{filtered.map(m=><Card key={m.id} shadow="sm" padding="lg" radius="md" withBorder><Card.Section withBorder inheritPadding py="xs"><Group justify="space-between"><Group gap="xs"><Badge variant="light">{roles.find(r=>r.value===m.role)?.label}</Badge><Badge color={m.status==='active'?'green':'gray'}>{m.status==='active'?'Activo':'Suspendido'}</Badge></Group><ActionIcon aria-label={`Editar perfil ${m.name||m.email}`} variant="subtle" onClick={()=>{setMember(m);setEditRole(m.role);}}><Edit size={16}/></ActionIcon></Group></Card.Section>
+      <Stack gap="md" mt="md"><Group><MemberAvatar member={m}/><div style={{flex:1}}><Text fw={600} size="lg">{m.name||m.email}</Text><Badge size="sm" variant="outline">{m.profession||'Sin profesión informada'}</Badge><Text size="sm" c="dimmed" mt={4}>{m.title}</Text></div></Group><Text size="sm" c="dimmed" lineClamp={3}>{m.description}</Text><Stack gap="xs"><Group gap="xs"><Mail size={14}/><Text size="xs" c="dimmed">{m.email}</Text></Group>{m.phone&&<Group gap="xs"><Phone size={14}/><Text size="xs" c="dimmed">{m.phone}</Text></Group>}</Stack><Button variant="light" fullWidth onClick={()=>{setMember(m);setEditRole(m.role);}}>Editar Perfil</Button></Stack>
+    </Card>)}</SimpleGrid>
+    <Modal opened={!!member} onClose={()=>setMember(null)} title="Editar Perfil del Miembro" size="lg">{member&&<Stack><ProfileSettings profile={member} clinicId={clinicId} onSave={async(payload,ids,expectedVersion,expectedClinicId)=>{await saveProfessionalProfile({clinicId:expectedClinicId,targetUserId:member.id,expectedVersion,payload,...ids});setNotice('Perfil profesional confirmado por el servidor.');setMember(null);await onIdentityRefresh();await onRefresh();}}/><Group grow><Select label="Perfil de membresía" data={roles} value={editRole} onChange={setEditRole}/><Button loading={busy} disabled={!editRole} onClick={()=>void perform(async()=>{await setTeamMembership({clinicId,userId:member.id,role:editRole,status:member.status});setMember(null);setNotice('Perfil de membresía confirmado por el servidor.');})}>Cambiar perfil</Button></Group><Button color={member.status==='active'?'red':'green'} variant="light" loading={busy} onClick={()=>{if(window.confirm(`${member.status==='active'?'Suspender':'Reactivar'} membresía de ${member.name||member.email}?`))void perform(async()=>{await setTeamMembership({clinicId,userId:member.id,role:member.role,status:member.status==='active'?'inactive':'active'});setMember(null);setNotice('Estado de membresía confirmado por el servidor.');});}}>{member.status==='active'?'Suspender membresía':'Reactivar membresía'}</Button><TeamAssignments userId={member.id} clinicId={clinicId}/></Stack>}</Modal>
+    <Modal opened={inviteOpened} onClose={()=>setInviteOpened(false)} title="Invitar miembro"><form onSubmit={e=>{e.preventDefault();const id=operation??crypto.randomUUID();setOperation(id);void perform(async()=>{const result=await inviteTeamMember({clinicId,email,role:inviteRole,operationId:id});setInviteOpened(false);setOperation(null);setNotice(result.alreadyAccepted?'Membresía confirmada; la cuenta ya tiene correo confirmado. Debe iniciar sesión; no se envió otra invitación.':result.deliveryError?'Membresía confirmada. El resultado del correo es incierto: actualiza Correos de invitación y consulta antes de otra petición.':result.delivery?.state==='sent'?'Membresía confirmada; Auth aceptó la solicitud de correo. Comprueba Mailpit: no significa recepción ni aceptación.':'Membresía confirmada. Consulta el comprobante y su estado en Correos de invitación; no se afirma entrega.');});}}><Stack><TextInput label="Email" type="email" required value={email} onChange={e=>{setEmail(e.currentTarget.value);setOperation(null);}}/><Select label="Perfil" required data={roles} value={inviteRole} onChange={value=>{setInviteRole(value);setOperation(null);}}/><Button type="submit" loading={busy}>Enviar invitación</Button><Text size="xs" c="dimmed">Reintentos conservan la operación. Esta invitación agrega membresía de clínica, no comparte una ficha externamente.</Text></Stack></form></Modal>
+    <InvitationDeliveries key={clinicId} clinicId={clinicId}/>
+  </Stack>;
 }

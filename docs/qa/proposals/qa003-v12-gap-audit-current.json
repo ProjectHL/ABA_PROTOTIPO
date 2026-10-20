@@ -1,0 +1,567 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09T16:47:17.715Z",
+  "readOnlyAudit": true,
+  "noAuthNoUiExecution": true,
+  "ledger": {
+    "path": "docs/qa/R5_LEDGER_ACCIONES_404.json",
+    "sha256": "4c1674d29f6d5fbc0e06c604444308531c70216d89427d042a1bb9fa387bbe6d",
+    "candidate": {
+      "container": "aba-local-qa-v12",
+      "buildId": "0Ehm1gKf372lHuuQ0KjeM",
+      "origin": "http://localhost:3001",
+      "changedSources": [
+        {
+          "path": "src/features/programs/SkillProgramDesigner.tsx",
+          "sha256": "5cc6dd41606f0be7d813cec8f732523fbc024ee64620811d2033cefa739f9bfa"
+        },
+        {
+          "path": "src/features/students/StudentPeoplePanel.tsx",
+          "sha256": "65f93312484b8886419dbc363ef8a471dca41cef30c33c61c00d6c41a9f5d924"
+        },
+        {
+          "path": "src/features/dataCollection/DataCollectionEngine.tsx",
+          "sha256": "12788705c20942fb4d17f53480a2c5c173181565cef96e88093e90960d50bf6e"
+        },
+        {
+          "path": "src/context/IdentityShell.tsx",
+          "sha256": "51bfcc32a4bf4ae26c7b6ec96ff6f38b50e7b73fa223a29756b6e330daec01ea"
+        },
+        {
+          "path": "src/views/DashboardPage.tsx",
+          "sha256": "3ae77811779d6b7646c5b9fc52f3c935a6b6b747d6d711be83e9cb23c7c6239b"
+        }
+      ]
+    },
+    "actions": 404,
+    "executionStateCounts": {
+      "evidence-mapped-review-pending": 212,
+      "evidence-not-reconciled": 52,
+      "desktop-mobile-verified": 70,
+      "desktop-mobile-partial": 5,
+      "desktop-mobile-verified-historical-candidate": 20,
+      "desktop-mobile-verified-mixed-candidates": 45
+    }
+  },
+  "existingEvidence": [
+    {
+      "id": "acquisition-full-initial-payload",
+      "actionIds": [
+        "PROGRAMAS-001",
+        "PROGRAMAS-003",
+        "PROGRAMAS-005",
+        "PROGRAMAS-006",
+        "PROGRAMAS-007",
+        "PROGRAMAS-008",
+        "PROGRAMAS-009",
+        "PROGRAMAS-010",
+        "PROGRAMAS-013",
+        "PROGRAMAS-014",
+        "PROGRAMAS-016",
+        "PROGRAMAS-017",
+        "PROGRAMAS-019",
+        "PROGRAMAS-020",
+        "PROGRAMAS-021",
+        "PROGRAMAS-022",
+        "PROGRAMAS-023",
+        "PROGRAMAS-031",
+        "PROGRAMAS-032",
+        "PROGRAMAS-033",
+        "PROGRAMAS-034",
+        "PROGRAMAS-035",
+        "PROGRAMAS-036",
+        "PROGRAMAS-042",
+        "PROGRAMAS-044"
+      ],
+      "tests": [
+        "tests/e2e/r5.program-acquisition-v5.spec.mjs:5",
+        "tests/e2e/r5.program-acquisition-v5.spec.mjs:12",
+        "tests/e2e/r5.program-acquisition-v5.spec.mjs:14"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/program-acquisition-v5-desktop-safe.json",
+          "exists": true,
+          "sha256": "4f6d80e0c49402be111a703b59095b1bae85fb9f7356dc253ba0bb729104c904"
+        },
+        {
+          "path": ".aba.local/qa/program-acquisition-v5-mobile-safe.json",
+          "exists": true,
+          "sha256": "787b6a1f099fd5a057f10cee0869c5812686d9cebab40a205f3e615503262278"
+        }
+      ],
+      "assertions": [
+        "Auditor independently deep-compared initial UI command.design against persisted originalDraft.originalDesign: exact desktop and mobile.12 receipts correlated each.",
+        "UI fills title/objective/antecedent/procedure/teachingProcedure/prompts/errorCorrection/masteryCriteria/generalization/skillArea; prompt levelsI+Modelo,2steps/2sets/2items, published full design preserved.",
+        "Successor independently edits objective, firststep and item; IDs retained, predecessor/version immutable; lifecyclepause/reactivate/achieve/discontinue and dismiss no-write."
+      ],
+      "limits": [
+        "Independent re-edit of every field is not demonstrated; matrix simple Editar controls have actual initial entry+save equality. Do not silently demand a second edit for every field unless requirement specifies existing-value edit or immutable successor semantics.",
+        "Initial set names and title persisted by exact full payload; independent title/setrename not demonstrated. UX baseline separate."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "history-medication-lifecycle",
+      "actionIds": [
+        "HISTORIAL-002",
+        "HISTORIAL-003",
+        "HISTORIAL-004",
+        "HISTORIAL-005",
+        "HISTORIAL-006",
+        "HISTORIAL-007",
+        "HISTORIAL-008",
+        "HISTORIAL-009",
+        "HISTORIAL-010",
+        "HISTORIAL-011",
+        "HISTORIAL-014",
+        "HISTORIAL-015",
+        "HISTORIAL-018"
+      ],
+      "tests": [
+        "tests/e2e/r5.student-aux-v5.spec.mjs:60",
+        "tests/e2e/r5.student-aux-v5.spec.mjs:61",
+        "tests/e2e/r5.student-aux-v5.spec.mjs:62",
+        "tests/e2e/r5.student-aux-v5.spec.mjs:64",
+        "tests/e2e/r5.student-aux-v5.spec.mjs:67"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-student-aux-desktop-20261005-resume3/r5.student-aux-v5-QA-003-0-749cc-ión-y-consentimiento-por-UI-desktop/student-aux-v5-safe.json",
+          "exists": true,
+          "sha256": "097cc00c37dc24f0a2afd52a4a1040fedcbe0023c03e04b9fbe9b2170bf690bc"
+        },
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-student-aux-mobile-20261005/r5.student-aux-v5-QA-003-0-749cc-ión-y-consentimiento-por-UI-mobile/student-aux-v5-safe.json",
+          "exists": true,
+          "sha256": "c357e0563c82cebb0a2da3e21c7f31968f055808cfa5c57c6a159049a3a91a6b"
+        }
+      ],
+      "assertions": [
+        "AdminB real UI: assessment v1→v2 correctednotes/supersedes + previousversiondisplay, reload.",
+        "Medication v1→v5 with dosecorrection, frequencyevolution, finish/restart, ownhistoryID and supersedes chain. Dose/frequency exact equality independently asserted.",
+        "Safes desktop/mobile have historyVersions2, medicationVersions5, reloadedEachSection and priorRecordsPreserved."
+      ],
+      "limits": [
+        "No diagnosis/procedure variant or medicationexpand/cancel in this suite. Prescriber/start/notes supplied but not explicitly DTO equality; do not promote those separatefields from count5 alone."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "B-positive-admin-clinical",
+      "actionIds": [
+        "FICHA-018",
+        "FICHA-019",
+        "FICHA-020",
+        "FICHA-022",
+        "HISTORIAL-002"
+      ],
+      "tests": [
+        "tests/e2e/r5.student-aux-v5.spec.mjs:33",
+        "tests/e2e/r5.student-aux-v5.spec.mjs:47"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-student-aux-desktop-20261005-resume3/r5.student-aux-v5-QA-003-0-749cc-ión-y-consentimiento-por-UI-desktop/student-aux-v5-safe.json",
+          "exists": true,
+          "sha256": "097cc00c37dc24f0a2afd52a4a1040fedcbe0023c03e04b9fbe9b2170bf690bc"
+        },
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-student-aux-mobile-20261005/r5.student-aux-v5-QA-003-0-749cc-ión-y-consentimiento-por-UI-mobile/student-aux-v5-safe.json",
+          "exists": true,
+          "sha256": "c357e0563c82cebb0a2da3e21c7f31968f055808cfa5c57c6a159049a3a91a6b"
+        }
+      ],
+      "assertions": [
+        "OwnB studentbbf1e89c, adminB UI edits contact+stableID, siblings+stableID, history/medication/consent; reload each, clinicAdenied."
+      ],
+      "limits": [
+        "Contradicts blanket claim no positiveB folder tested; narrower route-profile suite still no ownB. No Bcapture/program UI claimed."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "B-positive-technician-member",
+      "actionIds": [
+        "EQUIPO-005",
+        "EQUIPO-006",
+        "EQUIPO-007"
+      ],
+      "tests": [
+        "tests/e2e/r5.team-profile-v5.spec.mjs:164",
+        "tests/e2e/r5.team-profile-v5.spec.mjs:167",
+        "tests/e2e/r5.team-profile-v5.spec.mjs:169"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/team-profile-v5-membership-5c7f4c64-4ff3-4e8a-8b78-e916aed25d9d.json",
+          "exists": true,
+          "sha256": "96f2a2fa2d8cef8879cd26fdb53bea42abd10b6b38ed450cdc03e0bc0e1309dd"
+        },
+        {
+          "path": ".aba.local/qa/team-profile-v5-membership-3c2072d0-d3a2-4416-8c7b-b0791afb7361.json",
+          "exists": true,
+          "sha256": "4e45d5e69f2d0e881020623ca28fd7f74361cea971069df9070173964ce6af17"
+        }
+      ],
+      "assertions": [
+        "TecnicoB existing browser session: suspendedfolderUI absent, restoredfolderUI visible after reload; own role and othermembers/assignments restored."
+      ],
+      "limits": [
+        "Positive technicianB folder read exists; no technician capture or clinicalwrite action in this packet. Original combined desktop .last-run failed anothercase, individual successproof scope retained, not whole-run passed."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "B-assignments-role-positives",
+      "actionIds": [
+        "EQUIPO-008",
+        "EQUIPO-009"
+      ],
+      "tests": [
+        "tests/e2e/r5.team-profile-v5.spec.mjs:127",
+        "tests/e2e/r5.team-profile-v5.spec.mjs:133"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/team-profile-v5-assignments-d05c7680-9782-4074-8c33-11c5727e339a.json",
+          "exists": true,
+          "sha256": "67a745d898079fe95a5409403877ad43126ce97c0cab4fdf1fa638620d57fd0d"
+        },
+        {
+          "path": ".aba.local/qa/team-profile-v5-assignments-67bc7725-1dbd-4706-8bba-285e9d1ed3e1.json",
+          "exists": true,
+          "sha256": "a701950530eb38ee22ace97a148f2befa72bd2eaf3a90bfcd7e1cbc852eeae87"
+        },
+        {
+          "path": ".aba.local/qa/assignment-read-v5-1696d349-55ee-4d4e-aaaa-c7baae49a396.json",
+          "exists": true,
+          "sha256": "4461bafd802a6358ee9cb7b8230975a2fa97884514e1154ab49df7f354f8e489"
+        }
+      ],
+      "assertions": [
+        "AdminB realassignmentUI, tecnicoB and supervisorB ordinarycapabilities positive; assignmentREST9actors3positive6negative.",
+        "Existing requesteligibility supervisorB canRequest/canEdit true, roles unchanged."
+      ],
+      "limits": [
+        "SupervisorB positivecapabilities is not supervisorB capture/editsUI. SQL/REST actorread not substitute serveraction UI."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "A-technician-future-ui-read",
+      "actionIds": [
+        "ESTADOS-006"
+      ],
+      "tests": [
+        "tests/e2e/r5.future-assignment-v5.spec.mjs:7"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/future-assignment-v5-safe-20261005.json",
+          "exists": true,
+          "sha256": "70b9403a9dfe90e0185de7ca2b8b259db8c2b39188f593174b54ff0d8dbb4de4"
+        }
+      ],
+      "assertions": [
+        "TecnicoA existing dedicatedstudent: beforeeffective deniedAPI/UI; after real45seconds detailID/clinicalID UI visible; ownassignmentclosed and denial restored, originalassignments identical."
+      ],
+      "limits": [
+        "Desktop unique focal; no technician capture/write tested; no new permissions needed for documentary audit."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "photo-upload-substitute",
+      "actionIds": [
+        "FICHA-014"
+      ],
+      "tests": [
+        "tests/e2e/r5.document-media-v5.spec.mjs:24",
+        "tests/e2e/r5.document-media-v5.spec.mjs:25"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/document-media-v5-desktop-desktop-e7f0957a-7376-4805-a274-c08f93727d43-safe.json",
+          "exists": true,
+          "sha256": "caae31315c2d120def3ee9bf0696bb38ff4df81bbe89e8792a2defb9b1390ab6"
+        },
+        {
+          "path": ".aba.local/qa/document-media-v5-mobile-mobile-b36df55d-e1b1-46f1-8dde-e65d2e6cec4c-safe.json",
+          "exists": true,
+          "sha256": "ca5f74d946ec97f3dd488d12abac81a02a8dea2e7a180f05128a3ebcdf684b80"
+        }
+      ],
+      "assertions": [
+        "Separateupload leaveslinkunchanged, confirm incrementsversion, JPEGbytesdecoded/downloaded/reload exact; mobile oldphotolink matchesdesktop newlyuploadedphoto, proving substitution; priorattachments retained."
+      ],
+      "limits": [
+        "Still genericpending in ledger; no new photo tests needed for this coveredbehavior solely because remaininggeneric."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "search-student-positive-empty",
+      "actionIds": [
+        "BUSQUEDA-001",
+        "BUSQUEDA-002",
+        "BUSQUEDA-003",
+        "ESTADOS-002"
+      ],
+      "tests": [
+        "tests/e2e/r5.shell-readonly-v8.spec.mjs:4"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/shell-readonly-v8-desktop-safe.json",
+          "exists": true,
+          "sha256": "e284b14360f2cffca616367b7ef4948ebf1daea21697530202286d32935e7aae"
+        },
+        {
+          "path": ".aba.local/qa/shell-readonly-v8-mobile-safe.json",
+          "exists": true,
+          "sha256": "d96cb439d3f97c68d7574171dccbb45090f95073073d1c6f5e497f26282831b9"
+        }
+      ],
+      "assertions": [
+        "Open authorized search, invalid1character, positive ownstudent clinicalID exactRPC count and selected route; no-match empty and Escape.",
+        "ClinicalfieldV11 adds listname/initials/ID/RUT/diagnosis no-match and filters."
+      ],
+      "limits": [
+        "Program/document mixed types and foreign/revoked resources not tested by this searchpacket; empty state is specificsearch/list only."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "specific-retry-state",
+      "actionIds": [
+        "ESTADOS-004"
+      ],
+      "tests": [
+        "tests/e2e/r5.conflicts.spec.mjs:102",
+        "tests/e2e/r5.conflicts.spec.mjs:107",
+        "tests/e2e/r5.capture-conflicts.spec.mjs:201",
+        "tests/e2e/r5.capture-conflicts.spec.mjs:210"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/playwright/conflicts/.last-run.json",
+          "exists": true,
+          "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+        },
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-capture-conflicts-repeat/.last-run.json",
+          "exists": true,
+          "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+        }
+      ],
+      "assertions": [
+        "Explicit response-loss transportfault then UI sameoperation retry button; session/capture identity/payload preserved and receipt recovered."
+      ],
+      "limits": [
+        "Aggregate pass plus concrete deterministic source branches; exact oldrunneropt-in/candidate pairing to be reconciled for historical evidence. Does not prove generalload-error retry everyroute."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    },
+    {
+      "id": "unavailable-real-profiles",
+      "actionIds": [
+        "ESTADOS-006"
+      ],
+      "tests": [
+        "tests/e2e/r5.route-profiles.spec.mjs"
+      ],
+      "artifacts": [
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-route-profiles-current-context/r5.route-profiles-QA-001-0-282ef-co-a-lectura-y-denegaciones-desktop/route-profile-coverage.json",
+          "exists": true,
+          "sha256": "13f823fac92e03387bf2f047b612e9c81599bbca84e0ddda0bedf99499982772"
+        },
+        {
+          "path": ".aba.local/qa/playwright/r5-v5-route-profiles-mobile-clinic/r5.route-profiles-QA-001-0-eb075-or-a-lectura-y-denegaciones-mobile/route-profile-coverage.json",
+          "exists": true,
+          "sha256": "9213a10b718f8762c7edb95f7b6eafc3b6961a0e932b80a5abef2d8a446166c5"
+        }
+      ],
+      "assertions": [
+        "DeniedA folder shows exact unavailable/clinicneededtext, nofullName orsavefields, RPCnull; nonadminteam/commercial controls absent."
+      ],
+      "limits": [
+        "Scope actual deniedroles; do not infer every unavailable-state visual or ability positive."
+      ],
+      "decision": "Existing concrete execution to reconcile; generic remaining text alone does not require re-execution."
+    }
+  ],
+  "programPayloadIndependentChecks": [
+    {
+      "project": "desktop",
+      "journal": ".aba.local/qa/program-acquisition-v5-desktop-journal.json",
+      "journalSha256": "27f92ee8a96133cbeb2faec195a72f235281d9611d69917a40dd98f62be8413f",
+      "commands": 12,
+      "initialUiPayloadEqualsSavedDesign": true,
+      "titleMatches": true,
+      "allReceiptsCorrelated": true,
+      "nonemptySavedFields": [
+        "kind",
+        "prompts",
+        "objective",
+        "procedure",
+        "skillArea",
+        "antecedent",
+        "generalization",
+        "errorCorrection",
+        "masteryCriteria",
+        "teachingProcedure",
+        "measurementDimension"
+      ],
+      "successorChangedFields": [
+        "objective",
+        "steps",
+        "sets"
+      ]
+    },
+    {
+      "project": "mobile",
+      "journal": ".aba.local/qa/program-acquisition-v5-mobile-journal.json",
+      "journalSha256": "6f1f82bffdff20f9bb9f3eb306fb508554339723fb76948215daebe26a4dc169",
+      "commands": 12,
+      "initialUiPayloadEqualsSavedDesign": true,
+      "titleMatches": true,
+      "allReceiptsCorrelated": true,
+      "nonemptySavedFields": [
+        "kind",
+        "prompts",
+        "objective",
+        "procedure",
+        "skillArea",
+        "antecedent",
+        "generalization",
+        "errorCorrection",
+        "masteryCriteria",
+        "teachingProcedure",
+        "measurementDimension"
+      ],
+      "successorChangedFields": [
+        "objective",
+        "steps",
+        "sets"
+      ]
+    }
+  ],
+  "prioritizedActualGaps": [
+    {
+      "priority": 1,
+      "id": "authorized-search-mixed-isolation",
+      "actionIds": [
+        "BUSQUEDA-002",
+        "BUSQUEDA-003"
+      ],
+      "whatMissing": "Actual UI program and document result type query/open, crossclinic/no-permission query and manipulated destination rechecks.",
+      "reuse": "KnownB student/documentmedia retained; own acquisitionA programs available. No new data or grant required for positive query. Source AuthorizedSearch receives path thenrouterpush; destination must enforceauthorization.",
+      "prove": "UI results equal ordinary authorizedsearchRPC projection bykind/id; positive open expectedresource/tab; B/Aforeign unique querynoresults; revokedactor only if existingfixture exactvalidated."
+    },
+    {
+      "priority": 1,
+      "id": "role-ui-positive-serveraction",
+      "actionIds": [],
+      "whatMissing": "Supervisor and technician positive ownresource ServerActions (capture/program/chart according actual capabilities) not proven by generic role-routes/readonlycapabilities. B positive folderread/adminedit alreadyexists; add only missingpermitted action/profile.",
+      "reuse": "ExistingB technician/supervisor assignments and ownB student; read currentcapabilities andversions before any plan. A technician futurefocal closedownassignmenthistorically; do not reopen blindly or repeatfuturetest.",
+      "prove": "Role must come currentidentityDB, chosen allowedcontrol actualclick, exact receipt/persist/reload, denied adminonlycontrol; own-only reversible syntheticcapture. Do not require allwrite types for role lackingcapability."
+    },
+    {
+      "priority": 1,
+      "id": "behavior-design-controls",
+      "actionIds": [
+        "PROGRAMAS-004",
+        "PROGRAMAS-024",
+        "PROGRAMAS-025",
+        "PROGRAMAS-026",
+        "PROGRAMAS-027",
+        "PROGRAMAS-028",
+        "PROGRAMAS-029",
+        "PROGRAMAS-030"
+      ],
+      "whatMissing": "Oldlocal suite conditionallycreated behavior; no field-byfield executedjournal confirms precur/crisis/multiplefunctions/additionalbackend fields. Acquisitionjournal is not behavior proof.",
+      "reuse": "Existing synthetics may be read beforewrite; choose ownnewdraft only if necessary, preserveversions.",
+      "prove": "Current UI topography/operational/currentDimension/precursors/replacement/crisis/prevention/response/hypothesizednotes +2functions saved design equality, reopen, extrafields retained throughsuccessor andpublish."
+    },
+    {
+      "priority": 1,
+      "id": "clinical-history-variants",
+      "actionIds": [
+        "HISTORIAL-001",
+        "HISTORIAL-012",
+        "HISTORIAL-016",
+        "HISTORIAL-017",
+        "HISTORIAL-019"
+      ],
+      "whatMissing": "Reporteddiagnosis/procedure creation variants; medication specificexpand/close no-write; prescriber/date/note exactDTO equality, not suppliedalone; cancel edit/create no treatmentfinish.",
+      "reuse": "Existing syntheticmedication versionchain1→5 for expand/cancel/DTOreadonly reconciliation, so do not recreate5steps. Only newhistoryvariants when needed.",
+      "prove": "Kind exact+versionid/historyid+correlatedACK+reload; prescriber/start/end/notes separatefields; expandpriorversiondisplay immutable; dialog cancel0commands."
+    },
+    {
+      "priority": 1,
+      "id": "history-withdrawal-requirement-control-gap",
+      "actionIds": [
+        "HISTORIAL-013"
+      ],
+      "whatMissing": "Matrix says Retirar referencia, current history panel exposes Add/Edit and disabledtrash with preservationwarning; no withdrawal handler located. This is a requirement/control decision gap, not just missingtest.",
+      "reuse": "StudentClinicalHistoryPanel.tsx:50 disabledtrash; StudentDetail historyModal onlynotes correction; existing supersededversionhistorypreserved.",
+      "prove": "Root resolve whether originalretirement maps to explicit correction/supersession or functionalwithdrawal required; documentauthorizeddecision and assert exactcurrentsemantics. Never invent destructivedelete or fictitiouscommand."
+    },
+    {
+      "priority": 2,
+      "id": "explicit-loading-error-navigation-states",
+      "actionIds": [
+        "ESTADOS-001",
+        "ESTADOS-003",
+        "ESTADOS-008",
+        "ESTADOS-009",
+        "SHELL-012"
+      ],
+      "whatMissing": "Positive loader underdelayedrealread, recoverableloaderror andretry retainscontext, errorclose no mutation, explicit returnDashboard in statecomponent.",
+      "reuse": "Specificempties, deniedroutes, unknowntransportretry alreadyexist. Do not repeat those justbecausegeneric remaining.",
+      "prove": "Scoped delay/faultinjection in browsercontext only; visibleloader/disabledcontrols, retryerrorcleared+correctresources; no servermutation whenalertclose; stateback/dashboard exactroute."
+    },
+    {
+      "priority": 2,
+      "id": "small-clinical-ui-remainders",
+      "actionIds": [
+        "FICHA-001",
+        "FICHA-008",
+        "FICHA-011",
+        "FICHA-028",
+        "FICHA-030",
+        "EQUIPO-011"
+      ],
+      "whatMissing": "Bind historicalstudentcreate branch/receipt if available; actualBacktolistclick; emptyfullName fallbackinitials; Other selection/autocomplete choice; cardfields active session/family/diagnosis/professional exactsourceDTO; teamsearchname/profession.",
+      "reuse": "V11 fieldtest coveredRUT/independentfields/listfiltersmenu; no needrewriteallfields. Creationcurrentlyexistingwhen historicallocalbranch notproved; new minimalstudent only if truly necessary. Cardfidelity portions belongQA004.",
+      "prove": "Only exactremaining UIbehavior, preserveoriginalfields/own-onlyrecord, no global acceptance."
+    },
+    {
+      "priority": 2,
+      "id": "capture-offline-legacy-controls",
+      "actionIds": [
+        "SESION-012",
+        "SESION-021",
+        "PROGRAMAS-037",
+        "OFFLINE-016",
+        "OFFLINE-017",
+        "FRECUENCIA-008",
+        "INTERVALOS-010",
+        "DURACION-006",
+        "LATENCIA-006"
+      ],
+      "whatMissing": "Unsaveddiscard versusclose/borrador; V1 aggregateUIinventory; selectedpending/download discard; exactmixedderivedmetricsnotpayloadalone.",
+      "reuse": "ExistingcaptureV9details preservedmultiplewindows/episodes/response+NR and V10percentagephases; reusepersistedrecords for derivedmathreadonly, no re-create sixrecords.",
+      "prove": "Explicit discardconfirm/cancel unaffectedrecords+originalpayload; no V1false→new semantics; pausedwindows/mixednull/open/NRmetricmath independently asserted."
+    }
+  ],
+  "decisions": [
+    "Generic baseline comparison remaining belongsQA004, not automaticallymissingfunctionalQA003.",
+    "Initial entry+exactUIpayload/save/reload proves simple editcontrol; aseconddistinctedit is onlymandatory whereexplicit requirement saysre-edit/successor/history.",
+    "Previously verified focal controls do not establish all404; positivecontrolcoverage vs profileauthorization vsvisualcompare remainseparate.",
+    "Auth/global accepted-runaggregates never substitute individualbranchproof: teamdesktopcombinedfailed butsomeindividualsafescomplete; keeptruthfulscope.",
+    "Final human journeys not executed; real user profile untouched; no newfixtures/remotedeployment."
+  ]
+}

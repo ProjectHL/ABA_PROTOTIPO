@@ -1,0 +1,12 @@
+import { z } from 'zod';
+import { chatCommandSchema,chatMessageSchema,chatReadStateSchema } from '@/domain/collaboration/chat';
+export const chatParticipant=z.object({userId:z.uuid(),kind:z.enum(['professional','external','family']),status:z.enum(['active','revoked'])}).strict();
+export const chatConversation=z.object({id:z.uuid(),clinicId:z.uuid(),studentId:z.uuid(),title:z.string().min(1).max(300),audience:z.enum(['professionals','family']),version:z.number().int().positive(),participants:z.array(chatParticipant),lastSequence:z.number().int().nonnegative(),unreadCount:z.number().int().nonnegative(),updatedAt:z.iso.datetime({offset:true})}).strict();
+export const chatPage=z.object({actorId:z.uuid(),clinicId:z.uuid(),conversations:z.array(chatConversation)}).strict();
+export const chatMessagesPage=z.object({conversationId:z.uuid(),studentId:z.uuid(),afterSequence:z.number().int().nonnegative(),messages:z.array(chatMessageSchema).max(500),readState:chatReadStateSchema.nullable(),hasMore:z.boolean()}).strict();
+export const clinicChatCommand=z.object({clinicId:z.uuid(),command:chatCommandSchema}).strict();
+export const eligibleChatParticipant=z.object({userId:z.uuid(),kind:z.enum(['professional','external','family']),email:z.email(),name:z.string().max(160)}).strict();
+export type EligibleChatParticipant=z.infer<typeof eligibleChatParticipant>;
+export type ChatConversation=z.infer<typeof chatConversation>;
+export type ChatPage=z.infer<typeof chatPage>;
+export type ChatMessagesPage=z.infer<typeof chatMessagesPage>;

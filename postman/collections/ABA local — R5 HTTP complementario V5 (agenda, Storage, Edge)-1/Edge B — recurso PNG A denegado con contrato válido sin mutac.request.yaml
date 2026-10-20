@@ -1,0 +1,26 @@
+$kind: http-request
+name: Edge B — recurso PNG A denegado con contrato válido sin mutación
+url: "{{qa_api_url}}/functions/v1/verify-attachment-upload"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_b}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{{qa_edge_negative_body}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_token_admin_b')||!pm.variables.get('qa_png_metadata')) throw new Error('Actor B y PNG existente requeridos');
+      const v=JSON.parse(pm.variables.get('qa_png_metadata')),guid=()=>pm.variables.replaceIn('{{$guid}}');
+      if(v.state!=='available'||v.id!=='17834b36-a2d1-4821-aa7e-51ef251fcb04'||v.createdBy!==pm.variables.get('qa_actor_admin_a')||v.upload.sha256!=='bc21a4fa21aaa7c5eb60fbd88394d86813afd10ad287bf7274d0e1c588ea2764'||v.resource.studentId!=='b347646e-ff29-450b-aedf-9f9c015fb41a') throw new Error('PNG sintético disponible no verificado');
+      // These valid-shaped envelopes are used ONLY for the negative foreign actor. Never sent as admin A; no reserve/upload/confirm occurs.
+      const reservation={operationId:guid(),idempotencyKey:guid(),attachmentId:v.attachmentId,resource:v.resource,action:'reserve-upload',versionId:v.id,expectedVersion:0,supersedesVersionId:null,upload:v.upload};
+      const confirmation={operationId:guid(),idempotencyKey:guid(),attachmentId:v.attachmentId,resource:v.resource,action:'confirm-upload',versionId:v.id,expectedVersion:v.version};
+      pm.variables.set('qa_edge_negative_body',JSON.stringify({organizationId:pm.variables.get('qa_clinic_a'),reservation,confirmation}));
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Edge autorización de recurso cruzado',()=>{pm.response.to.have.status(403);pm.expect(pm.response.json().error).to.eql('resource_unavailable');});if(pm.response.code!==403||pm.response.json().error!=='resource_unavailable') throw new Error('Autorización Edge cruzada no confirmada');
+    language: text/javascript
+order: 34000

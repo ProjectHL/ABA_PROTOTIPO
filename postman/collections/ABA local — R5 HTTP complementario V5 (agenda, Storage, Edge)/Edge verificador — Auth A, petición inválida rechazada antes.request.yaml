@@ -1,0 +1,21 @@
+$kind: http-request
+name: Edge verificador — Auth A, petición inválida rechazada antes de verificar bytes
+url: "{{qa_api_url}}/functions/v1/verify-attachment-upload"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+scripts:
+  - type: beforeRequest
+    code: if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 400',()=>pm.response.to.have.status(400)); if(pm.response.code!==400) throw new Error('HTTP inesperado; cuerpo omitido');
+      pm.test('Contrato Edge real',()=>pm.expect(pm.response.json().error).to.eql('invalid_verification_request'));
+    language: text/javascript
+order: 32000

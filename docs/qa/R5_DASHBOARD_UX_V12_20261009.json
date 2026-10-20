@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09T16:31:23.672Z",
+  "route": "/dashboard",
+  "profile": "admin-a synthetic",
+  "baselineRef": "dc1b0c43080408feaed574b30cf64be4b3514dfb",
+  "candidate": {
+    "container": "aba-local-qa-v12",
+    "buildId": "0Ehm1gKf372lHuuQ0KjeM"
+  },
+  "pairs": [
+    {
+      "project": "desktop",
+      "baseline": ".aba.local/qa/ux-baseline-render/desktop/dashboard.png",
+      "candidate": ".aba.local/qa/ux-current-v12-dashboard/desktop.png"
+    },
+    {
+      "project": "mobile",
+      "baseline": ".aba.local/qa/ux-baseline-render/mobile/dashboard.png",
+      "candidate": ".aba.local/qa/ux-current-v12-dashboard/mobile.png"
+    }
+  ],
+  "checks": [
+    "Restored desktop left welcome/active/completed lg5; right KPI/sessions-line/achievement-bars lg7",
+    "Mobile same original sequence, no horizontal overflow",
+    "Real authorized counts/filters/12 months/expanded dialogs tested; reference mocks not promoted"
+  ],
+  "adaptations": [
+    "Four real KPI instead three mock KPI; no fictional percentages",
+    "Real identity/clinc and refresh/folders instead simulation applicator switch",
+    "Explicit achieved events instead mock successes; line linear avoids interpolation of fictitious measurements",
+    "Added persisted activity and achieved history retained after original charts",
+    "Variable card heights follow actual authorized rows; no fixed mock session count"
+  ],
+  "limits": [
+    "This packet does not execute exact welcome name assertion or session expand/navigation controls DASHBOARD001/005/006/008/009",
+    "Other route families and global QA004 still pending",
+    "Final QA015 cross-packet regression pending"
+  ],
+  "artifacts": [
+    ".aba.local/qa/dashboard-ux-v12-desktop-safe-20261009.json",
+    ".aba.local/qa/dashboard-ux-v12-mobile-safe-20261009.json"
+  ],
+  "hashes": [
+    {
+      "path": "src/views/DashboardPage.tsx",
+      "sha256": "3ae77811779d6b7646c5b9fc52f3c935a6b6b747d6d711be83e9cb23c7c6239b"
+    },
+    {
+      "path": "tests/e2e/r5.dashboard-ux-v12.spec.mjs",
+      "sha256": "445963dfecaccf8c33ac5d7f2e9a7e8f1314a0c41d844591d0a58c29ba893d46"
+    },
+    {
+      "path": ".aba.local/qa/dashboard-ux-v12-desktop-safe-20261009.json",
+      "sha256": "642b7eef744359d698ce6886d3143e4a4dd800b478ff0804bff95c9943403356"
+    },
+    {
+      "path": ".aba.local/qa/dashboard-ux-v12-mobile-safe-20261009.json",
+      "sha256": "366e11004b19da6414f883f6ea3ce29c67f3bfca426e53d034c7f4cc0f32fc79"
+    }
+  ]
+}

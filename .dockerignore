@@ -1,6 +1,8 @@
 .git
 .next
 node_modules
+.aba.local
+.runtime.local
 .env*
 !.env.example
 npm-debug.log*

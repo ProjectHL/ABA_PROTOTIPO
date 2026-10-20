@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09T16:34:21.411Z",
+  "candidate": {
+    "container": "aba-local-qa-v12",
+    "buildId": "0Ehm1gKf372lHuuQ0KjeM"
+  },
+  "test": "tests/e2e/r5.notifications-open-unread-v12.spec.mjs",
+  "testSha256": "aff48c83eb89582aaba457bd80188266a3008ccfe1e36275591f1bcec0a447d9",
+  "config": "playwright.notifications-open-unread-v12.config.ts",
+  "results": {
+    "desktop": {
+      "passed": 1,
+      "seconds": 12
+    },
+    "mobile": {
+      "passed": 1,
+      "seconds": 8.6
+    },
+    "lint": "PASS"
+  },
+  "notificationId": "3cd2ef23-cbf0-4953-934d-cdcdaf406d91",
+  "profiles": [
+    "admin-a UI",
+    "admin-b ordinary read isolation"
+  ],
+  "runs": [
+    {
+      "project": "desktop",
+      "safe": ".aba.local/qa/notifications-open-unread-v12-desktop-safe.json",
+      "safeSha256": "a7719d2759e5af14f3f5c6eebcf93af322dbc83bc5c6a1fd8cf261c093e42f67",
+      "journal": ".aba.local/qa/notifications-open-unread-v12-desktop-journal.json",
+      "runId": "263d5b84-e4ef-483b-8a54-faaea1b4e7a6",
+      "originalRead": true,
+      "finalRead": true,
+      "originalVersion": 20,
+      "finalVersion": 22,
+      "readAtTimestampRestored": false,
+      "navigationReceipts": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "checks": [
+        "actual-mark-unread-ACK-persisted-after-reload",
+        "open-unread-commits-own-read-before-calendar-navigation",
+        "two-correlated-ACKs-confirmed-before-calendar-URL",
+        "original-read-boolean-restored-content-createdAt-exact-other-notifications-B-exact"
+      ],
+      "receipts": [
+        {
+          "stage": "mark-unread-for-open",
+          "read": false,
+          "operationId": "2b6d220a-85b8-428f-a8d9-3bcff779d0dd",
+          "idempotencyKey": "ea58138b-cf82-4420-a2b3-01adebb0ec97",
+          "receiptId": "c1615be8-2e64-46fb-8e29-fc17c52bcac1",
+          "serverVersion": 21,
+          "replayed": false
+        },
+        {
+          "stage": "open-resource",
+          "read": true,
+          "operationId": "a43dc2cc-1660-48a9-9fca-d663f9ead7c4",
+          "idempotencyKey": "05db3c92-960e-4e32-aaab-8fd6f8ef2ca0",
+          "receiptId": "3c7f9d1d-5113-4bb4-929b-179dd089f799",
+          "serverVersion": 22,
+          "replayed": false
+        }
+      ]
+    },
+    {
+      "project": "mobile",
+      "safe": ".aba.local/qa/notifications-open-unread-v12-mobile-safe.json",
+      "safeSha256": "032ebb705aff8c30e6668af61c5f118fa66da08c7d715a9100ed69f2e8fbf8f7",
+      "journal": ".aba.local/qa/notifications-open-unread-v12-mobile-journal.json",
+      "runId": "fc55a505-7d85-40d0-8f0a-b01715457114",
+      "originalRead": true,
+      "finalRead": true,
+      "originalVersion": 22,
+      "finalVersion": 24,
+      "readAtTimestampRestored": false,
+      "navigationReceipts": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "checks": [
+        "actual-mark-unread-ACK-persisted-after-reload",
+        "open-unread-commits-own-read-before-calendar-navigation",
+        "two-correlated-ACKs-confirmed-before-calendar-URL",
+        "original-read-boolean-restored-content-createdAt-exact-other-notifications-B-exact"
+      ],
+      "receipts": [
+        {
+          "stage": "mark-unread-for-open",
+          "read": false,
+          "operationId": "89965f8f-81f4-4894-a1f4-8711a65a23b8",
+          "idempotencyKey": "2dcda315-d9df-4a91-9762-20142b4ffb29",
+          "receiptId": "43f6c281-7ab3-4047-8ee2-8b1f208e5d5a",
+          "serverVersion": 23,
+          "replayed": false
+        },
+        {
+          "stage": "open-resource",
+          "read": true,
+          "operationId": "dd98e56b-6803-440a-b3e9-4488617c4163",
+          "idempotencyKey": "77753c1c-5782-4372-9257-2172f9f16811",
+          "receiptId": "d1595f5f-ca99-4609-8fa8-21db46b69e5e",
+          "serverVersion": 24,
+          "replayed": false
+        }
+      ]
+    }
+  ],
+  "actionId": "NOTIFICACIONES-005",
+  "assertions": [
+    "Original existing synthetic reminder read=true; explicit Marcar no leída click ACK then reload shows unread.",
+    "Abrir unread own resource commits read=true exact correlated ACK before URL/calendar frame navigation; navigation-event journal contains both receipt statuses acknowledged.",
+    "Agenda heading after navigate/reload; read-state originaltrue restored by Open, no independent duplicate restoration command.",
+    "Each2ACK, version+2, content/createdAt exact, other notificationsA and all B notification rows exact; no new fixtures."
+  ],
+  "limits": [
+    "Original readAt timestamp legitimately advances; safe timestampRestored=false.",
+    "Only authorized calendar reminder resource; revoked resource and other kinds not exercised.",
+    "Prior suite kept unchanged; supplement adds unread-Open branch without repeating original suite.",
+    "No product/canon/status changes, no fullQA003/004approval."
+  ],
+  "productDefects": []
+}

@@ -28,6 +28,7 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
     let result:RpcResult;
     switch(c.op) {
         case 'student': result=await rpc('mvp_save_student',{p_organization_id:active.id,p_client_id:c.id,p_expected_updated_at:c.expected,p_payload:c.payload,p_test_run_id:c.id?undefined:testRun});break;
+        case 'student-status': result=await rpc('mvp_set_student_status',{p_organization_id:active.id,p_client_id:c.clientId,p_expected_updated_at:c.expected,p_status:c.status});break;
         case 'context': result=await db.rpc('save_client_context',{p_client_id:c.clientId,p_expected_version:c.expected,p_home_adaptations:c.home||undefined,p_schooling:c.school||undefined,p_school_adaptations:c.adaptations||undefined});break;
         case 'history': result=await db.rpc('append_clinical_history_entry',{p_client_id:c.clientId,p_kind:c.kind,p_descriptor:c.descriptor,p_occurred_on:c.occurred||undefined,p_dose:c.dose||undefined,p_prescriber_descriptor:c.prescriber||undefined,p_started_on:c.started||undefined,p_ended_on:c.ended||undefined,p_supersedes_id:c.supersedes});break;
         case 'consent': result=await db.rpc('record_consent_reference',{p_client_id:c.clientId,p_purpose_code:c.purpose,p_notice_version:c.notice,p_grantor_descriptor:c.grantor,p_channel:c.channel,p_evidence_reference:c.reference||undefined,p_status:c.status,p_supersedes_id:c.supersedes});break;
@@ -57,6 +58,7 @@ export async function clinicalCommand(raw:unknown):Promise<{error:string|null;da
         const code=result.error.code;
         return {error:code==='42501'?'No tienes permiso para esta acción.':code==='40001'||code==='P0002'?'El registro cambió. Recarga antes de volver a intentar.':code==='23505'?'Ya existe un registro con ese identificador.':'No se guardó el cambio. Revisa los campos y el estado del registro.'};
     }
+    if(result.data===null || result.data===undefined) return {error:'El servidor no devolvió una confirmación persistida. Recarga antes de reintentar.'};
     revalidatePath('/','layout');
     return {error:null,data:result.data as Json};
 }

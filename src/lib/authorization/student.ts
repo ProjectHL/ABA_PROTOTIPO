@@ -4,8 +4,20 @@ export type StudentCapability =
     | 'student.view'
     | 'student.edit'
     | 'program.view'
+    | 'program.create'
+    | 'program.edit'
+    | 'record_config.view'
+    | 'record_config.create'
+    | 'record_config.edit'
+    | 'record.view'
     | 'record.capture'
-    | 'chart.view';
+    | 'record.submit'
+    | 'chart.view'
+    | 'chart.configure'
+    | 'result.download'
+    | 'authorization.request'
+    | 'authorization.decide'
+    | 'authorization.revoke';
 
 export async function getStudentCapabilities(studentId: string): Promise<string[] | null> {
     const supabase = await createClient();

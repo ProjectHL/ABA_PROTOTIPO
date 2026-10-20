@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-10-18T21:22:13.436Z",
+  "status": "PASS_FOCAL",
+  "candidate": "aba-local-qa-v21",
+  "buildId": "7AtdY0nw3olpUC5PDvk7o",
+  "actionId": "IDENTIDAD-007",
+  "execution": {
+    "projects": 2,
+    "casesPerProject": 5,
+    "reportedDurationSeconds": 15.4
+  },
+  "cases": [
+    {
+      "path": ".aba.local/qa/redirects-v21-desktop-safe.json",
+      "result": {
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "desktop",
+        "passed": true,
+        "cases": [
+          {
+            "name": "absolute",
+            "input": "https://example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "protocol-relative",
+            "input": "//example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "backslash",
+            "input": "/\\example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "encoded-control",
+            "input": "/%0a/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "valid-internal",
+            "input": "/team",
+            "destination": "/team",
+            "reloadPreserved": true,
+            "passed": true
+          }
+        ],
+        "attemptedCommands": 0,
+        "externalRequests": 0,
+        "identitySha256": "b188ea84dc0178b4798234cfb0e564b6cbe2bbd7c6caaba213cd3cc50077dc75",
+        "limits": [
+          "Tests login redirectTo with existing synthetic account; no fresh invitation or clinic switching claim."
+        ]
+      }
+    },
+    {
+      "path": ".aba.local/qa/redirects-v21-mobile-safe.json",
+      "result": {
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "mobile",
+        "passed": true,
+        "cases": [
+          {
+            "name": "absolute",
+            "input": "https://example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "protocol-relative",
+            "input": "//example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "backslash",
+            "input": "/\\example.invalid/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "encoded-control",
+            "input": "/%0a/escape",
+            "destination": "/dashboard",
+            "reloadPreserved": true,
+            "passed": true
+          },
+          {
+            "name": "valid-internal",
+            "input": "/team",
+            "destination": "/team",
+            "reloadPreserved": true,
+            "passed": true
+          }
+        ],
+        "attemptedCommands": 0,
+        "externalRequests": 0,
+        "identitySha256": "b188ea84dc0178b4798234cfb0e564b6cbe2bbd7c6caaba213cd3cc50077dc75",
+        "limits": [
+          "Tests login redirectTo with existing synthetic account; no fresh invitation or clinic switching claim."
+        ]
+      }
+    }
+  ],
+  "artifactsSHA256": {
+    ".aba.local/qa/redirects-v21-desktop-safe.json": "785ff287f580ab11502f19ab647a06d2277f7b7a8a0096e42eff284a372a02de",
+    ".aba.local/qa/redirects-v21-mobile-safe.json": "bdead88618f4b333b940e7f9693f059cf3216448510c1bb2e21b5add1e23bcb2",
+    "tests/e2e/r5.redirects-v21.spec.mjs": "466d56a0c38aacfe22b635a22fa0be1f1d32bbd2ee61073fe8f28022e67c711a",
+    "playwright.redirects-v21.config.ts": "cb5f7ff1605a441824b251f4985e0ab401fda73a077ba6a911b5b77ccf632cf9"
+  },
+  "limits": [
+    "Callback /auth/confirm next inválido no ejecutado en esta suite; localizar evidencia o completar focal.",
+    "QA004 comparación visual y QA015 candidato final permanecen separados.",
+    "Cuenta sintética admin-b existente; sin alta/invitación, cambio de clínica ni modificación de producto.",
+    "Prueba de login redirectTo; no atribuir cobertura automática a callback next ni a todos los consumidores del sanitizador."
+  ]
+}

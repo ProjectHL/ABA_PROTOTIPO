@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS_FOCAL",
+  "recordedAt": "2026-10-11T15:29:56.102Z",
+  "candidate": {
+    "name": "aba-local-qa-v19",
+    "buildId": "A7t-LPX5vzBg-DMDbF8_z",
+    "migrations": 103
+  },
+  "results": {
+    "desktop": {
+      "passed": true,
+      "buildId": "A7t-LPX5vzBg-DMDbF8_z",
+      "project": "desktop",
+      "actors": [
+        {
+          "label": "admin-a",
+          "canShare": true,
+          "capabilities": [
+            "authorization.decide",
+            "authorization.request",
+            "authorization.revoke",
+            "chart.configure",
+            "chart.view",
+            "program.create",
+            "program.edit",
+            "program.view",
+            "record_config.create",
+            "record_config.edit",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.edit",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "470bc571ed26b454902fd41ced37b318f30e0bb950e2b31fcf342c0b01a13ed4",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 1440,
+            "scrollWidth": 1440
+          }
+        },
+        {
+          "label": "supervisor-b",
+          "canShare": false,
+          "capabilities": [
+            "authorization.request",
+            "chart.configure",
+            "chart.view",
+            "program.create",
+            "program.edit",
+            "program.view",
+            "record_config.create",
+            "record_config.edit",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.edit",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "dbef7f5b7140db978dc2308b3aa140bda3f2cd6308e42cc2fb61a5f82d04a731",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 1440,
+            "scrollWidth": 1440
+          }
+        },
+        {
+          "label": "tecnico-b",
+          "canShare": false,
+          "capabilities": [
+            "chart.view",
+            "program.view",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "f904497ecf84876e8d8c01a67b689d5e7a1272ab397a4845329e1d288c97df5f",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 1440,
+            "scrollWidth": 1440
+          }
+        }
+      ],
+      "attemptedWrites": 0,
+      "checks": [
+        "original-detail-header-share-trigger-restored",
+        "existing-list-share-menu-variant-preserved",
+        "Cancel-Escape-X-clean-reopen-no-command",
+        "actual-status-flags-and-denied-role-controls",
+        "exact-clinical-program-original-invitation-snapshots"
+      ],
+      "limits": [
+        "No invitation sent; existing successful collaboration contracts covered separately",
+        "True badge rendering only claimed for actual true flags encountered; no fake grants/sessions"
+      ]
+    },
+    "mobile": {
+      "passed": true,
+      "buildId": "A7t-LPX5vzBg-DMDbF8_z",
+      "project": "mobile",
+      "actors": [
+        {
+          "label": "admin-a",
+          "canShare": true,
+          "capabilities": [
+            "authorization.decide",
+            "authorization.request",
+            "authorization.revoke",
+            "chart.configure",
+            "chart.view",
+            "program.create",
+            "program.edit",
+            "program.view",
+            "record_config.create",
+            "record_config.edit",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.edit",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "470bc571ed26b454902fd41ced37b318f30e0bb950e2b31fcf342c0b01a13ed4",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 390,
+            "scrollWidth": 390
+          }
+        },
+        {
+          "label": "supervisor-b",
+          "canShare": false,
+          "capabilities": [
+            "authorization.request",
+            "chart.configure",
+            "chart.view",
+            "program.create",
+            "program.edit",
+            "program.view",
+            "record_config.create",
+            "record_config.edit",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.edit",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "dbef7f5b7140db978dc2308b3aa140bda3f2cd6308e42cc2fb61a5f82d04a731",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 390,
+            "scrollWidth": 390
+          }
+        },
+        {
+          "label": "tecnico-b",
+          "canShare": false,
+          "capabilities": [
+            "chart.view",
+            "program.view",
+            "record_config.view",
+            "record.capture",
+            "record.submit",
+            "record.view",
+            "result.download",
+            "student.view"
+          ],
+          "statusFlags": {
+            "activeSession": false,
+            "familyAccess": false
+          },
+          "baselineHash": "f904497ecf84876e8d8c01a67b689d5e7a1272ab397a4845329e1d288c97df5f",
+          "exactSnapshotPreserved": true,
+          "geometry": {
+            "viewport": 390,
+            "scrollWidth": 390
+          }
+        }
+      ],
+      "attemptedWrites": 0,
+      "checks": [
+        "original-detail-header-share-trigger-restored",
+        "existing-list-share-menu-variant-preserved",
+        "Cancel-Escape-X-clean-reopen-no-command",
+        "actual-status-flags-and-denied-role-controls",
+        "exact-clinical-program-original-invitation-snapshots"
+      ],
+      "limits": [
+        "No invitation sent; existing successful collaboration contracts covered separately",
+        "True badge rendering only claimed for actual true flags encountered; no fake grants/sessions"
+      ]
+    }
+  },
+  "timingSeconds": {
+    "desktop": 16.1,
+    "mobile": 15.5
+  },
+  "staticChecks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "webpackBuild": "PASS"
+  },
+  "defects": [
+    {
+      "id": "R5_HEADER_SHARE_001",
+      "reproduction": "Ficha detail lacked the original Share trigger and status badges",
+      "correction": "Reuse ShareButton in header gated by resource authorization.decide, show status badges from actual DTO",
+      "status": "CLOSED_FOCAL"
+    },
+    {
+      "id": "R5_LIST_SHARE_002",
+      "reproduction": "V17 card menu Share opens then parent card navigation destroys modal. V18 stops navigation but dropdown closing unmounts modal after transition.",
+      "correction": "Stop click propagation for ShareButton interactive subtree including portal; keep card action menu mounted when dropdown closes",
+      "status": "CLOSED_FOCAL",
+      "failuresPreserved": [
+        "V17 desktop timeout modal Cancel detached",
+        "V18 desktop modal opacity became 0 after list input; URL remained students"
+      ]
+    }
+  ],
+  "visualReview": {
+    "desktop": "Original header Share placement retained alongside real photo/archive/start controls. Header and actual list modal inspected; fields and cancel reachable.",
+    "mobile": "Original header Share access retained; responsive stacked header and modal readable at390px, no page overflow. Template text truncates within buttons as existing control; no submission claimed.",
+    "statusBadges": "All tested DTO flags were false. Only conditional absence tested; true rendering remains unclaimed.",
+    "baseline": "dc1b0c4 header comparison only. No original share-modal pair captured; full QA004 remains open."
+  },
+  "limits": [
+    "No invitation sent and no command attempted; successful contract pipeline has prior evidence, not repeated here",
+    "No change to Auth, shared contracts, migrations, roles or originals",
+    "Six profile/viewport combinations with retained synthetic A/B fixtures; human journeys not executed",
+    "QA003/004/014/015/016 remain open;11/16 QA completed"
+  ],
+  "artifactsSHA256": {
+    "tests/e2e/r5.clinical-header-v19.spec.mjs": "b001c41ee3401b983bb2a12a1d2847f73f5e9d152efeea4dd9dc82a844f1c838",
+    "playwright.clinical-header-v19.config.ts": "a958514c20bd99ef95571de6eb0ffb6d239a107309b8d0b5539c135eb728e503",
+    "src/features/students/ShareButton.tsx": "97070e85a661fede52b4552abfcab95979735838258403210fb7173aa0b598bb",
+    "src/features/students/StudentsList.tsx": "647b040fa1c7e76f73f3c44b11704430886d946b25a9a77d611030f0dbc32f8d",
+    "src/features/students/StudentDetail.tsx": "09a53c05ee7e93b643c28432bc674e4efa4d948bab38ad7ca1823bca4333722e",
+    ".aba.local/qa/clinical-header-v17-desktop-journal.json": "cf8162bbfc39350e7c8136a431c78e9e727f84151c9c4d2a5baa860ab9f3142c",
+    ".aba.local/qa/clinical-header-v18-desktop-journal.json": "d0b0e9c727519111d8e656307227a8ca09967f5488af27de604e145e4fe46d38",
+    ".aba.local/qa/clinical-header-v19-desktop-safe.json": "9cea5444ffa38a2f3dc01fa19cd3a7058865b071d8e979772633791bafc606f5",
+    ".aba.local/qa/clinical-header-v19-mobile-safe.json": "a3e04bff785f932ad7e02f341df804e115bbf38016d7873f44c9359ce7f9b17b",
+    ".aba.local/qa/build-v19-clinical-header-safe.json": "4960f8c52f18738a1e6f2db838fc02ee18b2f11167cdd59b6c3b2508ba2cdb86",
+    ".aba.local/qa/web-v19-safe.json": "99bb2ece6eddc2637c4f7d37536ab9fed918f473ed40a8223a766705229ad3c3",
+    ".aba.local/qa/ux-current-v19-clinical-header/desktop/header.png": "2ea2e4a45d728fa0e378bc754aa939f506a8cd94defcd9f9f1d1260c6f5e3e35",
+    ".aba.local/qa/ux-current-v19-clinical-header/desktop/share-modal.png": "a8f9e703d607dfac1b2f5064918d7aff5ab1005ffd2e26fff3311ba05c1ccad2",
+    ".aba.local/qa/ux-current-v19-clinical-header/desktop/list-share-modal.png": "5e191d9ea8e95cc3a75f6ee835dee3862043f2d0b4e2a1d56b5c1d352199baac",
+    ".aba.local/qa/ux-current-v19-clinical-header/mobile/header.png": "0031531083d9a56be9928f81d40b418daa54e66c6418f7eea009cefd13842f7a",
+    ".aba.local/qa/ux-current-v19-clinical-header/mobile/share-modal.png": "691a79cbb0b76c23aca17297d02323e97df7a22ca170ae663e91cd8acf53dbf1",
+    ".aba.local/qa/ux-current-v19-clinical-header/mobile/list-share-modal.png": "f00d23a577e545e9c8ca65a1e7a50828c414dc0c73766309427d55d7115063f7",
+    ".aba.local/qa/ux-baseline-render/desktop/student-tab-0.png": "e67340ba0821b88f4612708722187058a925b6cae9e4416c936812565c74245e",
+    ".aba.local/qa/ux-baseline-render/mobile/student-tab-0.png": "51c21f6e119a99197cbc1fe0972aeeb3c124d7d1d197623883149601b9e8557d"
+  }
+}

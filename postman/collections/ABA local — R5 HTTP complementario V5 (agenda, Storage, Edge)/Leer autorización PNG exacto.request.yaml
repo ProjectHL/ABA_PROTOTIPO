@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_attachment_read_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}",
+      "p_resource": {
+        "kind": "student",
+        "clinicId": "{{qa_clinic_a}}",
+        "studentId": "b347646e-ff29-450b-aedf-9f9c015fb41a"
+      },
+      "p_version_id": "{{qa_png_version}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+      if(!pm.variables.get('qa_png_version')) throw new Error('PNG propio no confirmado');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200)); if(pm.response.code!==200) throw new Error('HTTP inesperado; cuerpo omitido');
+      const v=pm.response.json(),before=JSON.parse(pm.variables.get('qa_png_metadata'));pm.test('Versión/huella/autorización intactas',()=>{pm.expect(v.id).to.eql(before.id);pm.expect(v.upload.sha256).to.eql(before.upload.sha256);pm.expect(v.objectKey).to.eql(before.objectKey);pm.expect(v.state).to.eql('available');});
+    language: text/javascript
+order: 23000

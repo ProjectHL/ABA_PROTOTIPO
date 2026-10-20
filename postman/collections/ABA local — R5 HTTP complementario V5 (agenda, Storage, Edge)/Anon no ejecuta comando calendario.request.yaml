@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_calendar_command_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: "{{qa_http_body}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('Anon sin EXECUTE autorizado',()=>pm.expect([401,403]).to.include(pm.response.code)); if(![401,403].includes(pm.response.code)) throw new Error('Denegación anónima no confirmada');
+    language: text/javascript
+order: 16000

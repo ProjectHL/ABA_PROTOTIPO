@@ -1,0 +1,343 @@
+{
+  "recordedAt": "2026-10-13T22:06:43.454Z",
+  "status": "PASS_FOCAL",
+  "buildId": "7AtdY0nw3olpUC5PDvk7o",
+  "cases": [
+    {
+      "path": ".aba.local/qa/v1-card-v21-desktop-safe.json",
+      "result": {
+        "passed": true,
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "desktop",
+        "recordId": "c38dbfa7-5f55-40c2-a2c6-1b506374a011",
+        "sessionId": "97a8e135-1fb0-4397-910f-f4fe5f099ad1",
+        "attemptedWrites": 0,
+        "snapshotSha256": "b68aea9b5ccd8e83cef6bc6032f2a414710b21c63de373a72c1c049a218fdda1",
+        "imageSha256": "4ca04f5bf2f82ce9f372cade4f6ea24060395dbd6194412e172e39239f4e016b",
+        "checks": [
+          "V1 frequency count3 displayed readonly",
+          "No edit undo capture inputs within V1 card",
+          "reload preserves same aggregate and full authorized snapshot"
+        ],
+        "limits": [
+          "Only existing V1 frequency fixture; no fabricated V1 percentage or duration",
+          "No writes to original session; historical result exports have separate evidence"
+        ]
+      }
+    },
+    {
+      "path": ".aba.local/qa/results-controls-v21r4-desktop-safe.json",
+      "result": {
+        "runId": "72797d49-0cb3-45e1-a10c-3a209ebaff83",
+        "status": "complete",
+        "stage": "complete",
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "desktop",
+        "attemptedWrites": 0,
+        "checks": [
+          {
+            "action": "RESULTADOS-018/019",
+            "programId": "3265dba8-6df0-4736-9d08-75308903a930",
+            "recordIds": [
+              "f847e9eb-4306-48d4-897f-b1197ed6ea10",
+              "06bf3179-2c77-4009-9df9-59404e37d921"
+            ],
+            "baseTicks": [
+              0,
+              25,
+              50,
+              75,
+              100
+            ],
+            "limitedTicks": [
+              10,
+              30,
+              50,
+              70,
+              90
+            ],
+            "filters": [
+              "Porcentaje",
+              "Todo el historial",
+              "Mantenimiento",
+              "Profesional · 1984eae1",
+              "10",
+              "90"
+            ],
+            "tableHash": "af2bc4ea0c69bf2007a5d2e368ebb22ba80b0f4faa73aa6c96af2df2ded7a978",
+            "dotCount": 8,
+            "closePreservesData": true
+          }
+        ],
+        "limits": [
+          "Admin A only; exact two authorized program/session snapshots. No write, goal/correction submission, export or full QA closure.",
+          "Y scale checks inspect rendered SVG ticks and point coordinates; enlargement changes viewport geometry, so compare normalized data and exact table/filter state, not absolute pixels."
+        ],
+        "beforeHashes": {
+          "own": "e2f6d48cc193086be330042d5e8fab53acc0a9fdf93ae5e506ca91f64798d128",
+          "original": "b68aea9b5ccd8e83cef6bc6032f2a414710b21c63de373a72c1c049a218fdda1"
+        },
+        "limitedDots": [
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-violet-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-violet-6)"
+          }
+        ],
+        "afterDots": [
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-violet-6)"
+          },
+          {
+            "cx": 1022,
+            "cy": 269.7275390625,
+            "stroke": "var(--mantine-color-violet-6)"
+          }
+        ],
+        "passed": true
+      }
+    },
+    {
+      "path": ".aba.local/qa/v1-card-v21-mobile-safe.json",
+      "result": {
+        "passed": true,
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "mobile",
+        "recordId": "c38dbfa7-5f55-40c2-a2c6-1b506374a011",
+        "sessionId": "97a8e135-1fb0-4397-910f-f4fe5f099ad1",
+        "attemptedWrites": 0,
+        "snapshotSha256": "b68aea9b5ccd8e83cef6bc6032f2a414710b21c63de373a72c1c049a218fdda1",
+        "imageSha256": "f6f9a92ff65e5293f989029e3c8377e95ce63375771e32d918e36484a94d7c66",
+        "checks": [
+          "V1 frequency count3 displayed readonly",
+          "No edit undo capture inputs within V1 card",
+          "reload preserves same aggregate and full authorized snapshot"
+        ],
+        "limits": [
+          "Only existing V1 frequency fixture; no fabricated V1 percentage or duration",
+          "No writes to original session; historical result exports have separate evidence"
+        ]
+      }
+    },
+    {
+      "path": ".aba.local/qa/results-controls-v21r4-mobile-safe.json",
+      "result": {
+        "runId": "b181f0fb-e1af-43cf-8468-4eeee36b21da",
+        "status": "complete",
+        "stage": "complete",
+        "buildId": "7AtdY0nw3olpUC5PDvk7o",
+        "project": "mobile",
+        "attemptedWrites": 0,
+        "checks": [
+          {
+            "action": "RESULTADOS-018/019",
+            "programId": "3265dba8-6df0-4736-9d08-75308903a930",
+            "recordIds": [
+              "f847e9eb-4306-48d4-897f-b1197ed6ea10",
+              "06bf3179-2c77-4009-9df9-59404e37d921"
+            ],
+            "baseTicks": [
+              0,
+              25,
+              50,
+              75,
+              100
+            ],
+            "limitedTicks": [
+              10,
+              30,
+              50,
+              70,
+              90
+            ],
+            "filters": [
+              "Porcentaje",
+              "Todo el historial",
+              "Mantenimiento",
+              "Profesional · 1984eae1",
+              "10",
+              "90"
+            ],
+            "tableHash": "af2bc4ea0c69bf2007a5d2e368ebb22ba80b0f4faa73aa6c96af2df2ded7a978",
+            "dotCount": 8,
+            "closePreservesData": true
+          }
+        ],
+        "limits": [
+          "Admin A only; exact two authorized program/session snapshots. No write, goal/correction submission, export or full QA closure.",
+          "Y scale checks inspect rendered SVG ticks and point coordinates; enlargement changes viewport geometry, so compare normalized data and exact table/filter state, not absolute pixels."
+        ],
+        "beforeHashes": {
+          "own": "e2f6d48cc193086be330042d5e8fab53acc0a9fdf93ae5e506ca91f64798d128",
+          "original": "b68aea9b5ccd8e83cef6bc6032f2a414710b21c63de373a72c1c049a218fdda1"
+        },
+        "limitedDots": [
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-violet-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-violet-6)"
+          }
+        ],
+        "afterDots": [
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-green-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-yellow-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-red-6)"
+          },
+          {
+            "cx": 72,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-violet-6)"
+          },
+          {
+            "cx": 252,
+            "cy": 229.4326171875,
+            "stroke": "var(--mantine-color-violet-6)"
+          }
+        ],
+        "passed": true
+      }
+    }
+  ],
+  "artifactsSHA256": {
+    ".aba.local/qa/v1-card-v21-desktop-safe.json": "67fab004befd99531799394e98c44f88a18b07a7c9b2b1cc59a0cf71cda49ba7",
+    ".aba.local/qa/results-controls-v21r4-desktop-safe.json": "1105c49530efe0255b729bd061bfa94217e7c0ff02ea115ebeed1190c5f9a40e",
+    ".aba.local/qa/v1-card-v21-mobile-safe.json": "f560b2ab72a9682ffb7fd5fdc65a9a5a36c153d7b17e714e640a1820e627e32d",
+    ".aba.local/qa/results-controls-v21r4-mobile-safe.json": "59a1b205df781833d2b2c8b088f7130b4dbaafde4d9370e905912d31fe839ff6",
+    "tests/e2e/r5.v1-card-v21.spec.mjs": "ceae66dcb22f5e42457b6474e3f0bb85a26166b69735c4908f68199a5a4de6c5",
+    "tests/e2e/r5.results-controls-v21r4.spec.mjs": "50aacc4b5bdf64112efee1c52420b80c7068da29a25713bab9f3253026f08a3f"
+  },
+  "lint": "PASS selected final suites/configs",
+  "priorFailures": "V21/r1 SVG tick labels live in sibling layer, r2 ambiguous label selected input+listbox, r3 sampled animated coordinates; final r4 waits stable points and checks same exact data. No product edit.",
+  "limits": [
+    "Only existing V1 frequency aggregate; no fabricated legacy dimensions.",
+    "Results controls tested with authorized adminA and existing percentage records, not full QA003 or QA004."
+  ]
+}

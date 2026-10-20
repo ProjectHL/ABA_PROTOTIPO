@@ -1,75 +1,63 @@
-import { useState } from 'react';
-import { Box, Grid, Stack } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { useNavigate } from '@/lib/navigation';
+'use client';
+import { useEffect,useMemo,useState } from 'react';
+import { Accordion,Alert,Badge,Box,Button,Card,Grid,Group,Loader,Modal,MultiSelect,SegmentedControl,Select,SimpleGrid,Stack,Text,ThemeIcon,Title } from '@mantine/core';
+import { Activity,Award,Expand,FolderOpen,ListChecks,Users } from 'lucide-react';
+import { Bar,BarChart,CartesianGrid,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis } from 'recharts';
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/MainLayout';
-import { supervisorProfile } from '@/api/mockData';
-import {
-    mockActiveSessions,
-    mockCompletedSessions,
-    mockDashboardKPIs,
-} from '@/api/dashboardData';
-import {
-    WelcomeCard,
-    ActiveSessionCard,
-    CompletedSessionsCard,
-    KPICards,
-    ProgressLineChart,
-    ProgramsBarChart,
-} from '@/features/dashboard';
+import { useIdentity } from '@/context/IdentityContext';
+import { loadDashboardSnapshot } from '@/modules/dashboard/dashboard.server';
+import type { DashboardSnapshot } from '@/modules/dashboard/contracts';
 
-export default function DashboardPage() {
-    const [supervisor] = useState(supervisorProfile);
-    const [, { open: openEditSupervisor }] = useDisclosure(false);
-    const navigate = useNavigate();
 
-    const handleViewProgram = (_programId: string, studentId: string) => {
-        // Redirigir a la pestaña de programas del estudiante
-        navigate(`/students/${studentId}?tab=programs`);
-    };
-
-    return (
-        <MainLayout supervisor={supervisor} onEditProfile={openEditSupervisor}>
-            <Box w="100%" px="md">
-                <Grid gutter="lg">
-                    {/* Primera Columna - Información y Sesiones */}
-                    <Grid.Col span={{ base: 12, lg: 5 }}>
-                        <Stack gap="lg" pr="md">
-                            {/* Card de Bienvenida */}
-                            <WelcomeCard supervisor={supervisor} />
-
-                            {/* Sesiones Activas */}
-                            <ActiveSessionCard
-                                sessions={mockActiveSessions}
-                                onViewProgram={handleViewProgram}
-                            />
-
-                            {/* Sesiones Finalizadas */}
-                            <CompletedSessionsCard
-                                sessions={mockCompletedSessions}
-                                onViewProgram={handleViewProgram}
-                            />
-                        </Stack>
-                    </Grid.Col>
-
-                    {/* Segunda Columna - KPIs y Gráficos */}
-                    <Grid.Col span={{ base: 12, lg: 7 }}>
-                        <Stack gap="lg">
-                            {/* KPIs */}
-                            <KPICards kpis={mockDashboardKPIs} />
-
-                            {/* Gráfico de Líneas */}
-                            <ProgressLineChart
-                                title="N° de sesiones registradas por estudiante"
-                                description="Visualización comparativa de sesiones realizadas en el tiempo"
-                            />
-
-                            {/* Gráfico de Barras */}
-                            <ProgramsBarChart />
-                        </Stack>
-                    </Grid.Col>
-                </Grid>
-            </Box>
-        </MainLayout>
-    );
+type Period = 'weekly' | 'monthly' | 'yearly';
+const DAY=86400000;
+const periodOptions=[{value:'weekly',label:'Semanal'},{value:'monthly',label:'Mensual'},{value:'yearly',label:'Anual'}];
+const colors=['blue','teal','violet','orange','red','cyan','lime','pink','indigo','grape'];
+// Periodos calendario UTC anclados a la proyección, nunca al reloj del navegador.
+function buckets(generatedAt:string,period:Period){
+  const anchor=new Date(generatedAt),year=anchor.getUTCFullYear(),month=anchor.getUTCMonth();
+  if(period==='yearly')return Array.from({length:12},(_,i)=>({label:new Date(Date.UTC(year,i,1)).toLocaleDateString('es-CL',{month:'short',timeZone:'UTC'}),start:Date.UTC(year,i,1),end:Date.UTC(year,i+1,1)}));
+  if(period==='monthly'){const start=Date.UTC(year,month,1),end=Date.UTC(year,month+1,1);return Array.from({length:Math.ceil((end-start)/DAY/7)},(_,i)=>({label:`Días ${i*7+1}–${Math.min((i+1)*7,(end-start)/DAY)}`,start:start+i*7*DAY,end:Math.min(start+(i+1)*7*DAY,end)}));}
+  const today=Date.UTC(year,month,anchor.getUTCDate()),monday=today-((anchor.getUTCDay()+6)%7)*DAY;
+  return Array.from({length:7},(_,i)=>({label:new Date(monday+i*DAY).toLocaleDateString('es-CL',{weekday:'short',day:'2-digit',timeZone:'UTC'}),start:monday+i*DAY,end:monday+(i+1)*DAY}));
 }
+function DashboardCharts({snapshot}:{snapshot:DashboardSnapshot}){
+  const [achievementPeriod,setAchievementPeriod]=useState<Period>('weekly');
+  const [achievementStudent,setAchievementStudent]=useState('all');
+  const [sessionPeriod,setSessionPeriod]=useState<Period>('weekly');
+  const [studentIds,setStudentIds]=useState<string[]>(()=>snapshot.students.slice(0,5).map(student=>student.id));
+  const [expanded,setExpanded]=useState(false);
+  const options=snapshot.students.map(student=>({value:student.id,label:student.displayName}));
+  const selectedIds=studentIds.filter(id=>snapshot.students.some(student=>student.id===id)).slice(0,10);
+  const selectedAchievement=achievementStudent==='all'||snapshot.students.some(student=>student.id===achievementStudent)?achievementStudent:null;
+  const achievementData=useMemo(()=>buckets(snapshot.generatedAt,achievementPeriod).map(bucket=>({label:bucket.label,achieved:selectedAchievement===null?0:snapshot.achievements.filter(item=>{const time=Date.parse(item.achievedAt);return(selectedAchievement==='all'||item.studentId===selectedAchievement)&&time>=bucket.start&&time<bucket.end&&time<=Date.parse(snapshot.generatedAt);}).length})),[snapshot,achievementPeriod,selectedAchievement]);
+  const sessionData=useMemo(()=>buckets(snapshot.generatedAt,sessionPeriod).map(bucket=>{
+    const point:Record<string,string|number>={label:bucket.label};snapshot.students.forEach(student=>{point[student.id]=0;});
+    snapshot.activityByStudent.forEach(item=>{const time=Date.parse(`${item.date}T00:00:00Z`);if(time>=bucket.start&&time<bucket.end&&time<=Date.parse(snapshot.generatedAt)&&Object.hasOwn(point,item.studentId))point[item.studentId]=Number(point[item.studentId])+item.finishedSessions;});return point;
+  }),[snapshot,sessionPeriod]);
+  const filters=<Stack gap="xs"><SegmentedControl value={sessionPeriod} onChange={value=>setSessionPeriod(value as Period)} data={periodOptions}/><MultiSelect label="Estudiantes (máximo 10)" placeholder="Buscar estudiantes…" data={options} value={selectedIds} onChange={values=>setStudentIds(values.slice(0,10))} searchable clearable maxValues={10} hidePickedOptions nothingFoundMessage="No se encontraron estudiantes"/></Stack>;
+  const chart=(height:number)=>selectedIds.length?<ResponsiveContainer width="100%" height={height}><LineChart data={sessionData}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis allowDecimals={false}/><Tooltip/><Legend/>{selectedIds.map((id,index)=><Line key={id} type="linear" dataKey={id} name={snapshot.students.find(student=>student.id===id)?.displayName??id} stroke={`var(--mantine-color-${colors[index]}-6)`} strokeWidth={2} isAnimationActive={false}/>)}</LineChart></ResponsiveContainer>:<Text c="dimmed" py="xl">Selecciona al menos un estudiante para ver las sesiones.</Text>;
+  return <><Stack gap="lg"><Card withBorder padding="lg" h="100%"><Stack><Group justify="space-between"><Title order={3}>Sesiones realizadas</Title><Button variant="default" leftSection={<Expand size={16}/>} onClick={()=>setExpanded(true)}>Ampliar</Button></Group><Text size="sm" c="dimmed">Sesiones finalizadas por estudiante; volumen operativo, no mejoría clínica.</Text>{filters}{chart(300)}</Stack></Card><Card withBorder padding="lg" h="100%"><Stack><Title order={3}>Programas logrados</Title><Text size="sm" c="dimmed">Transiciones explícitas a logrado; no inferidas desde resultados.</Text><Select label="Estudiante" data={[{value:'all',label:'Todos los estudiantes'},...options]} value={selectedAchievement} onChange={value=>setAchievementStudent(value??'all')} searchable/><SegmentedControl value={achievementPeriod} onChange={value=>setAchievementPeriod(value as Period)} data={periodOptions.slice(0,2)}/><Text fw={700}>{achievementData.reduce((sum,point)=>sum+point.achieved,0)} logros en el periodo</Text>{selectedAchievement===null?<Alert color="yellow">El estudiante seleccionado ya no está disponible. Elige otro filtro.</Alert>:<ResponsiveContainer width="100%" height={300}><BarChart data={achievementData}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="label"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="achieved" name="Logros explícitos" fill="var(--mantine-color-blue-6)"/></BarChart></ResponsiveContainer>}</Stack></Card></Stack><Text size="xs" c="dimmed">Semana de lunes a domingo, mes y año calendario en UTC. Corte: {new Date(snapshot.generatedAt).toLocaleString('es-CL',{timeZone:'UTC'})} UTC. Los periodos actuales son parciales; no se proyectan eventos futuros.</Text><Modal opened={expanded} onClose={()=>setExpanded(false)} size="95%" title="Sesiones realizadas por estudiante"><Stack>{filters}{chart(500)}<Text size="sm" c="dimmed">Los filtros son compartidos con la vista principal y se conservan al cerrar.</Text></Stack></Modal></>;
+}
+
+function ActivityChart({data}:{data:DashboardSnapshot['activity']}){return <ResponsiveContainer width="100%" height={300}><BarChart data={data}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date" tickFormatter={value=>new Date(`${value}T00:00:00Z`).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',timeZone:'UTC'})}/><YAxis allowDecimals={false}/><Tooltip/><Legend/><Bar dataKey="finishedSessions" name="Sesiones finalizadas" fill="var(--mantine-color-blue-6)"/><Bar dataKey="submittedRecords" name="Registros sometidos" fill="var(--mantine-color-teal-6)"/></BarChart></ResponsiveContainer>}
+function Sessions({items,empty}:{items:DashboardSnapshot['activeSessions'];empty:string}){const router=useRouter();return items.length?<Accordion variant="separated">{items.map(session=><Accordion.Item key={session.id} value={session.id}><Accordion.Control><Group justify="space-between" pr="md"><div><Text fw={700}>{session.studentName}</Text><Text size="xs" c="dimmed">{session.status==='finished' ? (session.finishedAt ? new Date(session.finishedAt).toLocaleString('es-CL') : 'Cierre no disponible') : new Date(session.updatedAt).toLocaleString('es-CL')}</Text></div><Badge color={session.status==='paused'?'yellow':session.status==='finished'?'blue':'green'}>{session.status==='paused'?'Pausada':session.status==='finished'?'Finalizada':'Activa'}</Badge></Group></Accordion.Control><Accordion.Panel><Stack gap="xs"><Text size="sm">ID clínico: {session.clinicalId}</Text><Group><Button size="xs" variant="light" onClick={()=>router.push(`/session/${session.studentId}`)}>Abrir sesión</Button>{session.programs.map(program=><Button key={program.id} size="xs" variant="subtle" onClick={()=>router.push(`/students/${session.studentId}/programs/${program.id}/chart`)}>{program.title}</Button>)}</Group></Stack></Accordion.Panel></Accordion.Item>)}</Accordion>:<Text c="dimmed">{empty}</Text>}
+
+function DashboardContent(){const router=useRouter();const {identity,verified}=useIdentity();const clinicId=identity?.active?.id??null;const role=identity?.active?.role;const isProfessional=role==='admin'||role==='supervisor'||role==='therapist';const [loaded,setLoaded]=useState<{clinicId:string;snapshot:DashboardSnapshot}|null>(null);const [failure,setFailure]=useState<{clinicId:string;actorId:string;message:string}|null>(null);const [refreshIndex,setRefreshIndex]=useState(0);const [refreshing,setRefreshing]=useState(false);const [range,setRange]=useState('30');const [activityExpanded,setActivityExpanded]=useState(false);const snapshot=verified&&loaded?.clinicId===clinicId&&loaded.snapshot.clinicId===clinicId&&loaded.snapshot.actorId===identity?.userId?loaded.snapshot:null;const error=verified&&failure?.clinicId===clinicId&&failure.actorId===identity?.userId?failure.message:null;const loading=!!clinicId&&verified&&isProfessional&&!snapshot&&!error;
+  useEffect(()=>{if(verified&&role==='family')router.replace('/family');else if(verified&&role==='external')router.replace('/shared-access');},[verified,role,router]);
+  useEffect(()=>{let current=true;if(clinicId&&verified&&isProfessional)void loadDashboardSnapshot(clinicId).then(value=>{if(current){if(value.actorId!==identity?.userId||value.clinicId!==clinicId)throw new Error('La identidad o clínica cambió; vuelve a consultar.');setLoaded({clinicId,snapshot:value});setFailure(null);}}).catch(cause=>{if(current)setFailure({clinicId,actorId:identity?.userId??'',message:cause instanceof Error?cause.message:'No fue posible cargar el panel.'});}).finally(()=>{if(current)setRefreshing(false);});return()=>{current=false;};},[clinicId,verified,isProfessional,identity?.userId,refreshIndex]);
+  const activity=useMemo(()=>{if(!snapshot)return[];const cutoff=Date.parse(snapshot.generatedAt)-Number(range)*86400000;return snapshot.activity.filter(item=>Date.parse(`${item.date}T00:00:00Z`)>=cutoff);},[snapshot,range]);
+  const metrics=snapshot?[{label:'Estudiantes vigentes',value:snapshot.counts.activeStudents,color:'blue',icon:Users},{label:'Programas activos',value:snapshot.counts.activePrograms,color:'violet',icon:ListChecks},{label:'Sesiones en curso',value:snapshot.counts.activeSessions,color:'green',icon:Activity},{label:'Logros explícitos',value:snapshot.counts.achievements,color:'orange',icon:Award}]:[];
+  if(verified&&(role==='family'||role==='external'))return <MainLayout><Stack align="center" py="xl"><Loader/><Text>Abriendo tu espacio autorizado…</Text></Stack></MainLayout>;
+  return <MainLayout><Box w="100%" px="md"><Grid gutter="lg">
+    <Grid.Col span={{base:12,lg:5}}><Stack gap="lg"><Card padding="lg" radius="md" withBorder c="white" style={{background:"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"}}><Group justify="space-between" align="flex-start"><div><Text size="sm" opacity={0.85}>Panel clínico autorizado</Text><Title order={2} c="white">{identity?.profile.name||identity?.email||'Profesional'}</Title><Text mt="xs" opacity={0.9}>{identity?.active?.name??'Selecciona una clínica para continuar'}</Text></div><Group><Button variant="white" color="blue" loading={refreshing} disabled={!clinicId||!verified||loading} onClick={()=>{setRefreshing(true);setFailure(null);setRefreshIndex(value=>value+1);}}>Actualizar</Button><Button variant="white" color="blue" leftSection={<FolderOpen size={16}/>} onClick={()=>router.push('/students')} disabled={!clinicId}>Ver carpetas</Button></Group></Group></Card>
+      {error&&<Alert color="red" title="Panel no disponible">{error}{snapshot&&<Text size="sm">Se conserva la última consulta confirmada; no representa un refresco correcto.</Text>}</Alert>}
+      {loading?<Group justify="center" py="xl"><Loader/><Text c="dimmed">Cargando proyección autorizada…</Text></Group>:snapshot&&<><Card withBorder padding="lg"><Title order={3} mb="md">Sesiones en curso</Title><Sessions items={snapshot.activeSessions} empty="No hay sesiones activas o pausadas."/></Card>
+<Card withBorder padding="lg"><Group justify="space-between" mb="md"><Title order={3}>Sesiones finalizadas</Title><Badge variant="light">{snapshot.counts.finishedSessions} total</Badge></Group><Sessions items={snapshot.finishedSessions} empty="No hay sesiones finalizadas visibles."/></Card></>}
+    </Stack></Grid.Col>
+    <Grid.Col span={{base:12,lg:7}}>{snapshot&&!loading&&<Stack gap="lg"><SimpleGrid cols={{base:1,sm:2,lg:2}}>{metrics.map(({label,value,color,icon:Icon})=><Card key={label} withBorder padding="lg"><Group justify="space-between"><div><Text size="xs" c="dimmed" tt="uppercase" fw={700}>{label}</Text><Text size="32px" fw={900} c={color}>{value}</Text></div><ThemeIcon size="xl" radius="md" variant="light" color={color}><Icon size={24}/></ThemeIcon></Group></Card>)}</SimpleGrid><DashboardCharts snapshot={snapshot}/><Card withBorder padding="lg"><Group justify="space-between" align="end"><div><Title order={3}>Actividad persistida</Title><Text size="sm" c="dimmed">Volumen operativo; no representa mejoría clínica.</Text></div><Group><Select value={range} onChange={value=>setRange(value??'30')} data={[{value:'7',label:'7 días'},{value:'30',label:'30 días'},{value:'90',label:'90 días'}]}/><Button variant="default" leftSection={<Expand size={16}/>} onClick={()=>setActivityExpanded(true)}>Ampliar</Button></Group></Group>{activity.length?<ActivityChart data={activity}/>:<Text c="dimmed" mt="md">No hay actividad en el periodo seleccionado.</Text>}</Card>
+      <Card withBorder padding="lg"><Group justify="space-between" mb="md"><Title order={3}>Historial de logros</Title><Badge color="orange" variant="light">Eventos achieved</Badge></Group>{snapshot.achievements.length?<Stack>{snapshot.achievements.map(item=><Group key={item.id} justify="space-between"><div><Text fw={700}>{item.programTitle}</Text><Text size="sm" c="dimmed">{item.studentName} · {item.clinicalId} · {new Date(item.achievedAt).toLocaleString('es-CL')}</Text></div><Button size="xs" variant="light" onClick={()=>router.push(`/students/${item.studentId}/programs/${item.programId}/chart`)}>Abrir resultados</Button></Group>)}</Stack>:<Text c="dimmed">No hay transiciones de programa a logrado.</Text>}</Card></Stack>}</Grid.Col>
+  </Grid><Modal opened={activityExpanded&&!!snapshot} onClose={()=>setActivityExpanded(false)} size="95%" title="Actividad persistida ampliada">{activity.length?<ActivityChart data={activity}/>:<Text c="dimmed">No hay actividad en el periodo.</Text>}<Text size="sm" c="dimmed">Cerrar conserva el periodo seleccionado.</Text></Modal></Box></MainLayout>}
+
+export default function DashboardPage(){const {identity}=useIdentity();return <DashboardContent key={`${identity?.userId??'none'}:${identity?.active?.id??'none'}`}/>;}

@@ -1,2 +1,3 @@
-import { redirect } from 'next/navigation';
-export default function Page() { redirect('/students'); }
+import DashboardPage from '@/views/DashboardPage';
+
+export default function Page() { return <DashboardPage />; }

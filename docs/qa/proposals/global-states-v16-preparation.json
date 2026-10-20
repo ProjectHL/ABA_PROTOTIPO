@@ -1,0 +1,74 @@
+{
+  "status": "prepared-not-executed",
+  "candidate": "V16",
+  "buildId": "SqXFb86Tn89rgGpuEGkKu",
+  "catalogContext": 103,
+  "tests": [
+    "tests/e2e/r5.global-states-v16.spec.mjs",
+    "playwright.global-states-v16.config.ts"
+  ],
+  "staticChecks": [
+    "eslint PASS",
+    "Playwright list only; no Auth"
+  ],
+  "errorFault": {
+    "path": "/_next/static/chunks/app/dashboard/page-a6d05ffa73949bd5.js",
+    "module": 15498,
+    "sha256": "490050880a6f9b7a0a9031015ac8cdc9a9aa7ac10d37610412c927051948b1ab",
+    "anchor": "Exact entire default function J, one occurrence",
+    "effect": "Only browser response has inserted sessionStorage conditional throw at render start; reverse substitution equals whole original bundle",
+    "cleanup": "Clear context flag before real Reintentar/reset; close page afterwards; original on-disk bundle exact invariant",
+    "assertions": [
+      "Actual app/error alert and disclaimer",
+      "Close Alert does not issue NextAction or command",
+      "Clearflag+Reintentar real reset recovers dashboard matching ordinary authorized DTO"
+    ]
+  },
+  "loadingFault": {
+    "navigation": "Actual Ver carpetas router push to /students",
+    "retained": "Original GET RSC then original students page bundle; no fabricated Flight",
+    "assertions": [
+      "Real app/loading role=status Cargando información autorizada… during pending module",
+      "Release real JS; actual list appears and fallback disappears"
+    ],
+    "uncertainty": "Runtime proof required: full RSC hold alone may preserve prior UI; after RSC release page-module hold suspends the genuine route import; failure remains pending and must be inspected"
+  },
+  "existingEvidence": [
+    {
+      "actions": [
+        "ESTADOS-005",
+        "ESTADOS-007"
+      ],
+      "source": "tests/e2e/r5.public-support-v10.spec.mjs:7",
+      "artifacts": [
+        ".aba.local/qa/public-support-v10-desktop-safe.json",
+        ".aba.local/qa/public-support-v10-mobile-safe.json",
+        ".aba.local/qa/public-support-v10-desktop-v11-safe-20261009.json",
+        ".aba.local/qa/public-support-v10-mobile-v11-safe-20261009.json"
+      ],
+      "buildId": "mZeZnMMBZ4vYp1uE31Kon",
+      "assertions": "Actual Página no encontrada heading then actual Volver atrás -> /dashboard; checks 404-back-real-history",
+      "noRepeat": "No back-button rerun planned"
+    },
+    {
+      "action": "ESTADOS-008",
+      "finding": "Not exercised by public-support-v10 spec or V11 safes; shellV8 sidebar Dashboard is different control",
+      "supplement": "Actual Ir al Inicio button on not-found -> /dashboard and real DTO metrics"
+    }
+  ],
+  "mappedActions": [
+    "ESTADOS-001 global route loader",
+    "ESTADOS-003 actual app/error boundary",
+    "ESTADOS-004 actual reset",
+    "ESTADOS-009 close Alert without request/mutation",
+    "ESTADOS-008 missing exact home control supplement"
+  ],
+  "preservation": "Whole own94/current-version33 clinical and program-session DTO plus original b347/session97 deep-equal before-after; no updates",
+  "commandGuard": "Abort parsed operationId+idempotencyKey command before forwarding; attemptedWrites must0",
+  "executionGate": "Await explicit root preparation approval before Auth or UI; desktop first, mobile only after terminal PASS",
+  "limitations": [
+    "Context injected client render exception proves boundary mechanics, not actual server outage",
+    "Single synthetic admin-a; no full QA003 or all routes/profile acceptance"
+  ],
+  "results": "None"
+}

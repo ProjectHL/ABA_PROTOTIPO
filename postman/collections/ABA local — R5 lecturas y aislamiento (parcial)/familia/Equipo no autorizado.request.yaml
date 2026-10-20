@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_team"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const token=pm.variables.get('qa_token_familia');
+      if(!token) throw new Error('Iniciar sesión sintética familia primero');
+      pm.variables.set('qa_token',token);
+      pm.variables.set('qa_actor_id',pm.variables.get('qa_actor_familia'));
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Equipo rechazado',()=>pm.response.to.have.status(403));
+    language: text/javascript
+order: 8000

@@ -1,0 +1,33 @@
+$kind: http-request
+name: Agenda antes — registrar preservación e inicializar cita mínima
+url: "{{qa_api_url}}/rest/v1/rpc/aba_calendar_read_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+      if(!pm.variables.get('qa_http_student_ready')||!pm.variables.get('qa_identity_admin_a')||!pm.variables.get('qa_identity_admin_b')) throw new Error('Completar precondiciones del lote primero');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200)); if(pm.response.code!==200) throw new Error('HTTP inesperado; cuerpo omitido');
+      const d=pm.response.json(); if(d.actorId!==pm.variables.get('qa_actor_admin_a')||d.clinicId!==pm.variables.get('qa_clinic_a')||!d.students.some(r=>r.id==='b347646e-ff29-450b-aedf-9f9c015fb41a')||!d.professionals.some(r=>r.userId===pm.variables.get('qa_actor_admin_a'))) throw new Error('Agenda/participante autorizados no verificados');
+      const snap=rows=>rows.map(r=>({id:r.id,version:r.version,status:r.status,startsAt:r.startsAt,endsAt:r.endsAt,participants:r.participants.map(p=>p.kind+':'+(p.userId||p.personId)).sort(),linkedSessionId:r.linkedSessionId})).sort((a,b)=>a.id.localeCompare(b.id));
+      pm.variables.set('qa_calendar_baseline',JSON.stringify(snap(d.appointments)));
+      const guid=()=>pm.variables.replaceIn('{{$guid}}'); const id=guid(); const title='QA R5 POSTMAN V5 '+Date.now()+' '+id.slice(0,8);
+      const start=new Date(Date.now()+86400000);start.setUTCHours(15,0,0,0);const end=new Date(start.getTime()+1800000);
+      const input={studentId:'b347646e-ff29-450b-aedf-9f9c015fb41a',title,notes:'QA R5 POSTMAN V5 mínimo sin recordatorios',startsAt:start.toISOString(),endsAt:end.toISOString(),timeZone:'America/Santiago',participants:[{kind:'professional',userId:pm.variables.get('qa_actor_admin_a')}],reminderMinutesBefore:[],recurrence:null};
+      const create={schemaVersion:2,operationId:guid(),idempotencyKey:guid(),appointmentId:id,studentId:'b347646e-ff29-450b-aedf-9f9c015fb41a',expectedVersion:0,action:'create',input};
+      pm.variables.set('qa_http_id',id);pm.variables.set('qa_http_title',title);pm.variables.set('qa_http_input',JSON.stringify(input));pm.variables.set('qa_http_create',JSON.stringify(create));pm.variables.set('qa_http_phase','ready');pm.test('Preconsulta preservada',()=>pm.expect(d.appointments).to.be.an('array'));
+    language: text/javascript
+order: 6000

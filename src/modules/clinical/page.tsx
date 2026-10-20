@@ -3,6 +3,8 @@ import { clinicalContext } from './context';
 import { uuid } from './contracts';
 import { ClinicalWorkspace } from './workspace';
 import type { Database } from '@/lib/supabase/database.types';
+import { loadProgramSessionPageData } from '@/modules/program-session/program-session.server';
+import type { ProgramSessionPageData } from '@/modules/program-session/ports';
 
 type Row<T extends keyof Database['public']['Tables']>=Database['public']['Tables'][T]['Row'];
 export type SessionRecord=Omit<Row<'session_program_records'>,'dimension'> & {dimension:'percentage'|'frequency'|'interval'};
@@ -20,7 +22,7 @@ const recordColumns='id,client_id,session_id,program_version_id,dimension,payloa
 const assignmentColumns='id,organization_id,client_id,user_id,role,is_primary,status,effective_at,ended_at,created_by,test_run_id,created_at';
 
 export interface WorkspaceData {
-    email:string; choices:{id:string;name:string;role:string}[]; active:{id:string;name:string;role:string}|null;
+    userId:string; email:string; choices:{id:string;name:string;role:string}[]; active:{id:string;name:string;role:string}|null;
     students:Row<'clients'>[]; student:Row<'clients'>|null; capabilities:string[];
     guardians:(Row<'guardians'> & {relationship?:string|null;phone?:string|null})[]; siblings:Row<'siblings'>[];
     context:Row<'client_context_profiles'>|null; history:Row<'clinical_history_entries'>[]; consents:Row<'consent_records'>[];
@@ -31,7 +33,8 @@ export interface WorkspaceData {
 
 export async function ClinicalPage({studentId,programId,initialTab}:{studentId?:string;programId?:string;initialTab?:string}) {
     const {db,user,choices,active}=await clinicalContext();
-    const data:WorkspaceData={email:user.email??'',choices,active,students:[],student:null,capabilities:[],guardians:[],siblings:[],context:null,history:[],consents:[],programs:[],versions:[],sessions:[],records:[],assignments:[],team:[]};
+    let programSession:ProgramSessionPageData|null=null;
+    const data:WorkspaceData={userId:user.id,email:user.email??'',choices,active,students:[],student:null,capabilities:[],guardians:[],siblings:[],context:null,history:[],consents:[],programs:[],versions:[],sessions:[],records:[],assignments:[],team:[]};
     if(active) {
         const students=await db.from('clients').select(clientColumns).eq('organization_id',active.id).order('created_at',{ascending:false});
         if(students.error) throw new Error('No se pudieron cargar las carpetas.');
@@ -64,8 +67,9 @@ export async function ClinicalPage({studentId,programId,initialTab}:{studentId?:
             ]);
             if([guardians,siblings,context,history,consents,programs,versions,sessions,records,assignments].some(r=>r.error)) throw new Error('No se pudo cargar una sección clínica. Vuelve a intentar.');
             Object.assign(data,{guardians:guardians.data,siblings:siblings.data,context:context.data,history:history.data,consents:consents.data,programs:programs.data,versions:versions.data,sessions:sessions.data,records:records.data as unknown as SessionRecord[],assignments:assignments.data});
+            programSession=await loadProgramSessionPageData(active.id,studentId);
             if(programId && (!uuid.safeParse(programId).success || !data.programs.some(p=>p.id===programId))) notFound();
         }
     }
-    return <ClinicalWorkspace data={data} initialTab={initialTab} />;
+    return <ClinicalWorkspace data={data} programSession={programSession} initialTab={initialTab} />;
 }

@@ -14,7 +14,7 @@ describe('mapClientToStudentProfile', () => {
 
         expect(student.fullName).toBe('A.B.');
         expect(student.identityNumber).toBe('ABA-001');
-        expect(student.diagnosis).toBe('No disponible en esta vista');
+        expect(student.diagnosis).toBeNull();
         expect(student.familyMembers).toEqual([]);
         expect(student.medications).toEqual([]);
     });

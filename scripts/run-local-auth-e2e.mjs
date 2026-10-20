@@ -48,15 +48,8 @@ try {
   );
   exitCode = result.status ?? 1;
 } finally {
-  try {
-    execFileSync(process.execPath, [supabaseCli, 'db', 'reset', '--local'], {
-      cwd: root,
-      stdio: ['ignore', 'ignore', 'ignore'],
-    });
-  } catch {
-    console.error('No se pudo restablecer Supabase local después del E2E.');
-    exitCode = 1;
-  }
+  // Preserve the local database on success and failure. Fixture cleanup belongs
+  // to an explicit, scoped operation; never reconstruct development in finally.
   for (const file of generatedConfigFiles) writeFileSync(file.path, file.contents);
   rmSync(resolve(root, '.next-local-auth'), { recursive: true, force: true });
 }

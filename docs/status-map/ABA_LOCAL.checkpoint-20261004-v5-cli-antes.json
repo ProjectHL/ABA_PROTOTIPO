@@ -1,0 +1,593 @@
+{
+  "project": "ABA · cierre local",
+  "as_of": "2026-10-01",
+  "scope": "Entrega local. Chat, adjuntos de chat y R6 online diferidos. Cierre por hitos explícitos; no es un porcentaje de líneas de código.",
+  "baseline": "Checkout Desktop, main, HEAD 39071f8542968f334ab6732a9a4a222d4ad0a1a1 más cambios locales preservados; 404 requisitos integrados, 100 migraciones. Candidato BUILD_ID Q91hAGwYDkaVv3jWSO_0h; no versión final aceptada.",
+  "source_paths": [
+    "../CHECKLIST_EJECUCION_INTEGRAL_ABA_LOCAL.md",
+    "../handoffs/R4_CONSOLIDACION_CIERRE_LOCAL.md",
+    "../handoffs/R5_EJECUCION_V5.md",
+    "../MATRIZ_UX_CONTRATO_PERSISTENCIA_ABA_LOCAL.md"
+  ],
+  "decision_log": [
+    "R3/R4 es aceptación técnica, no funcional.",
+    "QA-014 es el único caso validado local/sintético; los demás siguen parciales o pendientes.",
+    "ARCHIVOS-013 no autoriza borrado físico sin aprobación específica del lote previsualizado.",
+    "No se calcula porcentaje global: categorías sin pesos comparables.",
+    "Cuarto corte V5: focales aprobados no cierran QA completos. Rutas/perfiles cubren 17 casos más una repetición móvil aprobada; no se declara una corrida única 18/18.",
+    "Corrección del denominador offline: los cuatro hitos focales estaban cumplidos, pero faltaba representar el gate transversal obligatorio. Se añade ese quinto hito pendiente: cierre por hitos pasa de 4/4 a 4/5 sin invalidar pruebas previas.",
+    "Captura: el hito de variantes/concurrencia focales se cumple con ciclo online dedicado, cinco dimensiones offline y conflictos/replay. El gate integral V1/V2 sigue pendiente.",
+    "Postman complementario inicial: 58/59 aserciones aprobadas y cinco errores de script; negativos con recurso sin resolver no acreditan aislamiento. Repetición de la colección corregida aún pendiente.",
+    "PWA instalada y abierta en Windows; instalación Android/iOS no acreditada. Realtime efectivo y correo local no quedan probados por polling o integración técnica."
+  ],
+  "next_checkpoint": "Repetir Postman complementario con PNG exacto; verificar Realtime, correo local y persistencia tras reinicio, conciliar cobertura integral. ARCHIVOS-013 requiere aprobación específica; QA-016 después del cierre.",
+  "categories": [
+    {
+      "id": "integracion",
+      "name": "Alcance e integración R3/R4",
+      "description": "404 requisitos, contratos, persistencia y rutas trazables.",
+      "state": "cerrado",
+      "hitos": [
+        {
+          "name": "Matriz reconciliada",
+          "hecho": true
+        },
+        {
+          "name": "Contratos y rutas consolidados",
+          "hecho": true
+        },
+        {
+          "name": "Gate técnico R4 aceptado para R5",
+          "hecho": true
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "R3/R4 consolidados; la funcionalidad se valida en R5.",
+      "evidence": [
+        {
+          "label": "Gate R4",
+          "path": "../handoffs/R4_CONSOLIDACION_CIERRE_LOCAL.md"
+        }
+      ],
+      "next_action": "No reabrir salvo defecto concreto de QA.",
+      "blocker": null,
+      "owner": "Equipo de cierre",
+      "verified_at": "2026-09-30",
+      "dependencies": []
+    },
+    {
+      "id": "identidad",
+      "name": "Identidad y permisos",
+      "description": "Auth, solicitudes V2, roles, grants, RLS y dos clínicas.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Boundary integrado",
+          "hecho": true
+        },
+        {
+          "name": "71 lecturas API focales repetidas",
+          "hecho": true
+        },
+        {
+          "name": "Gate transversal REST/RPC/Edge/Storage por perfil",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Aislamiento UI/API completo entre perfiles y clínicas.",
+      "evidence": [
+        {
+          "label": "Lecturas y Postman",
+          "path": "../handoffs/R5_LECTURAS_PERMISOS_Y_POSTMAN.md"
+        },
+        {
+          "label": "Cuarto corte V5: resultados y pendientes",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Completar escrituras, REST/RPC/Edge/Storage y cobertura transversal; rutas/perfiles 17 más repetición móvil aprobada. Postman base 103 solicitudes/187 aserciones; complementario pendiente.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "integracion"
+      ]
+    },
+    {
+      "id": "clinica",
+      "name": "Ficha clínica",
+      "description": "Ficha, historial, medicación, personas y persistencia.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Implementación integrada",
+          "hecho": true
+        },
+        {
+          "name": "UI focal escritorio/móvil y recarga",
+          "hecho": true
+        },
+        {
+          "name": "Matriz completa por ruta/perfil y persistencia",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Flujos críticos de ficha y Server Actions autorizados con relectura persistente.",
+      "evidence": [
+        {
+          "label": "UI ficha",
+          "path": "../handoffs/R5_UI_FICHA_Y_BUILD.md"
+        },
+        {
+          "label": "Cuarto corte V5: resultados y pendientes",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Completar rutas, perfiles y relectura tras reinicio.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "identidad"
+      ]
+    },
+    {
+      "id": "captura",
+      "name": "Programas y captura",
+      "description": "Programas, sesiones, cinco dimensiones, conflictos y V1/V2.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Programas/sesión V2 integrados",
+          "hecho": true
+        },
+        {
+          "name": "Cinco dimensiones verificadas focalmente",
+          "hecho": true
+        },
+        {
+          "name": "Variantes y concurrencia focales verificadas",
+          "hecho": true,
+          "evidence": "../handoffs/R5_EJECUCION_V5.md"
+        },
+        {
+          "name": "Gate integral V1/V2",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Captura reconciliada en UI, RPC, datos y reintentos.",
+      "evidence": [
+        {
+          "label": "Cinco dimensiones",
+          "path": "../handoffs/R5_PROGRAMAS_Y_CINCO_DIMENSIONES.md"
+        },
+        {
+          "label": "Sesiones",
+          "path": "../handoffs/R5_SESIONES_BORRADOR_Y_CORRECCION.md"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Reconciliar cobertura integral V1/V2 y regresiones; ciclo dedicado desktop/mobile y concurrencia focal pasan.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "clinica",
+        "identidad"
+      ]
+    },
+    {
+      "id": "familia",
+      "name": "Colaboración y familia",
+      "description": "Vínculos, portal, publicación, descarga, recordatorios y revocación; sin chat.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Boundary familiar integrado",
+          "hecho": true
+        },
+        {
+          "name": "Descarga/revocación focal escritorio/móvil",
+          "hecho": true
+        },
+        {
+          "name": "Recorrido integral de colaboración y permisos",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Solo recursos publicados y acceso revocado oportunamente en UI/API.",
+      "evidence": [
+        {
+          "label": "Familia y documentos",
+          "path": "../handoffs/R5_DOCUMENTOS_STORAGE.md"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Conciliar recorrido integral y aislamiento; externo 2/2 y familia documental escritorio/móvil 2/2 pasan. Falta entrega Realtime efectiva y correo local.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "identidad",
+        "clinica"
+      ]
+    },
+    {
+      "id": "archivos",
+      "name": "Documentos y limpieza física",
+      "description": "Versiones, Storage, archivo lógico y ARCHIVOS-013.",
+      "state": "bloqueado",
+      "hitos": [
+        {
+          "name": "Documentos y descargas integrados",
+          "hecho": true
+        },
+        {
+          "name": "Versiones, límites y revocación focales",
+          "hecho": true
+        },
+        {
+          "name": "Preview, guardas y respaldo de lote",
+          "hecho": true
+        },
+        {
+          "name": "Lote autorizado, recibos y recuperación aislada",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "ARCHIVOS-013 validado con lote aprobado y sin tocar datos reales.",
+      "evidence": [
+        {
+          "label": "Preparación ARCHIVOS-013",
+          "path": "../handoffs/R5_ARCHIVOS_013_PREPARACION.md"
+        },
+        {
+          "label": "Storage",
+          "path": "../handoffs/R5_DOCUMENTOS_STORAGE.md"
+        },
+        {
+          "label": "Cuarto corte V5: resultados y pendientes",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Tras aprobación específica del preview 796f24cb-235e-4dc8-a3d8-bb6370b0047e y su hash, revalidar lote/respaldo/referencias; aplicar sólo dos PNG y acreditar recibos, reintento y recuperación aislada.",
+      "blocker": "Falta autorización del usuario para el lote previsualizado; ningún borrado físico ejecutado.",
+      "owner": "Usuario: aprobación; QA: ejecución",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "identidad",
+        "clinica"
+      ]
+    },
+    {
+      "id": "agenda",
+      "name": "Agenda, gestión y soporte",
+      "description": "Citas, DST, planes internos, recordatorios y tickets.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Módulos integrados",
+          "hecho": true
+        },
+        {
+          "name": "UI y aislamiento focales",
+          "hecho": true
+        },
+        {
+          "name": "Variantes horarias/participantes y gate global",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Agenda y gestión operables con permisos y persistencia probados.",
+      "evidence": [
+        {
+          "label": "Agenda y gestión",
+          "path": "../handoffs/R5_AGENDA_GESTION.md"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Conciliar gate global; horarios y participantes adicionales focales pasan.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "identidad",
+        "clinica"
+      ]
+    },
+    {
+      "id": "offline",
+      "name": "Offline y sincronización",
+      "description": "PWA, cola, reconexión, replay, revocación y documentos sin red.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Cola/PWA integradas",
+          "hecho": true
+        },
+        {
+          "name": "Núcleo offline focal escritorio/móvil",
+          "hecho": true
+        },
+        {
+          "name": "Variantes de captura y fallo ACK",
+          "hecho": true
+        },
+        {
+          "name": "Instalación y apertura PWA Windows",
+          "hecho": true
+        },
+        {
+          "name": "Regresión y gate transversal offline",
+          "hecho": false,
+          "evidence": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Pendientes sobreviven fallos sin pérdida, duplicación ni fuga de permisos.",
+      "evidence": [
+        {
+          "label": "QA offline",
+          "path": "../handoffs/R5_OFFLINE_QA.md"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        },
+        {
+          "label": "V5: PWA Windows instalada, standalone y recarga 1/1",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Completar regresión offline y gate transversal; instalación Windows acreditada.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "captura",
+        "identidad"
+      ]
+    },
+    {
+      "id": "resultados",
+      "name": "Resultados y dashboard",
+      "description": "Gráficos, metas, series, PDF/CSV y legado V1.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Resultados integrados",
+          "hecho": true
+        },
+        {
+          "name": "V2/PDF/CSV focal escritorio/móvil",
+          "hecho": true
+        },
+        {
+          "name": "V1 histórico positivo en escritorio",
+          "hecho": true
+        },
+        {
+          "name": "V1 móvil y PDF inspeccionado",
+          "hecho": true
+        },
+        {
+          "name": "Gate transversal QA-012",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "V1/V2 y exportaciones reconciliados con datos y permisos en escritorio/móvil.",
+      "evidence": [
+        {
+          "label": "Resultados",
+          "path": "../handoffs/R5_RESULTADOS_EXPORTACIONES.md"
+        },
+        {
+          "label": "Prueba V1",
+          "path": "../../tests/e2e/r5.results.spec.mjs"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Completar gate transversal QA-012; regresión V2 repetida 2/2, diez PDF y catorce páginas inspeccionadas.",
+      "blocker": null,
+      "owner": "QA R5",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "captura",
+        "identidad"
+      ]
+    },
+    {
+      "id": "operacion",
+      "name": "Operación y recuperación",
+      "description": "Build, tipos, arranque, respaldo, restore y manuales.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "Build y servicios verificados",
+          "hecho": true
+        },
+        {
+          "name": "QA-014 restore aislado validado",
+          "hecho": true
+        },
+        {
+          "name": "Manual y versión final reconciliados",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": 100,
+      "validation_pct": null,
+      "closure_criterion": "Operador puede arrancar, respaldar y restaurar versión aceptada.",
+      "evidence": [
+        {
+          "label": "Operación",
+          "path": "../handoffs/R5_OPERACION_RESPALDO.md"
+        },
+        {
+          "label": "Runbook",
+          "path": "../runbooks/LOCAL_R5_RECOVERY.md"
+        },
+        {
+          "label": "Cuarto corte V5: resultados y pendientes",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Verificar persistencia crítica tras reinicio controlado y conciliar manuales/versión final; build candidato Q91hAGwYDkaVv3jWSO_0h aprobado.",
+      "blocker": null,
+      "owner": "Equipo de cierre",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "integracion"
+      ]
+    },
+    {
+      "id": "qa",
+      "name": "QA R5 y aceptación",
+      "description": "Postman, UI/Server Actions, permisos, regresiones e informe final.",
+      "state": "en_validacion",
+      "hitos": [
+        {
+          "name": "QA-001",
+          "hecho": false
+        },
+        {
+          "name": "QA-002",
+          "hecho": false
+        },
+        {
+          "name": "QA-003",
+          "hecho": false
+        },
+        {
+          "name": "QA-004",
+          "hecho": false
+        },
+        {
+          "name": "QA-005",
+          "hecho": false
+        },
+        {
+          "name": "QA-006",
+          "hecho": false
+        },
+        {
+          "name": "QA-007",
+          "hecho": false
+        },
+        {
+          "name": "QA-008",
+          "hecho": false
+        },
+        {
+          "name": "QA-009",
+          "hecho": false
+        },
+        {
+          "name": "QA-010",
+          "hecho": false
+        },
+        {
+          "name": "QA-011",
+          "hecho": false
+        },
+        {
+          "name": "QA-012",
+          "hecho": false
+        },
+        {
+          "name": "QA-013",
+          "hecho": false
+        },
+        {
+          "name": "QA-014",
+          "hecho": true
+        },
+        {
+          "name": "QA-015",
+          "hecho": false
+        },
+        {
+          "name": "QA-016",
+          "hecho": false
+        }
+      ],
+      "implementation_pct": null,
+      "validation_pct": 6.25,
+      "closure_criterion": "QA-001–016 con evidencia y cero bloqueos; aceptación local explícita.",
+      "evidence": [
+        {
+          "label": "Índice QA",
+          "path": "../CHECKLIST_EJECUCION_INTEGRAL_ABA_LOCAL.md"
+        },
+        {
+          "label": "Ejecución V5 (en curso)",
+          "path": "../handoffs/R5_EJECUCION_V5.md"
+        }
+      ],
+      "next_action": "Completar Postman complementario, Realtime, correo, persistencia, fidelidad/cobertura y regresiones; conservar QA-014 como único caso completo; presentar QA-016 al cerrar gates.",
+      "blocker": null,
+      "owner": "QA R5 y usuario",
+      "verified_at": "2026-10-01",
+      "dependencies": [
+        "identidad",
+        "clinica",
+        "captura",
+        "familia",
+        "archivos",
+        "agenda",
+        "offline",
+        "resultados",
+        "operacion"
+      ]
+    },
+    {
+      "id": "futuro",
+      "name": "Upgrades posteriores",
+      "description": "Chat, adjuntos de chat y R6 online, fuera del cierre local.",
+      "state": "diferido",
+      "hitos": [],
+      "implementation_pct": null,
+      "validation_pct": null,
+      "closure_criterion": "Fuera de alcance hasta aceptación local.",
+      "evidence": [
+        {
+          "label": "Decisión chat",
+          "path": "../DECISION_CHAT_UPGRADE_POSTERIOR.md"
+        }
+      ],
+      "next_action": "No iniciar durante este cierre.",
+      "blocker": null,
+      "owner": "Producto futuro",
+      "verified_at": "2026-09-30",
+      "dependencies": []
+    }
+  ]
+}

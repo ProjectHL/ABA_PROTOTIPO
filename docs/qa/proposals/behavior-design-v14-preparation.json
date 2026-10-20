@@ -1,0 +1,70 @@
+{
+  "status": "prepared-not-executed",
+  "buildId": "-N6_dbDzA8P56-Y0qP5nR",
+  "migrationCatalog": 103,
+  "tests": [
+    "tests/e2e/r5.behavior-design-v14.spec.mjs",
+    "playwright.behavior-design-v14.config.ts"
+  ],
+  "staticChecks": [
+    "lint PASS",
+    "Playwright --list 2 cases desktop/mobile, no browser/Auth"
+  ],
+  "profiles": [
+    "admin-a synthetic"
+  ],
+  "studentId": "94d73448-03ec-495c-8add-30c3cfe05eaa",
+  "fixturePlan": "One minimal new own behavior program per project; no sessions or capture/roles/grants",
+  "fields": [
+    "title",
+    "topography",
+    "operationalDefinition",
+    "currentDimension",
+    "precursorBehaviors",
+    "hypothesizedFunctionNotes",
+    "replacementBehavior",
+    "procedure",
+    "preventionStrategy",
+    "responseStrategy",
+    "masteryCriteria",
+    "crisisPlan",
+    "measurementDimension duration",
+    "functions attention+escape"
+  ],
+  "steps": [
+    "Ordinary current identity/resource/DTO guard and original baseline read at execution",
+    "Save full draft exact design↔command↔DTO; reload/reopen each UI value",
+    "Publish original with draft/lifecycle ACK",
+    "Change successor topography then cancel accepting discard: command count and DTO unchanged",
+    "Reopen successor preserving all extras; edit topography/prevention only; save exact predecessor/full design, immutable original",
+    "Reload/reopen successor; publish; original remains exact except superseded state; successor released/current; read-only editor cancel",
+    "Compare all existing programs/sessions/records and own/original clinical DTO exact; 6 correlated ACK per project"
+  ],
+  "actionIds": [
+    "PROGRAMAS-004",
+    "PROGRAMAS-005",
+    "PROGRAMAS-006",
+    "PROGRAMAS-007",
+    "PROGRAMAS-024",
+    "PROGRAMAS-025",
+    "PROGRAMAS-026",
+    "PROGRAMAS-027",
+    "PROGRAMAS-028",
+    "PROGRAMAS-029",
+    "PROGRAMAS-031",
+    "PROGRAMAS-036"
+  ],
+  "guards": [
+    "BUILD_ID exact V14",
+    "Pending journal blocks rerun",
+    "Command before route.fetch; receipt operation/idempotency/resource exact",
+    "Only own prefix behavior commands and own program publication allowed",
+    "Original b347/session97 read only"
+  ],
+  "authorization": "Design approved by root; execution waits serial Auth release",
+  "results": "None; no Auth/UI execution yet",
+  "limits": [
+    "No export bytes, capture, security-allprofiles or fullQA003 approval",
+    "Do not edit canon/product/SQL/migrations"
+  ]
+}

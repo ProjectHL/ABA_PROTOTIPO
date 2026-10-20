@@ -1,0 +1,135 @@
+{
+  "recordedAt": "2026-10-18T21:29:50.770Z",
+  "date": "2026-10-18",
+  "status": "PASS_FOCAL",
+  "actionId": "OFFLINE-016",
+  "buildId": "7AtdY0nw3olpUC5PDvk7o",
+  "runs": [
+    {
+      "passed": true,
+      "buildId": "7AtdY0nw3olpUC5PDvk7o",
+      "project": "desktop",
+      "sessionId": "abbbd3a2-4d4f-4b2c-b6dd-c025c348cdd2",
+      "checks": [
+        "prior-real-UI-conflict-review-lineage-preserved",
+        "discard-cancel-preserves-all-three",
+        "discard-confirm-removes-only-pending",
+        "ACK-and-superseded-raw-rows-preserved",
+        "cache-and-attachments-preserved",
+        "reconnect-no-discarded-command-write",
+        "five-correlated-ACK-and-one-conflict",
+        "own-session-only-cancelled-archived",
+        "all-prior-records-programs-sessions-and-clinical-originals-exact"
+      ],
+      "receipts": [
+        {
+          "stage": "cancel-own",
+          "operationId": "2cc37b5a-f724-4dfe-b800-0740c8dd19bf",
+          "receiptId": "7351dd01-0247-4d4e-9fe9-526df2051996",
+          "serverVersion": 4
+        },
+        {
+          "stage": "archive-own",
+          "operationId": "064d0d37-b27b-493a-b9ca-f9cead03ba02",
+          "receiptId": "1a436652-e64c-4e56-81a5-088da6b3f903",
+          "serverVersion": 5
+        }
+      ],
+      "queueIds": [
+        "834b2cbc-ade7-466d-a831-695e9da7986c",
+        "b08cd845-e035-4ab4-87eb-5f652c5c994b"
+      ],
+      "journal": ".aba.local/qa/queue-retention-resume-v21-desktop-journal.json",
+      "sourceFile": ".aba.local/qa/queue-retention-v21-desktop-journal.json",
+      "sourceSha256": "3ffa7c261a095c82a869b6070e304db52cd9bc5051935de98926e6a903812c50",
+      "priorReceipts": [
+        "2a4e3222-87b0-4726-ae95-80bb96a18f0b",
+        "d2d2b1a8-197c-40cf-8119-a6e6142d81e0",
+        "4c83beee-62a6-4431-b9d2-5dbe9544df16"
+      ],
+      "totalReceipts": 5,
+      "limits": [
+        "Recovery uses the exact same desktop synthetic session and exact three saved raw rows restored while offline; no recreated conflict or new session.",
+        "Retained ACK/superseded rows and cache remain in this browser context until normal test context closure; raw snapshots preserved in journal.",
+        "No attachment blobs seeded: attachment selection verified by separate packet."
+      ]
+    },
+    {
+      "passed": true,
+      "buildId": "7AtdY0nw3olpUC5PDvk7o",
+      "project": "mobile",
+      "sessionId": "20d0c055-da56-4a88-82fb-23426fbe93e7",
+      "checks": [
+        "real-UI-conflict-review-lineage",
+        "discard-cancel-preserves-all-three",
+        "discard-confirm-removes-only-pending",
+        "ACK-and-superseded-raw-rows-preserved",
+        "cache-and-attachments-preserved",
+        "reconnect-no-discarded-command-write",
+        "five-correlated-ACK-and-one-conflict",
+        "own-session-only-cancelled-archived",
+        "all-prior-records-programs-sessions-and-clinical-originals-exact"
+      ],
+      "receipts": [
+        {
+          "stage": "start-own",
+          "operationId": "edf24041-fd92-4f1f-9487-f083782af3e4",
+          "receiptId": "331a3c91-30d4-4a47-9808-933c0c69cb5a",
+          "serverVersion": 1
+        },
+        {
+          "stage": "competitor",
+          "operationId": "e8ffe794-9886-48d7-82e6-3d5aef5a3cf2",
+          "receiptId": "d1854ec7-15f8-46bf-9b7b-d0d9f9274ae4",
+          "serverVersion": 2
+        },
+        {
+          "stage": "replacement",
+          "operationId": "37fd8b29-ce80-499f-9879-09516e64ad36",
+          "receiptId": "e8c94ef9-bea2-495e-a625-92bdf4dad102",
+          "serverVersion": 3
+        },
+        {
+          "stage": "cancel-own",
+          "operationId": "e1c0c29b-f3c9-4148-87ff-53091a5571d0",
+          "receiptId": "ebd280b6-3880-4b4e-9333-7ea0eb784fbd",
+          "serverVersion": 4
+        },
+        {
+          "stage": "archive-own",
+          "operationId": "5312d8b8-27fe-41aa-adab-8e84ec752fc2",
+          "receiptId": "bf43e4ee-805a-425f-9d5c-196d0ac48d6c",
+          "serverVersion": 5
+        }
+      ],
+      "queueIds": [
+        "31a8bd17-405e-4174-9ab6-461f2fa0bdb1",
+        "bbe065d7-74f2-48e1-ad60-3cc92064bedb"
+      ],
+      "journal": ".aba.local/qa/queue-retention-mobile-resume-v21-mobile-journal.json",
+      "sourceFile": ".aba.local/qa/queue-retention-v21-mobile-journal.json",
+      "sourceSha256": "1a3079f439fa2042d373bd01971a39bf3e0ebf8c97b5961240d77c20cc58b8da",
+      "limits": [
+        "Resumed same mobile session after initial start ACK; no session recreated. All remaining commands through UI.",
+        "Retained ACK/superseded rows and cache remain in this browser context until normal test context closure; raw snapshots preserved in journal.",
+        "No attachment blobs seeded: attachment selection verified by separate packet."
+      ]
+    }
+  ],
+  "hashes": {
+    ".aba.local/qa/queue-retention-resume-v21-desktop-safe.json": "23c0b160f32b4d66bb126463ce70ed62735e09f4488e58ba053acacf82a5a3cb",
+    ".aba.local/qa/queue-retention-mobile-resume-v21-mobile-safe.json": "f58af8b75f4313f529c4c2dccffb568fe8246523c3f53dad9169959ae62cf94a",
+    "tests/e2e/r5.queue-retention-v21.spec.mjs": "a8e7eb8fa34ec4afe6d45398bccdc10c046576c5861b0ffeedc1bf0435617618",
+    "tests/e2e/r5.queue-retention-resume-v21.spec.mjs": "d600e222472b6b83ea123ad54eaa19f62dc2327ef7f5c06a8ebe34c28d3d3553",
+    "tests/e2e/r5.queue-retention-mobile-resume-v21.spec.mjs": "c7e583d3af1aa76da2bd62bd41a23c14cc8b2d6f4629a26b05d9408f00012ce6",
+    ".aba.local/qa/queue-retention-v21-desktop-journal.json": "3ffa7c261a095c82a869b6070e304db52cd9bc5051935de98926e6a903812c50",
+    ".aba.local/qa/queue-retention-v21-mobile-journal.json": "1a3079f439fa2042d373bd01971a39bf3e0ebf8c97b5961240d77c20cc58b8da"
+  },
+  "limits": [
+    "Desktop inicial interrumpido por handler residual de diálogo del test; corregido y recuperada misma sesión.",
+    "Mobile inicial: notificación interceptó clic Descargar ficha tras primer ACK. Reanudación con contexto nuevo pasó; superposición del aviso móvil pendiente de evaluación visual, no declarada corregida.",
+    "Caché sin blobs adjuntos en este caso; selección de adjuntos tiene evidencia separada.",
+    "QA003/004/014/015/016 siguen abiertos; QA11/16.",
+    "PROGRAMAS037: ensayo V1 no encontró diseño histórico en alumno original; no aprobado. Registro de medición V1 existente no sustituye diseño V1."
+  ]
+}

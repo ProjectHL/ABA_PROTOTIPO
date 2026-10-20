@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/e2e',testMatch:'r5.queue-retention-resume-v21.spec.mjs',workers:1,retries:0,fullyParallel:false,reporter:'line',outputDir:'.aba.local/qa/queue-retention-resume-v21-output',expect:{timeout:15000},use:{baseURL:'http://localhost:3001',channel:'chrome',actionTimeout:15000,trace:'off',video:'off',screenshot:'off',serviceWorkers:'block'},projects:[{name:'desktop',use:{viewport:{width:1440,height:900}}}]});

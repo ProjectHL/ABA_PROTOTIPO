@@ -1,0 +1,35 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/local.Dockerfile
+    working_dir: /workspace
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+      NODE_ENV: development
+      ABA_LOCAL_MODE: 'true'
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_INTERNAL_URL: http://supabase_kong_aba-reintegration-local:8000
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?run local/start.ps1}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+    networks:
+      - aba_stack
+    volumes:
+      - ../:/workspace
+      # Mask user staging files without deleting or editing them on the host.
+      - ../.aba.local/browser.env:/workspace/.env:ro
+      - ../.aba.local/browser.env:/workspace/.env.local:ro
+      - ../.aba.local/browser.env:/workspace/.env.development:ro
+      - ../.aba.local/browser.env:/workspace/.env.development.local:ro
+      - local_node_modules:/workspace/node_modules
+      - local_next:/workspace/.next
+    command: ['sh', '-c', 'npm ci && npm run dev -- --webpack --hostname 0.0.0.0']
+volumes:
+  local_node_modules:
+  local_next:
+networks:
+  aba_stack:
+    external: true
+    name: aba-reintegration-local

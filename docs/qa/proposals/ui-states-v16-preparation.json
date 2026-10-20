@@ -1,0 +1,61 @@
+{
+  "status": "prepared-not-executed",
+  "buildId": "SqXFb86Tn89rgGpuEGkKu",
+  "distDir": ".aba.local/qa/next-build-v16-medication",
+  "catalogContext": 103,
+  "tests": [
+    "tests/e2e/r5.ui-states-v16.spec.mjs",
+    "playwright.ui-states-v16.config.ts"
+  ],
+  "staticChecks": [
+    "eslint PASS",
+    "Playwright --list 2 cases desktop/mobile; no Auth/browser execution"
+  ],
+  "existingEvidenceNotRepeated": [
+    "dashboard-controls-v12: welcome/active+finished expansion/program+session navigation",
+    "authorized-search-v13: positive student/program/document types, negative clinicB and modal close",
+    "clinical-field-controls-v11: student fields/filter/menu read paths"
+  ],
+  "plannedCoverage": [
+    {
+      "surface": "Dashboard",
+      "fault": "Manifest exportedName loadDashboardSnapshot; first request held then abort before server forward",
+      "assertions": [
+        "Real loader text and Actualizar disabled; no metric cards",
+        "Actual error Panel no disponible; loader gone; retry enabled",
+        "Real Actualizar succeeds; counts match ordinary dashboard DTO",
+        "Second refresh abort preserves previous confirmed metrics plus warning; next retry clears error"
+      ]
+    },
+    {
+      "surface": "AuthorizedSearch",
+      "fault": "Manifest searchAuthorizedResources; single request held then abort",
+      "assertions": [
+        "Real busy text and disabled input; Escape cannot close while busy",
+        "Real alert/error nonempty; same query retained and enabled",
+        "Real Buscar retry results match ordinary RPC title/subtitle/order/count",
+        "Escape closes after recovery"
+      ]
+    },
+    {
+      "surface": "Students",
+      "fault": "Manifest listAuthorizedStudents request held then continued real server read",
+      "assertions": [
+        "Dashboard Ver carpetas real navigation; loader and no list filter until response",
+        "Release real read; authorized own94 card exact displayName/clinicalID",
+        "Real card menu Ver carpeta; route and persisted name/clinicalID fields",
+        "Real Volver a la lista; real sidebar Dashboard route/counts"
+      ]
+    }
+  ],
+  "faultScope": "Only Playwright page route handler for loopback NextAction read IDs; no server RPC/DB/Auth/Storage modifications or fabricated Flight",
+  "writeGuard": "Any parsed operationId+idempotencyKey command aborted before forwarding; attemptedWrites must remain0",
+  "preservation": "Ordinary own94/originalb347 clinical+program-session DTO deep equality, session97 readonly",
+  "omissions": [
+    "app/error global boundary not deterministically provoked by browser read abort; no global error claim",
+    "app/loading route fallback not exercised; only concrete client projection loaders",
+    "No offline/server-outage/Storage/Reatime fault or all-profile QA coverage"
+  ],
+  "executionGate": "Root just freed Auth; run desktop first, mobile only after terminal PASS; inspect pending journal rather than blind repeat",
+  "results": "None yet"
+}

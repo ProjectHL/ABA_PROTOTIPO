@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
     Stack,
     Group,
     Button,
     SegmentedControl,
+    ScrollArea,
     Title,
     Table,
     Badge,
@@ -15,24 +17,29 @@ import {
     Divider
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import {
     Settings,
     ClipboardCheck,
     TrendingUp,
     Plus,
     ChevronDown,
-    Check,
     AlertCircle
 } from 'lucide-react';
 import { type Program, type ProgramStatus } from '@/api/programsData';
 
+export type DashboardStatus=ProgramStatus|'draft';
+export type ProgramDashboardItem=Program extends infer Item ? Item extends Program ? Omit<Item,'status'>&{status:DashboardStatus}:never:never;
+
 interface ProgramsDashboardProps {
-    programs: Program[];
+    programs: ProgramDashboardItem[];
     onDesignProgram: (programId: string) => void;
     onRegisterData: (programId: string) => void;
     onViewChart: (programId: string) => void;
     onCreateProgram: (category: 'skill-acquisition' | 'behavior-management') => void;
+    /** Must resolve true only after a correlated persisted receipt. */
+    onChangeStatus?: (program: ProgramDashboardItem, status: ProgramStatus) => Promise<boolean>;
+    canManage?: boolean;
+    operationNotice?: ReactNode;
 }
 
 export function ProgramsDashboard({
@@ -41,19 +48,29 @@ export function ProgramsDashboard({
     onRegisterData,
     onViewChart,
     onCreateProgram,
+    onChangeStatus,
+    canManage=true,
+    operationNotice,
 }: ProgramsDashboardProps) {
-    const [programsList, setProgramsList] = useState<Program[]>(initialPrograms);
-    const [statusFilter, setStatusFilter] = useState<ProgramStatus | 'all'>('active');
+    const [programsList, setProgramsList] = useState<ProgramDashboardItem[]>(initialPrograms);
+    const [statusFilter, setStatusFilter] = useState<DashboardStatus | 'all'>('active');
+    const [savingStatus, setSavingStatus] = useState(false);
+    const savingStatusRef = useRef(false);
+    const [statusError, setStatusError] = useState('');
 
     // Estado para cambio de status
-    const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+    const [selectedProgram, setSelectedProgram] = useState<ProgramDashboardItem | null>(null);
     const [targetStatus, setTargetStatus] = useState<ProgramStatus | null>(null);
     const [confirmModalOpened, { open: openConfirmModal, close: closeConfirmModal }] = useDisclosure(false);
 
-    // Sincronizar si props cambian (para cuando creemos nuevos programas desde fuera)
-    useEffect(() => {
-        setProgramsList(initialPrograms);
-    }, [initialPrograms]);
+    useEffect(() => setProgramsList(initialPrograms), [initialPrograms]);
+    // A retry can complete from the shared operation banner instead of this modal.
+    // Close only after the authoritative list actually exposes the requested state.
+    useEffect(()=>{
+        if(selectedProgram&&targetStatus&&initialPrograms.some(item=>item.id===selectedProgram.id&&item.status===targetStatus)){
+            closeConfirmModal();setSelectedProgram(null);setTargetStatus(null);
+        }
+    },[initialPrograms,selectedProgram,targetStatus,closeConfirmModal]);
 
     const filteredPrograms = programsList.filter((program) =>
         statusFilter === 'all' ? true : program.status === statusFilter
@@ -62,7 +79,7 @@ export function ProgramsDashboard({
     const skillPrograms = filteredPrograms.filter((p) => p.category === 'skill-acquisition');
     const behaviorPrograms = filteredPrograms.filter((p) => p.category === 'behavior-management');
 
-    const getStatusColor = (status: ProgramStatus) => {
+    const getStatusColor = (status: DashboardStatus) => {
         switch (status) {
             case 'active': return 'green';
             case 'achieved': return 'blue';
@@ -72,7 +89,7 @@ export function ProgramsDashboard({
         }
     };
 
-    const getStatusLabel = (status: ProgramStatus) => {
+    const getStatusLabel = (status: DashboardStatus) => {
         switch (status) {
             case 'active': return 'Activo';
             case 'achieved': return 'Logrado';
@@ -82,34 +99,26 @@ export function ProgramsDashboard({
         }
     };
 
-    const handleStatusClick = (program: Program, newStatus: ProgramStatus) => {
+    const handleStatusClick = (program: ProgramDashboardItem, newStatus: ProgramStatus) => {
         if (program.status === newStatus) return;
         setSelectedProgram(program);
         setTargetStatus(newStatus);
         openConfirmModal();
     };
 
-    const confirmStatusChange = () => {
-        if (!selectedProgram || !targetStatus) return;
-
-        // Actualizar estado localmente
-        setProgramsList(prev => prev.map(p =>
-            p.id === selectedProgram.id ? { ...p, status: targetStatus } : p
-        ));
-
-        notifications.show({
-            title: 'Estado Actualizado',
-            message: `El programa "${selectedProgram.name}" ahora está ${getStatusLabel(targetStatus)}.`,
-            color: 'teal',
-            icon: <Check size={16} />
-        });
-
-        closeConfirmModal();
-        setSelectedProgram(null);
-        setTargetStatus(null);
+    const confirmStatusChange = async () => {
+        if (!selectedProgram || !targetStatus || savingStatusRef.current) return;
+        if (!onChangeStatus || !canManage) { setStatusError(canManage?'La persistencia V2 no está conectada en esta vista; no se cambió el estado.':'No tienes capacidad program.edit para esta ficha.'); return; }
+        savingStatusRef.current=true;setSavingStatus(true); setStatusError('');
+        try {
+            if (!await onChangeStatus(selectedProgram, targetStatus)) return;
+            closeConfirmModal(); setSelectedProgram(null); setTargetStatus(null);
+        } catch (cause) {
+            setStatusError(cause instanceof Error ? cause.message : 'Resultado desconocido; conserva el mismo comando.');
+        } finally { savingStatusRef.current=false;setSavingStatus(false); }
     };
 
-    const renderStatusBadge = (program: Program) => (
+    const renderStatusBadge = (program: ProgramDashboardItem) => (
         <Menu shadow="md" width={200} position="bottom-end">
             <Menu.Target>
                 <div style={{ cursor: 'pointer', display: 'inline-block' }}>
@@ -125,19 +134,23 @@ export function ProgramsDashboard({
             </Menu.Target>
             <Menu.Dropdown>
                 <Menu.Label>Cambiar estado</Menu.Label>
+                {(!onChangeStatus||!canManage) && <Menu.Label c="orange">{canManage?'Persistencia V2 no conectada':'Sin capacidad program.edit'}</Menu.Label>}
                 <Menu.Item
+                    disabled={!onChangeStatus||!canManage}
                     leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-green-6)' }} />}
                     onClick={() => handleStatusClick(program, 'active')}
                 >
                     Activo
                 </Menu.Item>
                 <Menu.Item
+                    disabled={!onChangeStatus||!canManage}
                     leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-blue-6)' }} />}
                     onClick={() => handleStatusClick(program, 'achieved')}
                 >
                     Logrado
                 </Menu.Item>
                 <Menu.Item
+                    disabled={!onChangeStatus||!canManage}
                     leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-yellow-6)' }} />}
                     onClick={() => handleStatusClick(program, 'paused')}
                 >
@@ -145,6 +158,7 @@ export function ProgramsDashboard({
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
+                    disabled={!onChangeStatus||!canManage}
                     color="red"
                     leftSection={<div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mantine-color-red-6)' }} />}
                     onClick={() => handleStatusClick(program, 'discontinued')}
@@ -166,17 +180,21 @@ export function ProgramsDashboard({
                 <Text size="sm" c="dimmed">
                     Gestiona los programas educativos y conductuales del estudiante.
                 </Text>
+                <ScrollArea maw="100%" type="auto" offsetScrollbars="x">
                 <SegmentedControl
+                    w="max-content"
                     value={statusFilter}
-                    onChange={(value) => setStatusFilter(value as ProgramStatus | 'all')}
+                    onChange={(value) => setStatusFilter(value as DashboardStatus | 'all')}
                     data={[
                         { label: 'Activos', value: 'active' },
                         { label: 'Logrados', value: 'achieved' },
                         { label: 'Pausa', value: 'paused' },
                         { label: 'Descontinuados', value: 'discontinued' },
+                        { label: 'Borradores', value: 'draft' },
                         { label: 'Todos', value: 'all' },
                     ]}
                 />
+                </ScrollArea>
             </Group>
 
             <Divider />
@@ -187,6 +205,7 @@ export function ProgramsDashboard({
                     <Title order={3}>Programas de Adquisición de Habilidades</Title>
                     <Button
                         variant="light"
+                        disabled={!canManage}
                         leftSection={<Plus size={18} />}
                         onClick={() => onCreateProgram('skill-acquisition')}
                     >
@@ -194,6 +213,7 @@ export function ProgramsDashboard({
                     </Button>
                 </Group>
 
+                <Table.ScrollContainer minWidth={700}>
                 <Table highlightOnHover withTableBorder>
                     <Table.Thead>
                         <Table.Tr>
@@ -235,6 +255,7 @@ export function ProgramsDashboard({
                                             <ActionIcon
                                                 variant="light"
                                                 color="blue"
+                                                disabled={!canManage}
                                                 onClick={() => onDesignProgram(program.id)}
                                                 title="Diseño"
                                             >
@@ -263,6 +284,7 @@ export function ProgramsDashboard({
                         )}
                     </Table.Tbody>
                 </Table>
+                </Table.ScrollContainer>
             </div>
 
             {/* Behavior Management Programs Table */}
@@ -271,6 +293,7 @@ export function ProgramsDashboard({
                     <Title order={3}>Programas de Manejo de Conducta</Title>
                     <Button
                         variant="light"
+                        disabled={!canManage}
                         leftSection={<Plus size={18} />}
                         onClick={() => onCreateProgram('behavior-management')}
                     >
@@ -278,6 +301,7 @@ export function ProgramsDashboard({
                     </Button>
                 </Group>
 
+                <Table.ScrollContainer minWidth={700}>
                 <Table highlightOnHover withTableBorder>
                     <Table.Thead>
                         <Table.Tr>
@@ -319,6 +343,7 @@ export function ProgramsDashboard({
                                             <ActionIcon
                                                 variant="light"
                                                 color="blue"
+                                                disabled={!canManage}
                                                 onClick={() => onDesignProgram(program.id)}
                                                 title="Diseño"
                                             >
@@ -347,16 +372,19 @@ export function ProgramsDashboard({
                         )}
                     </Table.Tbody>
                 </Table>
+                </Table.ScrollContainer>
             </div>
 
             {/* Modal de Confirmación de Estado */}
             <Modal
                 opened={confirmModalOpened}
-                onClose={closeConfirmModal}
+                onClose={()=>{if(!savingStatusRef.current)closeConfirmModal();}}
                 title={<Group gap="xs"><AlertCircle size={20} color="orange" /><Text fw={600}>Confirmar Cambio de Estado</Text></Group>}
                 centered
             >
                 <Stack>
+                    {operationNotice}
+                    {statusError && <Paper withBorder p="xs" bg="red.0"><Text size="xs" c="red.9">{statusError}</Text></Paper>}
                     <Text size="sm">
                         ¿Estás seguro de que deseas cambiar el estado del programa
                         <Text span fw={700}> "{selectedProgram?.name}" </Text>
@@ -373,8 +401,8 @@ export function ProgramsDashboard({
                     )}
 
                     <Group justify="flex-end" mt="md">
-                        <Button variant="default" onClick={closeConfirmModal}>Cancelar</Button>
-                        <Button color="blue" onClick={confirmStatusChange}>Confirmar</Button>
+                        <Button variant="default" disabled={savingStatus} onClick={closeConfirmModal}>Cancelar</Button>
+                        <Button color="blue" loading={savingStatus} disabled={!onChangeStatus||!canManage} onClick={()=>void confirmStatusChange()}>Confirmar</Button>
                     </Group>
                 </Stack>
             </Modal>

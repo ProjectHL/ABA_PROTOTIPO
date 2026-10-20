@@ -1,3 +1,8 @@
+import type { ReactNode } from 'react';
+import { useDesignerSubmission } from './useDesignerSubmission';
+import { Alert } from '@mantine/core';
+import { useEffect, useRef, useState } from 'react';
+import { useIdentity } from '@/context/IdentityContext';
 import {
     Modal,
     Stack,
@@ -6,20 +11,41 @@ import {
     Button,
     Group,
     MultiSelect,
-    Box
+    Box,
+    Select
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Download, Save } from 'lucide-react';
 import { type BehaviorManagementProgram, type BehaviorFunction } from '@/api/programsData';
+import { downloadProgramDesignPdf, type ProgramDesignPdfInput } from './program-design-pdf';
+import { downloadProgramDesignCsv, type ProgramDesignExportContext } from './program-design-csv';
 
 interface BehaviorProgramDesignerProps {
-    program?: BehaviorManagementProgram;
+    program?: Omit<BehaviorManagementProgram,'status'> & {status:BehaviorManagementProgram['status']|'draft'} & Partial<BehaviorDesignExtras>;
     opened: boolean;
+    locked?: boolean;
+    closeBlocked?: boolean;
+    operationNotice?: ReactNode;
+    exportContext?: ProgramDesignExportContext;
     onClose: () => void;
-    onSave: (data: Partial<BehaviorManagementProgram>) => Promise<void>;
+    onSave: (data: Partial<BehaviorManagementProgram> & BehaviorDesignExtras) => Promise<void>;
+    onPublish?: (data: Partial<BehaviorManagementProgram> & BehaviorDesignExtras) => Promise<void>;
 }
 
-export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: BehaviorProgramDesignerProps) {
+export type BehaviorDesignExtras={measurementDimension:'percentage'|'frequency'|'interval'|'duration'|'latency';hypothesizedFunctionNotes:string;preventionStrategy:string;responseStrategy:string};
+
+export function BehaviorProgramDesigner({ program, opened, onClose, onSave, onPublish, locked=false, closeBlocked=false, operationNotice, exportContext }: BehaviorProgramDesignerProps) {
+    const { identity, verified } = useIdentity();
+    const exportScopeKey = JSON.stringify([opened, verified, identity?.userId, identity?.active?.id, program?.id, exportContext?.versionId]);
+    const liveExportScope = useRef(exportScopeKey);
+    liveExportScope.current = exportScopeKey;
+    const exportMounted = useRef(true);
+    const exportEpoch = useRef(0);
+    const exportBusy = useRef(false);
+    useEffect(() => { exportMounted.current = true; return () => { exportMounted.current = false; }; }, []);
+    useEffect(() => { const epoch = exportEpoch; return () => { epoch.current += 1; }; }, [exportScopeKey]);
+    const [exportError, setExportError] = useState('');
+    const [exporting, setExporting] = useState(false);
     const form = useForm({
         initialValues: {
             name: program?.name || '',
@@ -32,6 +58,10 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
             procedure: program?.procedure || '',
             masteryCriteria: program?.masteryCriteria || '',
             crisisPlan: program?.crisisPlan || '',
+            measurementDimension: program?.measurementDimension || 'frequency' as BehaviorDesignExtras['measurementDimension'],
+            hypothesizedFunctionNotes: program?.hypothesizedFunctionNotes || '',
+            preventionStrategy: program?.preventionStrategy || '',
+            responseStrategy: program?.responseStrategy || '',
         },
         validate: {
             name: (value) => (value.length < 3 ? 'El nombre debe tener al menos 3 caracteres' : null),
@@ -49,20 +79,65 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
         { value: 'tangible', label: 'Tangible: La conducta está mantenida por acceso a tangibles (no es socialmente mediado)' },
     ];
 
-    const handleSubmit = async (values: typeof form.values) => {
-        await onSave(values);
-        onClose();
-    };
+    // Rehidrata el borrador sólo al abrir o cambiar de programa; incluir el objeto form reiniciaría el efecto en cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(()=>{if(!opened)return;form.setValues({name:program?.name||'',topography:program?.topography||'',operationalDefinition:program?.operationalDefinition||'',currentDimension:program?.currentDimension||'',precursorBehaviors:program?.precursorBehaviors||'',functions:program?.functions||[],replacementBehavior:program?.replacementBehavior||'',procedure:program?.procedure||'',masteryCriteria:program?.masteryCriteria||'',crisisPlan:program?.crisisPlan||'',measurementDimension:program?.measurementDimension||'frequency',hypothesizedFunctionNotes:program?.hypothesizedFunctionNotes||'',preventionStrategy:program?.preventionStrategy||'',responseStrategy:program?.responseStrategy||''});form.resetDirty();},[opened,program?.id]);
 
-    const handleDownloadPDF = () => {
-        // Simulación de descarga
-        alert('Funcionalidad de descarga PDF en desarrollo');
+    const {submit,requestClose,submitting,saveError}=useDesignerSubmission(onClose,closeBlocked,()=>form.isDirty());
+    const handleSubmit = async (values: typeof form.values) => {
+        if(locked)return;
+        await submit(()=>onSave(values));
+    };
+    const handlePublish=async()=>{if(locked||form.validate().hasErrors||!onPublish)return;await submit(()=>onPublish(form.values));};
+    const visibleExport = (): ProgramDesignPdfInput => ({
+        title:form.values.name,
+        kind:'Manejo de conducta',
+        measurementDimension:form.values.measurementDimension,
+        sections:[
+            {label:'Topografía',value:form.values.topography},
+            {label:'Definición operacional',value:form.values.operationalDefinition},
+            {label:'Dimensión actual de la conducta',value:form.values.currentDimension},
+            {label:'Conductas precursoras',value:form.values.precursorBehaviors},
+            {label:'Funciones de la conducta',value:form.values.functions.map(value=>behaviorFunctions.find(item=>item.value===value)?.label??value)},
+            {label:'Notas de hipótesis funcional',value:form.values.hypothesizedFunctionNotes},
+            {label:'Conducta de reemplazo',value:form.values.replacementBehavior},
+            {label:'Procedimiento detallado',value:form.values.procedure},
+            {label:'Estrategia de prevención',value:form.values.preventionStrategy},
+            {label:'Estrategia de respuesta',value:form.values.responseStrategy},
+            {label:'Criterio de logro',value:form.values.masteryCriteria},
+            {label:'Plan de crisis',value:form.values.crisisPlan},
+        ],
+    });
+    const handleExport = async (format: 'pdf' | 'csv') => {
+        const startedScope = exportScopeKey;
+        const startedEpoch = exportEpoch.current;
+        const isCurrent = () => exportMounted.current && exportEpoch.current === startedEpoch && liveExportScope.current === startedScope && opened && verified && !!identity?.userId && !!identity.active;
+        if (exportBusy.current || !isCurrent()) return;
+        exportBusy.current = true;
+        setExportError('');
+        setExporting(true);
+        try {
+            const input = visibleExport();
+            if (format === 'pdf') await downloadProgramDesignPdf(input, isCurrent);
+            else {
+                const { name, ...fields } = form.values;
+                downloadProgramDesignCsv({ ...input, context: exportContext, draft: {
+                    title: name,
+                    design: { schemaVersion: 2, kind: 'behavior', ...fields },
+                } });
+            }
+        } catch (cause) {
+            if (isCurrent()) setExportError(cause instanceof Error ? cause.message : 'No se pudo generar la exportación. El borrador se conserva.');
+        } finally {
+            exportBusy.current = false;
+            if (exportMounted.current) setExporting(false);
+        }
     };
 
     return (
         <Modal.Root
             opened={opened}
-            onClose={onClose}
+            onClose={requestClose}
             size="xl"
             centered
         >
@@ -71,12 +146,15 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                 {/* Modal Header - Sticky */}
                 <Modal.Header style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white' }}>
                     <Modal.Title style={{ fontSize: '1.25rem', fontWeight: 700 }}>Diseño de Programa - Manejo de Conducta</Modal.Title>
-                    <Modal.CloseButton />
+                    <Modal.CloseButton disabled={submitting||closeBlocked} />
                 </Modal.Header>
 
                 {/* Modal Body - Scrollable */}
                 <Modal.Body style={{ flex: 1, overflowY: 'auto' }}>
-                    <form id="behavior-program-form" onSubmit={form.onSubmit(handleSubmit)}>
+                    {operationNotice}
+                    {exportError&&<Alert color="red" role="alert" mb="sm">{exportError}</Alert>}
+                    {saveError&&<Alert color="orange" mb="sm">{saveError}</Alert>}
+                    <form id="behavior-program-form" onSubmit={form.onSubmit(handleSubmit)}><fieldset disabled={locked||submitting} style={{border:0,padding:0,margin:0,minWidth:0}}>
                         <Stack gap="lg">
                             {/* Información Básica */}
                             <TextInput
@@ -117,6 +195,8 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                                 {...form.getInputProps('currentDimension')}
                             />
 
+                            <Select label="Dimensión de medición" required data={[['percentage','Porcentaje'],['frequency','Frecuencia'],['interval','Intervalos'],['duration','Duración'],['latency','Latencia']].map(([value,label])=>({value,label}))} {...form.getInputProps('measurementDimension')} />
+
                             <Textarea
                                 label="Conductas Precursoras"
                                 description="Las conductas precursoras son las conductas que ocurren justo antes de una conducta escale. Por ejemplo, fruncir el ceño; morder el dedo; etc."
@@ -135,6 +215,8 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                                 required
                                 {...form.getInputProps('functions')}
                             />
+
+                            <Textarea label="Notas de hipótesis funcional" minRows={2} autosize {...form.getInputProps('hypothesizedFunctionNotes')} />
 
                             {/* Conducta de Reemplazo */}
                             <Textarea
@@ -156,6 +238,9 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                                 {...form.getInputProps('procedure')}
                             />
 
+                            <Textarea label="Estrategia de prevención" minRows={3} autosize {...form.getInputProps('preventionStrategy')} />
+                            <Textarea label="Estrategia de respuesta" minRows={3} autosize {...form.getInputProps('responseStrategy')} />
+
                             {/* Criterio de Logro */}
                             <Textarea
                                 label="Criterio de Logro"
@@ -176,7 +261,7 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                                 {...form.getInputProps('crisisPlan')}
                             />
                         </Stack>
-                    </form>
+                    </fieldset></form>
                 </Modal.Body>
 
                 {/* Modal Footer - Sticky */}
@@ -191,12 +276,14 @@ export function BehaviorProgramDesigner({ program, opened, onClose, onSave }: Be
                     }}
                 >
                     <Group justify="space-between">
-                        <Button variant="subtle" size="sm" leftSection={<Download size={16} />} onClick={handleDownloadPDF}>
-                            Descargar PDF
-                        </Button>
+                        <Group gap="xs">
+                            <Button variant="subtle" size="sm" leftSection={<Download size={16} />} disabled={submitting||exporting} onClick={()=>void handleExport('pdf')} title="Descarga el borrador visible sin guardar ni publicar cambios">Descargar PDF</Button>
+                            <Button variant="subtle" size="sm" leftSection={<Download size={16} />} disabled={submitting||exporting} onClick={()=>void handleExport('csv')} title="Descarga todos los campos y JSON del borrador visible sin guardar ni publicar cambios">Descargar CSV</Button>
+                        </Group>
                         <Group>
-                            <Button variant="default" onClick={onClose}>Cancelar</Button>
-                            <Button type="submit" form="behavior-program-form" leftSection={<Save size={16} />}>Guardar Programa</Button>
+                            <Button variant="default" onClick={requestClose}>Cancelar</Button>
+                            {onPublish&&<Button variant="light" disabled={locked||submitting} onClick={()=>void handlePublish()}>Guardar y publicar</Button>}
+                            <Button disabled={locked||submitting} type="submit" form="behavior-program-form" leftSection={<Save size={16} />}>Guardar Programa</Button>
                         </Group>
                     </Group>
                 </Box>

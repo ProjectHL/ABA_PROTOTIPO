@@ -21,6 +21,7 @@ export const designSchema=z.discriminatedUnion('kind',[
 const client={clientId:uuid};
 export const commandSchema=z.discriminatedUnion('op',[
     z.object({op:z.literal('student'),id:uuid.nullable(),expected:z.string().nullable(),payload:studentInput}).strict(),
+    z.object({op:z.literal('student-status'),...client,expected:z.string(),status:z.enum(['active','archived'])}).strict(),
     z.object({op:z.literal('context'),...client,expected:z.number().int().positive().optional(),home:optionalText(2000),school:optionalText(500),adaptations:optionalText(2000)}).strict(),
     z.object({op:z.literal('history'),...client,kind:z.enum(['reported_diagnosis','assessment','procedure','medication']),descriptor:text(200),occurred:optionalDate,dose:optionalText(120),prescriber:optionalText(120),started:optionalDate,ended:optionalDate,supersedes:uuid.optional()}).strict(),
     z.object({op:z.literal('consent'),...client,purpose:text(80),notice:text(80),grantor:text(120),channel:text(80),reference:optionalText(200),status:z.enum(['pending_review','valid','revoked','expired']),supersedes:uuid.optional()}).strict(),

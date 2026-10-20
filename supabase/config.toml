@@ -112,9 +112,14 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = false
+enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
+
+[storage.buckets.clinical-attachments]
+public = false
+file_size_limit = "20MiB"
+allowed_mime_types = ["application/pdf", "image/jpeg", "image/png"]
 
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]
@@ -223,7 +228,8 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# Required for double_confirm_changes: GoTrue bypasses dual verification under autoconfirm.
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -381,6 +387,16 @@ policy = "per_worker"
 inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
+
+# Signed-in users call these endpoints; service_role remains internal to workers.
+[functions.invite-clinic-member]
+verify_jwt = true
+
+[functions.resend-clinic-invitation]
+verify_jwt = true
+
+[functions.verify-attachment-upload]
+verify_jwt = true
 
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"

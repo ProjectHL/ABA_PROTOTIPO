@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{qa_api_url}}/storage/v1/object/authenticated/clinical-attachments/{{qa_png_path}}"
+method: GET
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_b}}
+  Content-Type: application/json
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(pm.variables.get('qa_png_version')!=='17834b36-a2d1-4821-aa7e-51ef251fcb04'||!pm.variables.get('qa_png_path')||!pm.variables.get('qa_png_metadata')) throw new Error('Recurso PNG exacto no confirmado; no ejecutar negativo con marcador vacío');
+      if(!pm.variables.get('qa_token_admin_b')) throw new Error('Iniciar sesión del actor sintético primero');
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('Acceso HTTP denegado',()=>pm.expect([400,401,403,404]).to.include(pm.response.code)); if(![400,401,403,404].includes(pm.response.code)) throw new Error('Denegación no confirmada; cuerpo omitido');
+    language: text/javascript
+order: 26000

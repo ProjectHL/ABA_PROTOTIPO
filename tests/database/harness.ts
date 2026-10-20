@@ -9,7 +9,28 @@ export async function createTestDatabase() {
         create role anon nologin; create role authenticated nologin;
         create role service_role nologin bypassrls;
         create schema auth;
-        create table auth.users (id uuid primary key, email text);
+        create schema storage;
+        create publication supabase_realtime;
+        create table auth.users (
+            id uuid primary key,
+            email text,
+            created_at timestamptz not null default now(),
+            email_confirmed_at timestamptz
+        );
+        create table storage.buckets (
+            id text primary key, name text not null, public boolean not null default false,
+            file_size_limit bigint, allowed_mime_types text[]
+        );
+        create table storage.objects (
+            id uuid primary key, bucket_id text not null, name text not null
+        );
+        alter table storage.objects enable row level security;
+        create function storage.foldername(p_name text) returns text[] language sql immutable as
+        $$ select case when strpos(p_name, '/') = 0 then array[]::text[]
+             else string_to_array(regexp_replace(p_name, '/[^/]*$', ''), '/') end $$;
+        -- Fail closed: PGlite cannot emulate Storage's authenticated-download request context.
+        create function storage.allow_only_operation(text) returns boolean language sql stable as
+        $$ select false $$;
         create function auth.uid() returns uuid language sql stable as
         $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
         grant usage on schema auth to anon, authenticated, service_role;

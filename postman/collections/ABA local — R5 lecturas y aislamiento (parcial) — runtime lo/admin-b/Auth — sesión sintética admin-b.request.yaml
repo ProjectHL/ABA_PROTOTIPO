@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{qa_api_url}}/auth/v1/token?grant_type=password"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Content-Type: application/json
+queryParams:
+  grant_type: password
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{qa_admin_b_email}}",
+      "password": "{{qa_admin_b_password}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_admin_b_email')||!pm.variables.get('qa_admin_b_password')) throw new Error('Faltan credenciales sintéticas privadas');
+      if(pm.variables.get('qa_admin_b_email')!=='admin-b.'+pm.variables.get('qa_batch_id')+'@aba.example.test') throw new Error('No usar cuentas reales');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200));
+      const data=pm.response.json();
+      pm.test('Cuenta del lote sintético',()=>pm.expect(data.user.app_metadata.aba_fixture_batch).to.eql(pm.variables.get('qa_batch_id')));
+      pm.variables.set('qa_token_admin_b',data.access_token);
+      pm.variables.set('qa_actor_admin_b',data.user.id);
+    language: text/javascript
+order: 1000

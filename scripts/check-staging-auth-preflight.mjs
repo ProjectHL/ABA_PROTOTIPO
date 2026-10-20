@@ -39,6 +39,7 @@ const checks = {
   expected_staging_project: false,
   auth_settings_reachable: false,
   public_signup_disabled: false,
+  anonymous_signins_disabled: false,
   email_provider_enabled: false,
   email_confirmation_required: false,
   edge_anonymous_rejected: false,
@@ -75,6 +76,10 @@ try {
   statuses.edge_anonymous = anonymousEdge.status;
   checks.auth_settings_reachable = settings.status === 200;
   checks.public_signup_disabled = settings.body?.disable_signup === true;
+  // GoTrue omits disabled external providers from the public settings map.
+  // Anonymous sign-ins are enabled only when the provider is explicitly true.
+  checks.anonymous_signins_disabled =
+    settings.status === 200 && settings.body?.external?.anonymous !== true;
   checks.email_provider_enabled = settings.body?.external?.email === true;
   checks.email_confirmation_required = settings.body?.mailer_autoconfirm === false;
   checks.edge_anonymous_rejected = anonymousEdge.status === 401;

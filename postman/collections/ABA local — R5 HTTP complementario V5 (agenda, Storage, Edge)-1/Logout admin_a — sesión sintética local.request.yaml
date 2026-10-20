@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{qa_api_url}}/auth/v1/logout?scope=local"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+queryParams:
+  scope: local
+scripts:
+  - type: beforeRequest
+    code: if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 204',()=>pm.response.to.have.status(204)); if(pm.response.code!==204) throw new Error('HTTP inesperado; cuerpo omitido');
+      pm.variables.unset('qa_token_admin_a');pm.variables.unset('qa_actor_admin_a');pm.variables.unset('qa_identity_admin_a');
+    language: text/javascript
+order: 35000

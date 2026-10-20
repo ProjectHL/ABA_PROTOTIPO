@@ -1,2 +1,2 @@
-import { redirect } from 'next/navigation';
-export default function Page() { redirect('/team'); }
+import SharedAccessPage from '@/views/SharedAccessPage';
+export default function Page() { return <SharedAccessPage/>; }

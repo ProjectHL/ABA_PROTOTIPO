@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+import {spawnSync} from 'node:child_process';
+import {readFileSync,appendFileSync} from 'node:fs';
+const project='aba-reintegration-local',root='/workspace',daemonRoot='/run/desktop/mnt/host/c/Users/Moonlabpc/Desktop/ABA/ABA_PROTOTIPO';
+const real=root+'/.aba.local/docker-tools/docker-linux';
+const valued=new Set(['--name','--hostname','-e','--env','--env-file','--ulimit','-v','--volume','--volumes-from','--tmpfs','-p','--publish','--expose','--health-cmd','--health-interval','--health-timeout','--health-retries','--health-start-period','--restart','--security-opt','--add-host','--network','--network-alias','--label','--entrypoint','--user','--workdir']);
+const booleans=new Set(['-i','--interactive','-d','--detach','--init']);
+function refuse(code='guard'){throw Object.assign(new Error('Guard refusal'),{safeCode:code});}
+function prepare(input){
+ const args=input[0]==='container'&&['create','run','rm','prune'].includes(input[1])?[...input.slice(1)]:[...input];if(!args.length)refuse();
+ if(['rm','rmi','prune','system'].includes(args[0]))refuse();
+ if(args[0]==='volume'&&!['inspect','ls'].includes(args[1]))refuse();
+ if(args[0]==='create'||args[0]==='run'){
+  let name,network,label;const ports=[],volumes=[];
+  for(let i=1;i<args.length;i++){
+   const flag=args[i];if(!flag.startsWith('-'))break;
+   if(booleans.has(flag))continue;
+   if(!valued.has(flag)||i+1>=args.length)refuse('unsupported-option');const value=args[++i];
+   if(flag==='--name'){if(name)refuse();name=value;}
+   if(flag==='--network'){if(network)refuse();network=value;}
+   if(flag==='--label'&&value.startsWith('com.supabase.cli.project=')){if(label)refuse();label=value;}
+   if(flag==='-p'||flag==='--publish')ports.push(i);
+   if(flag==='-v'||flag==='--volume')volumes.push(i);
+   if(flag==='--volumes-from')refuse();
+   if(flag==='--env-file'&&!value.startsWith(root+'/'))refuse();
+  }
+  if(!name?.endsWith('_'+project)||network!==project||label!=='com.supabase.cli.project='+project)refuse();
+  for(const i of ports){let v=args[i];if(v.startsWith('127.0.0.1:'))v=v.slice(10);const spec=v.split('/'),parts=spec[0].split(':');if(spec.length>2||(spec.length===2&&!['tcp','udp'].includes(spec[1]))||parts.length!==2||!parts.every(p=>/^[0-9]+$/.test(p))||Number(parts[0])<54321||Number(parts[0])>54329||Number(parts[1])<1||Number(parts[1])>65535)refuse();args[i]='127.0.0.1:'+v;}
+  for(const i of volumes){const split=args[i].split(':');if(split.length<2||split.length>3)refuse();let src=split[0];if(src.startsWith(root+'/')){if(src.includes('/../')||src.includes('/./'))refuse();src=daemonRoot+src.slice(root.length);}else if(!/^supabase_[a-z_]+_aba-reintegration-local$/.test(src))refuse();split[0]=src;args[i]=split.join(':');}
+ }
+ return args;
+}
+try{
+ if(process.platform!=='linux'||process.cwd()!==root)refuse();
+ if(!readFileSync(root+'/.aba.local/stack/supabase/config.toml','utf8').split('\n').some(line=>line.trim()==='project_id = "aba-reintegration-local"'))refuse();
+ if(process.argv[2]==='--self-test'){
+  const valid=['create','--name','supabase_db_'+project,'--network',project,'--label','com.supabase.cli.project='+project,'-p','54322:5432','-v','/workspace/.aba.local/stack/supabase:/etc/config:ro','image'];
+  const good=prepare(valid);if(!good.includes('127.0.0.1:54322:5432')||!good.includes(daemonRoot+'/.aba.local/stack/supabase:/etc/config:ro'))refuse();
+  const bad=[['rm','x'],['volume','rm','x'],valid.map(v=>v==='54322:5432'?'0.0.0.0:54322:5432':v),valid.map(v=>v==='54322:5432'?'8000:5432':v),valid.map(v=>v===project?'other-network':v),valid.map(v=>v==='/workspace/.aba.local/stack/supabase:/etc/config:ro'?'/other:/etc/config:ro':v)];
+  for(const example of bad){let denied=false;try{prepare(example);}catch{denied=true;}if(!denied)refuse();}
+  console.log(JSON.stringify({guardChecks:7,passed:true,mutations:false}));process.exit(0);
+ }
+ const incoming=process.argv.slice(2);appendFileSync(root+'/.aba.local/qa/docker-tools-command-shapes.jsonl',JSON.stringify({action:incoming[0],subcommand:incoming[0]==='container'?incoming[1]:null,flags:incoming.filter(v=>/^--?[a-z][a-z-]*$/.test(v))})+'\n');
+ if(incoming[0]==='volume'&&incoming[1]==='create'){
+  const names=new Set(['supabase_db_'+project,'supabase_storage_'+project,'supabase_edge_runtime_'+project]);
+  const name=incoming.at(-1);if(!names.has(name))refuse('volume-outside-project');
+  for(let i=2;i<incoming.length-1;i+=2){if(incoming[i]!=='--label'||!['com.supabase.cli.project='+project,'com.docker.compose.project='+project].includes(incoming[i+1]))refuse('volume-option');}
+  const checked=spawnSync(real,['volume','inspect',name],{encoding:'utf8'});
+  if(checked.status!==0||JSON.parse(checked.stdout)[0].Name!==name)refuse('original-volume-missing');
+  console.log(name);process.exit(0);
+ }
+ const args=prepare(incoming);const result=spawnSync(real,args,{stdio:'inherit'});if(result.error)refuse();process.exit(result.status??1);
+}catch(error){const raw=process.argv.slice(2);const safe={code:error.safeCode??'forwarding',action:/^[a-z-]+$/.test(raw[0]??'')?raw[0]:'unknown',flags:raw.filter(v=>/^--?[a-z][a-z-]*$/.test(v)),labelKeys:raw.filter((v,i)=>raw[i-1]==='--label').map(v=>v.split('=')[0]).filter(v=>/^[a-zA-Z0-9_.-]+$/.test(v))};appendFileSync(root+'/.aba.local/qa/docker-tools-guard-safe.jsonl',JSON.stringify(safe)+'\n');console.error('Docker project guard refused or forwarding failed; values withheld');process.exit(64);}

@@ -1,2 +1,2 @@
-import { ClinicalPage } from '@/modules/clinical/page';
-export default function Page() { return <ClinicalPage/>; }
+import TeamPage from '@/views/TeamPage';
+export default function Page() { return <TeamPage />; }

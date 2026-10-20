@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09T16:31:22.268Z",
+  "candidate": {
+    "container": "aba-local-qa-v12",
+    "buildId": "0Ehm1gKf372lHuuQ0KjeM",
+    "origin": "http://localhost:3001"
+  },
+  "test": "tests/e2e/r5.notifications-controls-v12.spec.mjs",
+  "testSha256": "a437d1c9ea2d699c3cfe88dffa8ebc859b92882609f1f3e7f38441745bc97ac8",
+  "config": "playwright.notifications-controls-v12.config.ts",
+  "results": {
+    "desktop": {
+      "passed": 1,
+      "seconds": 13.3
+    },
+    "mobile": {
+      "passed": 1,
+      "seconds": 10.7
+    },
+    "lint": "passed after prepared source; no edits after execution"
+  },
+  "profiles": [
+    "admin-a positive UI",
+    "admin-b ordinary read isolation"
+  ],
+  "notificationId": "3cd2ef23-cbf0-4953-934d-cdcdaf406d91",
+  "fixture": "Existing synthetic reminder QA R5 RECORDATORIO DOBLE 2155E99E; no created notification/appointment/account",
+  "runs": [
+    {
+      "project": "desktop",
+      "safe": ".aba.local/qa/notifications-controls-v12-desktop-safe.json",
+      "safeSha256": "e8aec5e3f031706470c02f280f0c9753960268974031feab3034747a89456590",
+      "journal": ".aba.local/qa/notifications-controls-v12-desktop-journal.json",
+      "runId": "58535e8f-5406-48ab-95d6-e90a32e93513",
+      "originalRead": true,
+      "finalRead": true,
+      "originalVersion": 16,
+      "finalVersion": 18,
+      "commands": 2,
+      "checks": [
+        "actual-mark-read-and-mark-unread-buttons-correlated-receipts-reload",
+        "open-read-navigation-no-extra-command",
+        "original-read-boolean-restored-content-createdAt-exact-other-notifications-B-exact"
+      ],
+      "receipts": [
+        {
+          "operationId": "4bd0f755-6a96-49c1-90cc-c5f3c99e218d",
+          "idempotencyKey": "44225ff3-2be8-440b-9d02-afc4375ba551",
+          "receiptId": "aac13bf4-fa61-44c2-aea2-89a2ee2de99b",
+          "serverVersion": 17,
+          "replayed": false,
+          "read": false,
+          "stage": "toggle-first"
+        },
+        {
+          "operationId": "0622b4af-38ac-475f-b097-59cc9a7f5b95",
+          "idempotencyKey": "4fcb0c38-89ad-48a4-86a2-5b5db12b0bf8",
+          "receiptId": "70784090-9808-49d7-aff2-b724b555b6c1",
+          "serverVersion": 18,
+          "replayed": false,
+          "read": true,
+          "stage": "toggle-original"
+        }
+      ]
+    },
+    {
+      "project": "mobile",
+      "safe": ".aba.local/qa/notifications-controls-v12-mobile-safe.json",
+      "safeSha256": "ba4eb99b6d618f39c325526aa002e3b7a3fe7c193e336392a9d437b5b25631a4",
+      "journal": ".aba.local/qa/notifications-controls-v12-mobile-journal.json",
+      "runId": "f2a4c2e5-6108-4774-b13c-3f8f3227886d",
+      "originalRead": true,
+      "finalRead": true,
+      "originalVersion": 18,
+      "finalVersion": 20,
+      "commands": 2,
+      "checks": [
+        "actual-mark-read-and-mark-unread-buttons-correlated-receipts-reload",
+        "open-read-navigation-no-extra-command",
+        "original-read-boolean-restored-content-createdAt-exact-other-notifications-B-exact"
+      ],
+      "receipts": [
+        {
+          "operationId": "16ebe165-caf1-4223-8466-5bab0e8c8f50",
+          "idempotencyKey": "02476c2b-acb7-4ecf-bd08-855bc4c24b14",
+          "receiptId": "e169917e-2302-4660-aec9-c0ae891e46c9",
+          "serverVersion": 19,
+          "replayed": false,
+          "read": false,
+          "stage": "toggle-first"
+        },
+        {
+          "operationId": "85c8805f-5d64-429f-a799-e9f8200c78eb",
+          "idempotencyKey": "195a44c4-13fd-4ee1-8c66-6e3c51fb2d37",
+          "receiptId": "e43ced69-f50e-4703-a43c-a618d75e1fad",
+          "serverVersion": 20,
+          "replayed": false,
+          "read": true,
+          "stage": "toggle-original"
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "actionId": "NOTIFICACIONES-003",
+      "executionState": "desktop-mobile-focal-verified-v12",
+      "assertion": "Actual Marcar leída button clicked; correlated sameoperation/idempotency/resource receipt, expectedVersion+1, persisted readAt and UI after reload."
+    },
+    {
+      "actionId": "NOTIFICACIONES-004",
+      "executionState": "desktop-mobile-focal-verified-v12",
+      "assertion": "Actual Marcar no leída clicked; correlated receipt, readAt null and persisted UI after reload; original boolean restored."
+    },
+    {
+      "actionId": "NOTIFICACIONES-005",
+      "executionState": "desktop-mobile-focal-positive-v12",
+      "assertion": "Actual Abrir own authorized already-read reminder navigates resourcePath /calendar; Agenda heading after navigate and reload; no extra read command because already read."
+    }
+  ],
+  "preservation": [
+    "Both original read-state true and final true; each 2UIACK: markunread false, markread true. Abrir already-read notification performs navigation with no third command.",
+    "Original content/id/clinic/kind/title/body/resourcePath/createdAt exact; own notification version advances+2 each project. readAt timestamp changes legitimately when markread; original boolean restored.",
+    "Other notification rows A exact, entire B notification projection exact; B cannot see A notification in ordinary read.",
+    "No new fixture, permission, program/session/student/attachment mutation."
+  ],
+  "limits": [
+    "No revoked-resource notification navigation case or foreign UI bell click tested; B ordinary read isolation only. Existing Auth/RLS/revocation suites remain distinct.",
+    "Positive /calendar navigation only; not all resourcePaths or notification kinds.",
+    "Fixture was originallyread; original boolean true restored but original readAt timestamp not restored by normal markread. Safe explicitly readAtTimestampRestored=false. Unread-Abrir branch exists in test but did not execute; no coverage claimed.",
+    "No new websocket/reconnect assertion: existing realtime-v5 independent; no QA003/004 whole approval or UX comparison."
+  ],
+  "productDefects": []
+}

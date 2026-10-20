@@ -1,5 +1,17 @@
 # Runbook de backup y restore — ABA Clínico
 
+> Cierre local R5 (2026-09-28): procedimiento vigente
+> `docs/runbooks/LOCAL_R5_RECOVERY.md` y evidencia de DB, Storage físico, Auth
+> y Storage API en `docs/handoffs/R5_OPERACION_RESPALDO.md`. Los comandos
+> de plataforma/PoC de este runbook son históricos y no deben apuntarse al
+> stack local activo. El restore local exige proyecto vacío inicializado con
+> Supabase CLI, Realtime deshabilitado, contenedor PG17 sin red ni puertos,
+> volumen etiquetado exacto y `scripts/local/restore.ps1` en preview antes de
+> `-Apply`. Los bytes de Storage se respaldan y restauran por separado; no
+> arrancar con CLI un destino ya restaurado hasta resolver su publicación de
+> puertos. La configuración de Auth/Storage se respaldó cifrada con DPAPI y se
+> probó su arranque independiente, limitado al mismo perfil Windows.
+
 ## Objetivo
 
 Demostrar recuperación antes de abrir la PoC sin restaurar encima de
@@ -17,6 +29,17 @@ clínico a logs o documentos.
   compatibles con el origen.
 - Objetivo inicial MVP: RPO de 24 horas y RTO de 4 horas. El propietario debe
   aceptar o reemplazar estos valores antes de la PoC.
+
+## Estado remoto al 10 de septiembre de 2026
+
+La organización `ABA` está en plan Free. Supabase documenta backups diarios automáticos sólo para Pro, Team y Enterprise y recomienda exportaciones regulares con CLI para Free: <https://supabase.com/docs/guides/platform/backups>.
+
+Por lo tanto, no existe evidencia de un backup gestionado utilizable para `ABA_staging`. Antes de pacientes reales se debe elegir una de estas salidas:
+
+1. subir la organización a Pro y comprobar en Dashboard la retención disponible; o
+2. ejecutar dumps lógicos cifrados y externos con una frecuencia compatible con el RPO aceptado.
+
+Un dump previo a la promoción protege los fixtures y cuentas actuales, pero no sustituye un programa periódico cuando comience la actividad clínica.
 
 Los backups gestionados de Supabase no incluyen objetos binarios de Storage. El
 MVP no usa adjuntos, pero esta excepción debe reevaluarse cuando se habiliten.

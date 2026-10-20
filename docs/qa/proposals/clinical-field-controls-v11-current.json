@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09T16:23:53.636Z",
+  "candidate": {
+    "container": "aba-local-qa-v11",
+    "buildId": "mZeZnMMBZ4vYp1uE31Kon",
+    "origin": "http://localhost:3001"
+  },
+  "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+  "testSha256": "c36005f63a6e2b8608fe6c63aa18742da82f5baff36e7304b5e691982ba53826",
+  "config": "playwright.clinical-field-controls-v11.config.ts",
+  "desktop": {
+    "passed": 1,
+    "durationSeconds": 11.8,
+    "resumedZeroWritesHarness": true
+  },
+  "mobile": {
+    "passed": 1,
+    "durationSeconds": 11.5,
+    "fresh": true
+  },
+  "runs": [
+    {
+      "project": "desktop",
+      "safe": ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+      "safeSha256": "9298c504e19a0f15f0c740ead8a5e586c067f9c04458f6d544993adf3373c2f3",
+      "journal": ".aba.local/qa/clinical-field-controls-v11-desktop-journal.json",
+      "runId": "6c83afc1-25e0-45b7-9c63-054c39c7e476",
+      "buildId": "mZeZnMMBZ4vYp1uE31Kon",
+      "originalVersion": 25,
+      "finalVersion": 27,
+      "correlatedUiReceipts": [
+        {
+          "receiptId": "df837f5b-ccbd-44fb-983e-cf9f10ac5803",
+          "operationId": "e89bace7-580d-4ac0-9d7e-7cff49cfaf2d",
+          "serverVersion": 26
+        },
+        {
+          "receiptId": "e1b278f5-a86b-4ed1-b49a-913073adf780",
+          "operationId": "01d0e75c-92bc-4a71-96f2-bcbb967c2cad",
+          "serverVersion": 27
+        }
+      ],
+      "checks": [
+        "invalid-rut-no-command-no-dto-change",
+        "eleven-fields-plus-diagnosis-context-save-normalized-rut-reload",
+        "five-search-keys-no-match-three-status-filters-menu-close-view-no-write",
+        "two-correlated-receipts-original-fields-restored-programs-records-unchanged"
+      ],
+      "originalValuesRestored": true,
+      "otherResourcesPreserved": true
+    },
+    {
+      "project": "mobile",
+      "safe": ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json",
+      "safeSha256": "10a5e8ef749887e8a8a002501968901bdff9835c2ca629359885d1eb6ac5c56d",
+      "journal": ".aba.local/qa/clinical-field-controls-v11-mobile-journal.json",
+      "runId": "725ab6f0-d1bc-48a7-bad3-e6dcdb49cc78",
+      "buildId": "mZeZnMMBZ4vYp1uE31Kon",
+      "originalVersion": 27,
+      "finalVersion": 29,
+      "correlatedUiReceipts": [
+        {
+          "receiptId": "2c6d066d-9f6f-4653-b54b-a4ed9d8a5dcc",
+          "operationId": "7655230e-20d2-4a93-8722-db17fd1d04fb",
+          "serverVersion": 28
+        },
+        {
+          "receiptId": "d9e5951b-e541-4f93-84c3-a01087aa0e5f",
+          "operationId": "82fc2a86-e6f1-4f3c-8647-2c96c7b831ab",
+          "serverVersion": 29
+        }
+      ],
+      "checks": [
+        "invalid-rut-no-command-no-dto-change",
+        "eleven-fields-plus-diagnosis-context-save-normalized-rut-reload",
+        "five-search-keys-no-match-three-status-filters-menu-close-view-no-write",
+        "two-correlated-receipts-original-fields-restored-programs-records-unchanged"
+      ],
+      "originalValuesRestored": true,
+      "otherResourcesPreserved": true
+    }
+  ],
+  "mappings": [
+    {
+      "actionId": "FICHA-002",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Five list searches: changed fullName,initials,clinicalId,normalizedRUT,reportedDiagnosis return own card only; unmatched query zero cards.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-005",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Todos shows own active card, Antiguos removes it, Vigentes shows it again.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-007",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Ver carpeta menu item click navigates exact own student UUID.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-009",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Information General eleven labels loaded, edited and checked after reload.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-010",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "clinicalId/initials/fullName/RUT/birthDate changed to distinct explicit values in normal profile update, persisted exact.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-012",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Invalid checksum produces no update command and original DTO exact; formatted valid RUT normalizes12345678-5; restore to original null demonstrates optional RUT.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-013",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "ClinicalId independently differs from initials, name and RUT and survives reload.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-015",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "ReportedDiagnosis free text edited while existing Other choice, exact DTO and reload.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-016",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "ConsultationReason changed to distinct synthetic value and reload exact.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-017",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Home/school/adaptations distinct values, separate livingArrangement, persisted and original values restored.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-025",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Card menu opens, Escape closes without DTO write then reopens for View navigation.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-027",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "BirthDate changed2015-06-12 while initials/name/clinicalId explicitly distinct and reloaded; original restored.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-029",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "List reported diagnosis query exact own card; unrelated diagnosis no match via universal unmatched query.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-032",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "Initials explicitQA.DF/QA.MF separate name/ID/RUT, persisted/reloaded/restored.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-033",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "PrimaryLanguage Español QA changed/reloaded/restored.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    },
+    {
+      "actionId": "FICHA-034",
+      "state": "desktop-mobile-focal-verified-v11",
+      "assertion": "LivingArrangement Convivencia QA independente differs home/adaptations and persisted/reloaded/restored.",
+      "test": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+      "artifacts": [
+        ".aba.local/qa/clinical-field-controls-v11-desktop-safe.json",
+        ".aba.local/qa/clinical-field-controls-v11-mobile-safe.json"
+      ],
+      "profiles": [
+        "admin-a"
+      ],
+      "route": "/students; /students/94d73448-03ec-495c-8add-30c3cfe05eaa",
+      "comparisonBaseline": "pending QA004"
+    }
+  ],
+  "limits": [
+    "Only admin-a positive write UI; no supervisor/technician/foreign/anonymous execution in this packet. Existing route-permission proof remains separate.",
+    "No FICHA001 creation; no FICHA008 back-button click; list reached via goto in this test.",
+    "FICHA011 full name displayed, but empty-name initials fallback not exercised.",
+    "FICHA028 Other free input edited while existing choice already Other; selecting Other from another diagnosis/autocomplete suggestion selection not exercised.",
+    "No history/person/sibling/consent/photo/session/program commands. Same source projections and original clinical detail verified; version/updatedAt advance legitimately.",
+    "No QA003 global closure or baseline visual comparison claimed."
+  ],
+  "harnessFix": {
+    "file": "tests/e2e/r5.clinical-field-controls-v11.spec.mjs",
+    "initialAttempt": "locator getByLabel exact missed required marker in label",
+    "confirmedWritesBeforeFix": 0,
+    "preservedDiagnostic": ".aba.local/qa/clinical-field-controls-v11-desktop-before-locator-fix.json",
+    "correction": "Use actual accessible textbox name; same journal/runId resumed after original DTO guard. No product modification."
+  },
+  "productDefects": []
+}

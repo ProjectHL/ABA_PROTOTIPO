@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_calendar_command_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_b}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{{qa_http_body}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_token_admin_b')) throw new Error('Iniciar sesión del actor sintético primero');
+      if(pm.variables.get('qa_http_phase')!=='stale-read') throw new Error('Cita propia no verificada');const c=JSON.parse(pm.variables.get('qa_http_edit'));c.operationId=pm.variables.replaceIn('{{$guid}}');c.idempotencyKey=pm.variables.replaceIn('{{$guid}}');c.expectedVersion=2;pm.variables.set('qa_http_body',JSON.stringify({p_organization_id:pm.variables.get('qa_clinic_a'),p_command:c}));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200)); if(pm.response.code!==200) throw new Error('HTTP inesperado; cuerpo omitido');
+      const d=pm.response.json(),c=JSON.parse(pm.variables.get('qa_http_body')).p_command;pm.test('Rechazo por recurso sin snapshot',()=>{pm.expect(d.status).to.eql('rejected');pm.expect(d.code).to.eql('permission-denied');pm.expect(d.resourceId).to.eql(c.appointmentId);pm.expect(d.operationId).to.eql(c.operationId);pm.expect(d.idempotencyKey).to.eql(c.idempotencyKey);pm.expect(d).not.to.have.property('currentVersion');});if(d.status!=='rejected'||d.code!=='permission-denied') throw new Error('Aislamiento del comando no confirmado');
+    language: text/javascript
+order: 15000

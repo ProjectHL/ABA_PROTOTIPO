@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_calendar_read_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+      if(pm.variables.get('qa_http_phase')!=='stale-read') throw new Error('Fase de recibo anterior no confirmada');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200)); if(pm.response.code!==200) throw new Error('HTTP inesperado; cuerpo omitido');
+      const d=pm.response.json(),id=pm.variables.get('qa_http_id'),rows=d.appointments.filter(r=>r.id===id);if(d.actorId!==pm.variables.get('qa_actor_admin_a')||d.clinicId!==pm.variables.get('qa_clinic_a')||rows.length!==1) throw new Error('Relectura propia no correlacionada');const a=rows[0],input=JSON.parse(pm.variables.get('qa_http_input'));
+      const snap=rows=>rows.map(r=>({id:r.id,version:r.version,status:r.status,startsAt:r.startsAt,endsAt:r.endsAt,participants:r.participants.map(p=>p.kind+':'+(p.userId||p.personId)).sort(),linkedSessionId:r.linkedSessionId})).sort((a,b)=>a.id.localeCompare(b.id));
+      pm.test('Cita exacta persistida y terceros preservados',()=>{pm.expect(a.version).to.eql(2);pm.expect(a.status).to.eql('scheduled');pm.expect(a.title).to.eql(pm.variables.get('qa_http_title'));pm.expect(a.studentId).to.eql('b347646e-ff29-450b-aedf-9f9c015fb41a');pm.expect(Date.parse(a.startsAt)).to.eql(Date.parse(input.startsAt));pm.expect(Date.parse(a.endsAt)).to.eql(Date.parse(input.endsAt));pm.expect(a.notes).to.eql(input.notes);pm.expect(a.timeZone).to.eql(input.timeZone);pm.expect(a.participants.map(p=>p.userId)).to.eql([pm.variables.get('qa_actor_admin_a')]);pm.expect(a.reminders).to.eql([]);pm.expect(a.recurrence).to.eql(null);pm.expect(a.linkedSessionId).to.eql(null);pm.expect(snap(d.appointments.filter(r=>r.id!==id))).to.eql(JSON.parse(pm.variables.get('qa_calendar_baseline')));});if(a.version!==2||a.status!=='scheduled') throw new Error('Persistencia no confirmada; no continuar escrituras');const cancel={schemaVersion:2,operationId:pm.variables.replaceIn('{{$guid}}'),idempotencyKey:pm.variables.replaceIn('{{$guid}}'),appointmentId:id,studentId:'b347646e-ff29-450b-aedf-9f9c015fb41a',expectedVersion:2,action:'cancel',scope:{kind:'single'},reason:'QA R5 POSTMAN V5 cierre sintético conservando historial',confirmation:true};pm.variables.set('qa_http_cancel',JSON.stringify(cancel));pm.variables.set('qa_http_phase','negative-read');
+    language: text/javascript
+order: 19000

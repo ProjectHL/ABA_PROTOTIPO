@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       acquisition_goals: {
@@ -61,14 +56,12 @@ export type Database = {
           {
             foreignKeyName: "acquisition_goals_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "acquisition_goals_program_client_fkey"
             columns: ["program_id", "client_id"]
-            isOneToOne: false
             referencedRelation: "acquisition_programs"
             referencedColumns: ["id", "client_id"]
           },
@@ -109,9 +102,337 @@ export type Database = {
           {
             foreignKeyName: "acquisition_programs_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          appointment_id: string
+          client_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json
+          test_run_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          appointment_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload: Json
+          test_run_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          appointment_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_events_v2_organization_id_client_id_appointmen_fkey"
+            columns: ["organization_id", "client_id", "appointment_id"]
+            referencedRelation: "appointments_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "appointment_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      appointment_participants_v2: {
+        Row: {
+          appointment_id: string
+          archived_at: string | null
+          client_id: string
+          created_at: string
+          family_person_id: string | null
+          id: string
+          organization_id: string
+          participant_kind: string
+          professional_user_id: string | null
+          test_run_id: string | null
+        }
+        Insert: {
+          appointment_id: string
+          archived_at?: string | null
+          client_id: string
+          created_at?: string
+          family_person_id?: string | null
+          id?: string
+          organization_id: string
+          participant_kind: string
+          professional_user_id?: string | null
+          test_run_id?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          archived_at?: string | null
+          client_id?: string
+          created_at?: string
+          family_person_id?: string | null
+          id?: string
+          organization_id?: string
+          participant_kind?: string
+          professional_user_id?: string | null
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_participants_v2_organization_id_client_id_appo_fkey"
+            columns: ["organization_id", "client_id", "appointment_id"]
+            referencedRelation: "appointments_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "appointment_participants_v2_organization_id_client_id_fami_fkey"
+            columns: ["organization_id", "client_id", "family_person_id"]
+            referencedRelation: "client_people_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "appointment_participants_v2_organization_id_professional_u_fkey"
+            columns: ["organization_id", "professional_user_id"]
+            referencedRelation: "memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "appointment_participants_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      appointment_reminders_v2: {
+        Row: {
+          appointment_id: string
+          archived_at: string | null
+          client_id: string
+          created_at: string
+          due_at: string | null
+          id: string
+          minutes_before: number
+          organization_id: string
+          sent_at: string | null
+          state: string
+          test_run_id: string | null
+        }
+        Insert: {
+          appointment_id: string
+          archived_at?: string | null
+          client_id: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          minutes_before: number
+          organization_id: string
+          sent_at?: string | null
+          state?: string
+          test_run_id?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          archived_at?: string | null
+          client_id?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          minutes_before?: number
+          organization_id?: string
+          sent_at?: string | null
+          state?: string
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_reminders_v2_organization_id_client_id_appoint_fkey"
+            columns: ["organization_id", "client_id", "appointment_id"]
+            referencedRelation: "appointments_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "appointment_reminders_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      appointment_series_v2: {
+        Row: {
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          version: number
+          weekly_rule: Json
+        }
+        Insert: {
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+          weekly_rule: Json
+        }
+        Update: {
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+          weekly_rule?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_series_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "appointment_series_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_series_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      appointments_v2: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          ends_at: string
+          id: string
+          is_exception: boolean
+          linked_session_id: string | null
+          notes: string
+          organization_id: string
+          original_local_date: string | null
+          series_id: string | null
+          starts_at: string
+          status: string
+          test_run_id: string | null
+          time_zone: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          ends_at: string
+          id: string
+          is_exception?: boolean
+          linked_session_id?: string | null
+          notes?: string
+          organization_id: string
+          original_local_date?: string | null
+          series_id?: string | null
+          starts_at: string
+          status?: string
+          test_run_id?: string | null
+          time_zone: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          ends_at?: string
+          id?: string
+          is_exception?: boolean
+          linked_session_id?: string | null
+          notes?: string
+          organization_id?: string
+          original_local_date?: string | null
+          series_id?: string | null
+          starts_at?: string
+          status?: string
+          test_run_id?: string | null
+          time_zone?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "appointments_v2_organization_id_client_id_linked_session_i_fkey"
+            columns: ["organization_id", "client_id", "linked_session_id"]
+            referencedRelation: "clinical_session_v2_state"
+            referencedColumns: ["organization_id", "client_id", "session_id"]
+          },
+          {
+            foreignKeyName: "appointments_v2_organization_id_client_id_series_id_fkey"
+            columns: ["organization_id", "client_id", "series_id"]
+            referencedRelation: "appointment_series_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "appointments_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -159,9 +480,224 @@ export type Database = {
           {
             foreignKeyName: "assessments_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      attachment_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          attachment_id: string
+          created_at: string
+          id: number
+          organization_id: string
+          test_run_id: string | null
+          version_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          attachment_id: string
+          created_at?: string
+          id?: number
+          organization_id: string
+          test_run_id?: string | null
+          version_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          attachment_id?: string
+          created_at?: string
+          id?: number
+          organization_id?: string
+          test_run_id?: string | null
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachment_events_v2_attachment_id_fkey"
+            columns: ["attachment_id"]
+            referencedRelation: "attachment_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachment_events_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachment_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attachment_events_v2_version_id_attachment_id_fkey"
+            columns: ["version_id", "attachment_id"]
+            referencedRelation: "attachment_versions"
+            referencedColumns: ["id", "attachment_id"]
+          },
+        ]
+      }
+      attachment_records: {
+        Row: {
+          archived_at: string | null
+          client_id: string | null
+          commercial_document_id: string | null
+          conversation_id: string | null
+          created_at: string
+          created_by: string
+          current_version_id: string | null
+          id: string
+          organization_id: string | null
+          professional_user_id: string | null
+          purpose: string
+          resource_kind: string
+          state: string
+          test_run_id: string | null
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          client_id?: string | null
+          commercial_document_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by: string
+          current_version_id?: string | null
+          id: string
+          organization_id?: string | null
+          professional_user_id?: string | null
+          purpose: string
+          resource_kind: string
+          state?: string
+          test_run_id?: string | null
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          client_id?: string | null
+          commercial_document_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string
+          current_version_id?: string | null
+          id?: string
+          organization_id?: string | null
+          professional_user_id?: string | null
+          purpose?: string
+          resource_kind?: string
+          state?: string
+          test_run_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachment_records_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachment_records_commercial_document_fkey"
+            columns: ["organization_id", "commercial_document_id"]
+            referencedRelation: "commercial_documents_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attachment_records_current_version_fkey"
+            columns: ["current_version_id", "id"]
+            referencedRelation: "attachment_versions"
+            referencedColumns: ["id", "attachment_id"]
+          },
+          {
+            foreignKeyName: "attachment_records_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attachment_records_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachment_records_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      attachment_versions: {
+        Row: {
+          archived_at: string | null
+          attachment_id: string
+          bucket_id: string
+          byte_length: number
+          confirmed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          mime_type: string
+          object_key: string
+          original_name: string
+          sha256: string
+          state: string
+          supersedes_version_id: string | null
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          attachment_id: string
+          bucket_id: string
+          byte_length: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by: string
+          id: string
+          mime_type: string
+          object_key: string
+          original_name: string
+          sha256: string
+          state: string
+          supersedes_version_id?: string | null
+          version: number
+        }
+        Update: {
+          archived_at?: string | null
+          attachment_id?: string
+          bucket_id?: string
+          byte_length?: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          mime_type?: string
+          object_key?: string
+          original_name?: string
+          sha256?: string
+          state?: string
+          supersedes_version_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachment_versions_attachment_id_fkey"
+            columns: ["attachment_id"]
+            referencedRelation: "attachment_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachment_versions_supersedes_version_id_attachment_id_fkey"
+            columns: ["supersedes_version_id", "attachment_id"]
+            referencedRelation: "attachment_versions"
+            referencedColumns: ["id", "attachment_id"]
           },
         ]
       }
@@ -200,7 +736,6 @@ export type Database = {
           {
             foreignKeyName: "audit_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -256,9 +791,265 @@ export type Database = {
           {
             foreignKeyName: "behavior_plans_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_conversations_v2: {
+        Row: {
+          audience: string
+          client_id: string
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          test_run_id: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          audience: string
+          client_id: string
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          test_run_id?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          audience?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "chat_conversations_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_conversations_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      chat_message_attachments_v2: {
+        Row: {
+          attachment_id: string
+          attachment_version_id: string
+          conversation_id: string
+          message_id: string
+          position: number
+        }
+        Insert: {
+          attachment_id: string
+          attachment_version_id: string
+          conversation_id: string
+          message_id: string
+          position: number
+        }
+        Update: {
+          attachment_id?: string
+          attachment_version_id?: string
+          conversation_id?: string
+          message_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_attachments_v2_attachment_version_id_attachme_fkey"
+            columns: ["attachment_version_id", "attachment_id"]
+            referencedRelation: "attachment_versions"
+            referencedColumns: ["id", "attachment_id"]
+          },
+          {
+            foreignKeyName: "chat_message_attachments_v2_conversation_id_message_id_fkey"
+            columns: ["conversation_id", "message_id"]
+            referencedRelation: "chat_messages_v2"
+            referencedColumns: ["conversation_id", "id"]
+          },
+        ]
+      }
+      chat_messages_v2: {
+        Row: {
+          author_user_id: string
+          body: string
+          client_id: string
+          conversation_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          sequence: number
+          test_run_id: string | null
+        }
+        Insert: {
+          author_user_id: string
+          body: string
+          client_id: string
+          conversation_id: string
+          created_at?: string
+          id: string
+          organization_id: string
+          sequence: number
+          test_run_id?: string | null
+        }
+        Update: {
+          author_user_id?: string
+          body?: string
+          client_id?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          sequence?: number
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_v2_conversation_id_author_user_id_fkey"
+            columns: ["conversation_id", "author_user_id"]
+            referencedRelation: "chat_participants_v2"
+            referencedColumns: ["conversation_id", "user_id"]
+          },
+          {
+            foreignKeyName: "chat_messages_v2_organization_id_client_id_conversation_id_fkey"
+            columns: ["organization_id", "client_id", "conversation_id"]
+            referencedRelation: "chat_conversations_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "chat_messages_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      chat_participants_v2: {
+        Row: {
+          client_id: string
+          conversation_id: string
+          joined_at: string
+          organization_id: string
+          participant_kind: string
+          revoked_at: string | null
+          status: string
+          test_run_id: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          conversation_id: string
+          joined_at?: string
+          organization_id: string
+          participant_kind: string
+          revoked_at?: string | null
+          status?: string
+          test_run_id?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          conversation_id?: string
+          joined_at?: string
+          organization_id?: string
+          participant_kind?: string
+          revoked_at?: string | null
+          status?: string
+          test_run_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_v2_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "chat_conversations_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_participants_v2_organization_id_client_id_conversatio_fkey"
+            columns: ["organization_id", "client_id", "conversation_id"]
+            referencedRelation: "chat_conversations_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "chat_participants_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      chat_read_states_v2: {
+        Row: {
+          client_id: string
+          conversation_id: string
+          organization_id: string
+          read_at: string
+          test_run_id: string | null
+          through_sequence: number
+          user_id: string
+          version: number
+        }
+        Insert: {
+          client_id: string
+          conversation_id: string
+          organization_id: string
+          read_at?: string
+          test_run_id?: string | null
+          through_sequence?: number
+          user_id: string
+          version?: number
+        }
+        Update: {
+          client_id?: string
+          conversation_id?: string
+          organization_id?: string
+          read_at?: string
+          test_run_id?: string | null
+          through_sequence?: number
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_read_states_v2_conversation_id_user_id_fkey"
+            columns: ["conversation_id", "user_id"]
+            referencedRelation: "chat_participants_v2"
+            referencedColumns: ["conversation_id", "user_id"]
+          },
+          {
+            foreignKeyName: "chat_read_states_v2_organization_id_client_id_conversation_fkey"
+            columns: ["organization_id", "client_id", "conversation_id"]
+            referencedRelation: "chat_conversations_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "chat_read_states_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -303,16 +1094,272 @@ export type Database = {
           {
             foreignKeyName: "client_context_profiles_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "client_context_profiles_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_people_v2: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          birth_date: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          email: string | null
+          full_name: string | null
+          id: string
+          initials: string | null
+          is_primary_contact: boolean
+          organization_id: string
+          phone: string
+          relationship: string
+          roles: string[]
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          birth_date?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          initials?: string | null
+          is_primary_contact?: boolean
+          organization_id: string
+          phone?: string
+          relationship?: string
+          roles: string[]
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by: string
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          birth_date?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          initials?: string | null
+          is_primary_contact?: boolean
+          organization_id?: string
+          phone?: string
+          relationship?: string
+          roles?: string[]
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_people_v2_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_people_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_people_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_people_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      client_profiles_v2: {
+        Row: {
+          client_id: string
+          consultation_reason: string
+          context_adaptations: string
+          context_home: string
+          context_school: string
+          created_at: string
+          created_by: string
+          full_name: string | null
+          organization_id: string
+          photo_attachment_id: string | null
+          reported_diagnosis: string
+          rut_normalized: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string
+          version: number
+        }
+        Insert: {
+          client_id: string
+          consultation_reason?: string
+          context_adaptations?: string
+          context_home?: string
+          context_school?: string
+          created_at?: string
+          created_by: string
+          full_name?: string | null
+          organization_id: string
+          photo_attachment_id?: string | null
+          reported_diagnosis?: string
+          rut_normalized?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by: string
+          version?: number
+        }
+        Update: {
+          client_id?: string
+          consultation_reason?: string
+          context_adaptations?: string
+          context_home?: string
+          context_school?: string
+          created_at?: string
+          created_by?: string
+          full_name?: string | null
+          organization_id?: string
+          photo_attachment_id?: string | null
+          reported_diagnosis?: string
+          rut_normalized?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_profiles_v2_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_profiles_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_profiles_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_profiles_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_profiles_v2_photo_attachment_fkey"
+            columns: ["photo_attachment_id"]
+            referencedRelation: "attachment_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_siblings_v2: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          birth_date: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          full_name: string | null
+          id: string
+          initials: string | null
+          notes: string
+          organization_id: string
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          birth_date?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          full_name?: string | null
+          id: string
+          initials?: string | null
+          notes?: string
+          organization_id: string
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by: string
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          birth_date?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          full_name?: string | null
+          id?: string
+          initials?: string | null
+          notes?: string
+          organization_id?: string
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_siblings_v2_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_siblings_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_siblings_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_siblings_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -360,14 +1407,12 @@ export type Database = {
           {
             foreignKeyName: "clients_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clients_test_batch_fkey"
             columns: ["organization_id", "test_run_id"]
-            isOneToOne: false
             referencedRelation: "test_data_batches"
             referencedColumns: ["organization_id", "id"]
           },
@@ -402,8 +1447,126 @@ export type Database = {
           {
             foreignKeyName: "clinic_admin_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_subscription_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          created_at: string
+          id: string
+          next_version: number
+          organization_id: string
+          payload: Json
+          prior_version: number | null
+          reason: string | null
+          subscription_id: string
+          test_run_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          created_at?: string
+          id?: string
+          next_version: number
+          organization_id: string
+          payload: Json
+          prior_version?: number | null
+          reason?: string | null
+          subscription_id: string
+          test_run_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          created_at?: string
+          id?: string
+          next_version?: number
+          organization_id?: string
+          payload?: Json
+          prior_version?: number | null
+          reason?: string | null
+          subscription_id?: string
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_subscription_events_v2_organization_id_subscription_fkey"
+            columns: ["organization_id", "subscription_id"]
+            referencedRelation: "clinic_subscriptions_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinic_subscription_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      clinic_subscriptions_v2: {
+        Row: {
+          cancelled_at: string | null
+          created_by: string
+          effective_at: string
+          id: string
+          occupied_seats: number
+          organization_id: string
+          plan_version_id: string
+          seats: number
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_by: string
+          effective_at: string
+          id: string
+          occupied_seats?: number
+          organization_id: string
+          plan_version_id: string
+          seats: number
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_by?: string
+          effective_at?: string
+          id?: string
+          occupied_seats?: number
+          organization_id?: string
+          plan_version_id?: string
+          seats?: number
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_subscriptions_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_subscriptions_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinic_subscriptions_v2_plan_version_id_fkey"
+            columns: ["plan_version_id"]
+            referencedRelation: "commercial_plan_versions_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -446,14 +1609,12 @@ export type Database = {
           {
             foreignKeyName: "clinical_audit_events_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_audit_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -515,23 +1676,204 @@ export type Database = {
           {
             foreignKeyName: "clinical_history_entries_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_entries_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clinical_history_entries_supersedes_id_fkey"
             columns: ["supersedes_id"]
-            isOneToOne: false
             referencedRelation: "clinical_history_entries"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_history_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          history_id: string
+          id: number
+          organization_id: string
+          test_run_id: string | null
+          version_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          client_id: string
+          created_at?: string
+          history_id: string
+          id?: number
+          organization_id: string
+          test_run_id?: string | null
+          version_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          client_id?: string
+          created_at?: string
+          history_id?: string
+          id?: number
+          organization_id?: string
+          test_run_id?: string | null
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_history_events_v2_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_history_events_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_history_events_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_history_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_history_events_v2_version_id_history_id_client_id_fkey"
+            columns: [
+              "version_id",
+              "history_id",
+              "client_id",
+              "organization_id",
+            ]
+            referencedRelation: "clinical_history_versions_v2"
+            referencedColumns: [
+              "id",
+              "history_id",
+              "client_id",
+              "organization_id",
+            ]
+          },
+        ]
+      }
+      clinical_history_versions_v2: {
+        Row: {
+          action: string
+          client_id: string
+          created_at: string
+          created_by: string
+          descriptor: string
+          dose: string | null
+          ended_on: string | null
+          frequency: string | null
+          history_id: string
+          id: string
+          kind: string
+          notes: string | null
+          organization_id: string
+          prescriber_descriptor: string | null
+          started_on: string | null
+          status: string
+          supersedes_version_id: string | null
+          test_run_id: string | null
+          version: number
+        }
+        Insert: {
+          action: string
+          client_id: string
+          created_at?: string
+          created_by: string
+          descriptor: string
+          dose?: string | null
+          ended_on?: string | null
+          frequency?: string | null
+          history_id: string
+          id: string
+          kind: string
+          notes?: string | null
+          organization_id: string
+          prescriber_descriptor?: string | null
+          started_on?: string | null
+          status: string
+          supersedes_version_id?: string | null
+          test_run_id?: string | null
+          version: number
+        }
+        Update: {
+          action?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          descriptor?: string
+          dose?: string | null
+          ended_on?: string | null
+          frequency?: string | null
+          history_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          organization_id?: string
+          prescriber_descriptor?: string | null
+          started_on?: string | null
+          status?: string
+          supersedes_version_id?: string | null
+          test_run_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_history_versions_v2_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_history_versions_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_history_versions_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_history_versions_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_history_versions_v2_supersedes_version_id_history_fkey"
+            columns: [
+              "supersedes_version_id",
+              "history_id",
+              "client_id",
+              "organization_id",
+            ]
+            referencedRelation: "clinical_history_versions_v2"
+            referencedColumns: [
+              "id",
+              "history_id",
+              "client_id",
+              "organization_id",
+            ]
           },
         ]
       }
@@ -567,9 +1909,151 @@ export type Database = {
           {
             foreignKeyName: "clinical_record_events_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_session_v2_events: {
+        Row: {
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          event_type: string
+          id: string
+          notes: string
+          occurred_at: string
+          organization_id: string
+          sequence: number
+          session_id: string
+          test_run_id: string | null
+        }
+        Insert: {
+          actor_user_id: string
+          client_id: string
+          created_at?: string
+          event_type: string
+          id: string
+          notes?: string
+          occurred_at: string
+          organization_id: string
+          sequence: number
+          session_id: string
+          test_run_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string
+          client_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          notes?: string
+          occurred_at?: string
+          organization_id?: string
+          sequence?: number
+          session_id?: string
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_session_v2_events_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_events_organization_id_client_id_sessi_fkey"
+            columns: ["organization_id", "client_id", "session_id"]
+            referencedRelation: "clinical_session_v2_state"
+            referencedColumns: ["organization_id", "client_id", "session_id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_events_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_events_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      clinical_session_v2_state: {
+        Row: {
+          archived_at: string | null
+          captured_at: string
+          client_id: string
+          created_at: string
+          created_by: string
+          notes: string
+          organization_id: string
+          schema_version: number
+          selected_programs: Json
+          session_id: string
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          captured_at: string
+          client_id: string
+          created_at?: string
+          created_by: string
+          notes?: string
+          organization_id: string
+          schema_version?: number
+          selected_programs?: Json
+          session_id: string
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          captured_at?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          notes?: string
+          organization_id?: string
+          schema_version?: number
+          selected_programs?: Json
+          session_id?: string
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_session_v2_state_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_state_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_state_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "clinical_session_v2_state_session_id_client_id_fkey"
+            columns: ["session_id", "client_id"]
+            referencedRelation: "clinical_sessions"
+            referencedColumns: ["id", "client_id"]
           },
         ]
       }
@@ -608,11 +2092,257 @@ export type Database = {
           {
             foreignKeyName: "clinical_sessions_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
+      }
+      commercial_document_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          created_at: string
+          document_id: string
+          id: string
+          next_version: number
+          organization_id: string
+          payload: Json
+          prior_version: number | null
+          test_run_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          created_at?: string
+          document_id: string
+          id?: string
+          next_version: number
+          organization_id: string
+          payload: Json
+          prior_version?: number | null
+          test_run_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          next_version?: number
+          organization_id?: string
+          payload?: Json
+          prior_version?: number | null
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_document_events_v2_organization_id_document_id_fkey"
+            columns: ["organization_id", "document_id"]
+            referencedRelation: "commercial_documents_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "commercial_document_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      commercial_documents_v2: {
+        Row: {
+          archived: boolean
+          attachment_record_id: string | null
+          attachment_version_id: string | null
+          created_at: string
+          created_by: string
+          currency: string
+          demonstration: boolean
+          id: string
+          issued_at: string
+          kind: string
+          lines: Json
+          minor_unit_digits: number
+          organization_id: string
+          payment_requested: boolean
+          predecessor_id: string | null
+          subscription_id: string | null
+          tax_document: boolean
+          test_run_id: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          archived?: boolean
+          attachment_record_id?: string | null
+          attachment_version_id?: string | null
+          created_at?: string
+          created_by: string
+          currency: string
+          demonstration?: boolean
+          id: string
+          issued_at: string
+          kind: string
+          lines?: Json
+          minor_unit_digits: number
+          organization_id: string
+          payment_requested?: boolean
+          predecessor_id?: string | null
+          subscription_id?: string | null
+          tax_document?: boolean
+          test_run_id?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          archived?: boolean
+          attachment_record_id?: string | null
+          attachment_version_id?: string | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          demonstration?: boolean
+          id?: string
+          issued_at?: string
+          kind?: string
+          lines?: Json
+          minor_unit_digits?: number
+          organization_id?: string
+          payment_requested?: boolean
+          predecessor_id?: string | null
+          subscription_id?: string | null
+          tax_document?: boolean
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_documents_attachment_scope_fkey"
+            columns: ["attachment_record_id", "organization_id", "id"]
+            referencedRelation: "attachment_records"
+            referencedColumns: [
+              "id",
+              "organization_id",
+              "commercial_document_id",
+            ]
+          },
+          {
+            foreignKeyName: "commercial_documents_v2_attachment_version_id_attachment_r_fkey"
+            columns: ["attachment_version_id", "attachment_record_id"]
+            referencedRelation: "attachment_versions"
+            referencedColumns: ["id", "attachment_id"]
+          },
+          {
+            foreignKeyName: "commercial_documents_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_documents_v2_organization_id_predecessor_id_fkey"
+            columns: ["organization_id", "predecessor_id"]
+            referencedRelation: "commercial_documents_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "commercial_documents_v2_organization_id_subscription_id_fkey"
+            columns: ["organization_id", "subscription_id"]
+            referencedRelation: "clinic_subscriptions_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "commercial_documents_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      commercial_plan_versions_v2: {
+        Row: {
+          active: boolean
+          amount_minor: number
+          created_at: string
+          currency: string
+          demonstration: boolean
+          description: string
+          features: Json
+          id: string
+          included_seats: number
+          maximum_seats: number | null
+          minor_unit_digits: number
+          name: string
+          period: string
+          plan_id: string
+          version_number: number
+        }
+        Insert: {
+          active?: boolean
+          amount_minor: number
+          created_at?: string
+          currency: string
+          demonstration?: boolean
+          description?: string
+          features?: Json
+          id: string
+          included_seats: number
+          maximum_seats?: number | null
+          minor_unit_digits: number
+          name: string
+          period: string
+          plan_id: string
+          version_number: number
+        }
+        Update: {
+          active?: boolean
+          amount_minor?: number
+          created_at?: string
+          currency?: string
+          demonstration?: boolean
+          description?: string
+          features?: Json
+          id?: string
+          included_seats?: number
+          maximum_seats?: number | null
+          minor_unit_digits?: number
+          name?: string
+          period?: string
+          plan_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_plan_versions_v2_plan_id_fkey"
+            columns: ["plan_id"]
+            referencedRelation: "commercial_plans_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commercial_plans_v2: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
       }
       consent_events: {
         Row: {
@@ -649,23 +2379,38 @@ export type Database = {
           {
             foreignKeyName: "consent_events_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_events_consent_record_id_fkey"
             columns: ["consent_record_id"]
-            isOneToOne: false
             referencedRelation: "consent_records"
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "consent_events_org_client_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "consent_events_org_test_batch_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "consent_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_events_same_record_fkey"
+            columns: ["organization_id", "client_id", "consent_record_id"]
+            referencedRelation: "consent_records"
+            referencedColumns: ["organization_id", "client_id", "id"]
           },
         ]
       }
@@ -676,6 +2421,7 @@ export type Database = {
           created_at: string
           created_by: string
           effective_at: string | null
+          evidence_attachment_id: string | null
           evidence_reference: string | null
           expires_at: string | null
           grantor_descriptor: string
@@ -686,6 +2432,7 @@ export type Database = {
           status: string
           supersedes_id: string | null
           test_run_id: string | null
+          version: number
         }
         Insert: {
           channel: string
@@ -693,6 +2440,7 @@ export type Database = {
           created_at?: string
           created_by: string
           effective_at?: string | null
+          evidence_attachment_id?: string | null
           evidence_reference?: string | null
           expires_at?: string | null
           grantor_descriptor: string
@@ -703,6 +2451,7 @@ export type Database = {
           status: string
           supersedes_id?: string | null
           test_run_id?: string | null
+          version?: number
         }
         Update: {
           channel?: string
@@ -710,6 +2459,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           effective_at?: string | null
+          evidence_attachment_id?: string | null
           evidence_reference?: string | null
           expires_at?: string | null
           grantor_descriptor?: string
@@ -720,27 +2470,254 @@ export type Database = {
           status?: string
           supersedes_id?: string | null
           test_run_id?: string | null
+          version?: number
         }
         Relationships: [
           {
             foreignKeyName: "consent_records_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "consent_records_evidence_attachment_fkey"
+            columns: ["evidence_attachment_id"]
+            referencedRelation: "attachment_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_records_org_client_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "consent_records_org_test_batch_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "consent_records_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "consent_records_supersedes_id_fkey"
             columns: ["supersedes_id"]
-            isOneToOne: false
             referencedRelation: "consent_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_records_supersedes_same_student_fkey"
+            columns: ["organization_id", "client_id", "supersedes_id"]
+            referencedRelation: "consent_records"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+        ]
+      }
+      family_access_links_v2: {
+        Row: {
+          accepted_at: string | null
+          client_id: string
+          created_at: string
+          family_person_id: string
+          id: string
+          invited_by: string
+          message: string
+          organization_id: string
+          recipient_email: string
+          recipient_user_id: string | null
+          revoked_at: string | null
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id: string
+          created_at?: string
+          family_person_id: string
+          id: string
+          invited_by: string
+          message?: string
+          organization_id: string
+          recipient_email: string
+          recipient_user_id?: string | null
+          revoked_at?: string | null
+          status: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string
+          created_at?: string
+          family_person_id?: string
+          id?: string
+          invited_by?: string
+          message?: string
+          organization_id?: string
+          recipient_email?: string
+          recipient_user_id?: string | null
+          revoked_at?: string | null
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_access_links_v2_organization_id_client_id_family_pe_fkey"
+            columns: ["organization_id", "client_id", "family_person_id"]
+            referencedRelation: "client_people_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "family_access_links_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_access_links_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      family_publication_recipients_v2: {
+        Row: {
+          client_id: string
+          family_person_id: string
+          organization_id: string
+          publication_id: string
+        }
+        Insert: {
+          client_id: string
+          family_person_id: string
+          organization_id: string
+          publication_id: string
+        }
+        Update: {
+          client_id?: string
+          family_person_id?: string
+          organization_id?: string
+          publication_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_publication_recipients_organization_id_client_id_fa_fkey"
+            columns: ["organization_id", "client_id", "family_person_id"]
+            referencedRelation: "client_people_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "family_publication_recipients_organization_id_client_id_pu_fkey"
+            columns: ["organization_id", "client_id", "publication_id"]
+            referencedRelation: "family_publications_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "family_publication_recipients_v2_publication_id_fkey"
+            columns: ["publication_id"]
+            referencedRelation: "family_publications_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_publication_resources_v2: {
+        Row: {
+          position: number
+          publication_id: string
+          resource_id: string
+          resource_kind: string
+        }
+        Insert: {
+          position: number
+          publication_id: string
+          resource_id: string
+          resource_kind: string
+        }
+        Update: {
+          position?: number
+          publication_id?: string
+          resource_id?: string
+          resource_kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_publication_resources_v2_publication_id_fkey"
+            columns: ["publication_id"]
+            referencedRelation: "family_publications_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_publications_v2: {
+        Row: {
+          client_id: string
+          id: string
+          introduction: string
+          organization_id: string
+          predecessor_id: string | null
+          published_at: string
+          published_by: string
+          superseded_at: string | null
+          test_run_id: string | null
+          version: number
+        }
+        Insert: {
+          client_id: string
+          id: string
+          introduction: string
+          organization_id: string
+          predecessor_id?: string | null
+          published_at?: string
+          published_by: string
+          superseded_at?: string | null
+          test_run_id?: string | null
+          version: number
+        }
+        Update: {
+          client_id?: string
+          id?: string
+          introduction?: string
+          organization_id?: string
+          predecessor_id?: string | null
+          published_at?: string
+          published_by?: string
+          superseded_at?: string | null
+          test_run_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_publications_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "family_publications_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_publications_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "family_publications_v2_predecessor_id_fkey"
+            columns: ["predecessor_id"]
+            referencedRelation: "family_publications_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -783,7 +2760,6 @@ export type Database = {
           {
             foreignKeyName: "guardians_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -818,7 +2794,6 @@ export type Database = {
           {
             foreignKeyName: "memberships_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -848,6 +2823,48 @@ export type Database = {
           status?: string
           test_run_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      professional_profiles: {
+        Row: {
+          avatar_object_path: string | null
+          avatar_preset: string
+          description: string
+          name: string
+          phone: string
+          profession: string
+          test_run_id: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          avatar_object_path?: string | null
+          avatar_preset?: string
+          description?: string
+          name?: string
+          phone?: string
+          profession?: string
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id: string
+          version?: number
+        }
+        Update: {
+          avatar_object_path?: string | null
+          avatar_preset?: string
+          description?: string
+          name?: string
+          phone?: string
+          profession?: string
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          version?: number
         }
         Relationships: []
       }
@@ -895,30 +2912,193 @@ export type Database = {
           {
             foreignKeyName: "program_lifecycle_events_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_lifecycle_events_program_id_fkey"
             columns: ["program_id"]
-            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "program_lifecycle_events_program_scope_fkey"
+            columns: ["organization_id", "client_id", "program_id"]
+            referencedRelation: "programs"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
             foreignKeyName: "program_lifecycle_events_program_version_id_fkey"
             columns: ["program_version_id"]
-            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_lifecycle_events_version_scope_fkey"
+            columns: [
+              "organization_id",
+              "client_id",
+              "program_id",
+              "program_version_id",
+            ]
+            referencedRelation: "program_versions"
+            referencedColumns: [
+              "organization_id",
+              "client_id",
+              "program_id",
+              "id",
+            ]
+          },
+        ]
+      }
+      program_result_goal_revisions_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          goal_id: string
+          id: string
+          organization_id: string
+          prior_value: Json
+          program_id: string
+          revision: number
+          test_run_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          client_id: string
+          created_at?: string
+          goal_id: string
+          id?: string
+          organization_id: string
+          prior_value: Json
+          program_id: string
+          revision: number
+          test_run_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          client_id?: string
+          created_at?: string
+          goal_id?: string
+          id?: string
+          organization_id?: string
+          prior_value?: Json
+          program_id?: string
+          revision?: number
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_result_goal_revisions__organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "program_result_goal_revisions_organization_id_client_id_pr_fkey"
+            columns: ["organization_id", "client_id", "program_id", "goal_id"]
+            referencedRelation: "program_result_goals_v2"
+            referencedColumns: [
+              "organization_id",
+              "client_id",
+              "program_id",
+              "id",
+            ]
+          },
+          {
+            foreignKeyName: "program_result_goal_revisions_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_result_goals_v2: {
+        Row: {
+          archived_at: string | null
+          client_id: string
+          comparator: string
+          created_at: string
+          created_by: string
+          dimension: string
+          id: string
+          label: string
+          organization_id: string
+          program_id: string
+          target_value: number
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string
+          version: number
+        }
+        Insert: {
+          archived_at?: string | null
+          client_id: string
+          comparator: string
+          created_at?: string
+          created_by: string
+          dimension: string
+          id: string
+          label: string
+          organization_id: string
+          program_id: string
+          target_value: number
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by: string
+          version?: number
+        }
+        Update: {
+          archived_at?: string | null
+          client_id?: string
+          comparator?: string
+          created_at?: string
+          created_by?: string
+          dimension?: string
+          id?: string
+          label?: string
+          organization_id?: string
+          program_id?: string
+          target_value?: number
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_result_goals_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "program_result_goals_v2_organization_id_client_id_program__fkey"
+            columns: ["organization_id", "client_id", "program_id"]
+            referencedRelation: "programs"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "program_result_goals_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_result_goals_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -933,6 +3113,7 @@ export type Database = {
           organization_id: string
           program_id: string
           program_type: string
+          revision: number
           supersedes_version_id: string | null
           test_run_id: string | null
           title: string
@@ -949,6 +3130,7 @@ export type Database = {
           organization_id: string
           program_id: string
           program_type: string
+          revision?: number
           supersedes_version_id?: string | null
           test_run_id?: string | null
           title: string
@@ -965,6 +3147,7 @@ export type Database = {
           organization_id?: string
           program_id?: string
           program_type?: string
+          revision?: number
           supersedes_version_id?: string | null
           test_run_id?: string | null
           title?: string
@@ -975,28 +3158,30 @@ export type Database = {
           {
             foreignKeyName: "program_versions_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "program_versions_organization_client_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "program_versions_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "program_versions_program_client_type_fkey"
             columns: ["program_id", "client_id", "program_type"]
-            isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id", "client_id", "program_type"]
           },
           {
             foreignKeyName: "program_versions_supersedes_version_id_fkey"
             columns: ["supersedes_version_id"]
-            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
@@ -1011,6 +3196,7 @@ export type Database = {
           id: string
           organization_id: string
           program_type: string
+          revision: number
           status: string
           test_run_id: string | null
           updated_at: string
@@ -1023,6 +3209,7 @@ export type Database = {
           id?: string
           organization_id: string
           program_type: string
+          revision?: number
           status?: string
           test_run_id?: string | null
           updated_at?: string
@@ -1035,6 +3222,7 @@ export type Database = {
           id?: string
           organization_id?: string
           program_type?: string
+          revision?: number
           status?: string
           test_run_id?: string | null
           updated_at?: string
@@ -1043,21 +3231,24 @@ export type Database = {
           {
             foreignKeyName: "programs_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "programs_current_version_fkey"
             columns: ["current_version_id"]
-            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "programs_organization_client_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "programs_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1098,21 +3289,18 @@ export type Database = {
           {
             foreignKeyName: "session_acquisition_trials_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_acquisition_trials_goal_client_fkey"
             columns: ["goal_id", "client_id"]
-            isOneToOne: false
             referencedRelation: "acquisition_goals"
             referencedColumns: ["id", "client_id"]
           },
           {
             foreignKeyName: "session_acquisition_trials_session_client_fkey"
             columns: ["session_id", "client_id"]
-            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id", "client_id"]
           },
@@ -1159,23 +3347,87 @@ export type Database = {
           {
             foreignKeyName: "session_behavior_measurements_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_behavior_measurements_plan_client_fkey"
             columns: ["behavior_plan_id", "client_id"]
-            isOneToOne: false
             referencedRelation: "behavior_plans"
             referencedColumns: ["id", "client_id"]
           },
           {
             foreignKeyName: "session_behavior_measurements_session_client_fkey"
             columns: ["session_id", "client_id"]
-            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id", "client_id"]
+          },
+        ]
+      }
+      session_program_record_revisions_v2: {
+        Row: {
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          prior_measurement: Json
+          reason: string
+          record_id: string
+          replacement_measurement: Json
+          revision: number
+          test_run_id: string | null
+        }
+        Insert: {
+          actor_user_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          prior_measurement: Json
+          reason: string
+          record_id: string
+          replacement_measurement: Json
+          revision: number
+          test_run_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          prior_measurement?: Json
+          reason?: string
+          record_id?: string
+          replacement_measurement?: Json
+          revision?: number
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_program_record_revisi_organization_id_client_id_re_fkey"
+            columns: ["organization_id", "client_id", "record_id"]
+            referencedRelation: "session_program_records_v2"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "session_program_record_revisio_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "session_program_record_revisions_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "session_program_record_revisions_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1226,23 +3478,127 @@ export type Database = {
           {
             foreignKeyName: "session_program_records_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_program_records_program_version_id_fkey"
             columns: ["program_version_id"]
-            isOneToOne: false
             referencedRelation: "program_versions"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "session_program_records_session_id_fkey"
             columns: ["session_id"]
-            isOneToOne: false
             referencedRelation: "clinical_sessions"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_program_records_v2: {
+        Row: {
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          dimension: string
+          discarded_at: string | null
+          id: string
+          measurement: Json
+          organization_id: string
+          program_id: string
+          program_version_id: string
+          schema_version: number
+          session_id: string
+          state: string
+          submitted_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          actor_user_id: string
+          client_id: string
+          created_at?: string
+          dimension: string
+          discarded_at?: string | null
+          id: string
+          measurement: Json
+          organization_id: string
+          program_id: string
+          program_version_id: string
+          schema_version?: number
+          session_id: string
+          state: string
+          submitted_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          actor_user_id?: string
+          client_id?: string
+          created_at?: string
+          dimension?: string
+          discarded_at?: string | null
+          id?: string
+          measurement?: Json
+          organization_id?: string
+          program_id?: string
+          program_version_id?: string
+          schema_version?: number
+          session_id?: string
+          state?: string
+          submitted_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_client_id_prog_fkey1"
+            columns: [
+              "organization_id",
+              "client_id",
+              "program_id",
+              "program_version_id",
+            ]
+            referencedRelation: "program_versions"
+            referencedColumns: [
+              "organization_id",
+              "client_id",
+              "program_id",
+              "id",
+            ]
+          },
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_client_id_progr_fkey"
+            columns: ["organization_id", "client_id", "program_id"]
+            referencedRelation: "programs"
+            referencedColumns: ["organization_id", "client_id", "id"]
+          },
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_client_id_sessi_fkey"
+            columns: ["organization_id", "client_id", "session_id"]
+            referencedRelation: "clinical_session_v2_state"
+            referencedColumns: ["organization_id", "client_id", "session_id"]
+          },
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_program_records_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1278,7 +3634,6 @@ export type Database = {
           {
             foreignKeyName: "siblings_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -1322,14 +3677,12 @@ export type Database = {
           {
             foreignKeyName: "student_access_audit_events_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_access_audit_events_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1382,14 +3735,12 @@ export type Database = {
           {
             foreignKeyName: "student_assignments_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_assignments_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1406,6 +3757,7 @@ export type Database = {
           granted_actions: string[]
           id: string
           organization_id: string
+          reason: string
           request_id: string
           supersedes_decision_id: string | null
           test_run_id: string | null
@@ -1420,6 +3772,7 @@ export type Database = {
           granted_actions?: string[]
           id?: string
           organization_id: string
+          reason?: string
           request_id: string
           supersedes_decision_id?: string | null
           test_run_id?: string | null
@@ -1434,6 +3787,7 @@ export type Database = {
           granted_actions?: string[]
           id?: string
           organization_id?: string
+          reason?: string
           request_id?: string
           supersedes_decision_id?: string | null
           test_run_id?: string | null
@@ -1442,28 +3796,24 @@ export type Database = {
           {
             foreignKeyName: "student_authorization_decisions_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_request_id_fkey"
             columns: ["request_id"]
-            isOneToOne: false
             referencedRelation: "student_authorization_requests"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_decisions_supersedes_decision_id_fkey"
             columns: ["supersedes_decision_id"]
-            isOneToOne: false
             referencedRelation: "student_authorization_decisions"
             referencedColumns: ["id"]
           },
@@ -1482,6 +3832,7 @@ export type Database = {
           resource_type: string
           status: string
           test_run_id: string | null
+          version: number
         }
         Insert: {
           client_id: string
@@ -1495,6 +3846,7 @@ export type Database = {
           resource_type: string
           status?: string
           test_run_id?: string | null
+          version?: number
         }
         Update: {
           client_id?: string
@@ -1508,21 +3860,407 @@ export type Database = {
           resource_type?: string
           status?: string
           test_run_id?: string | null
+          version?: number
         }
         Relationships: [
           {
             foreignKeyName: "student_authorization_requests_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "student_authorization_requests_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_external_access_v2: {
+        Row: {
+          access_level: string
+          client_id: string
+          granted_at: string
+          id: string
+          invitation_id: string
+          organization_id: string
+          revoked_at: string | null
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          access_level: string
+          client_id: string
+          granted_at?: string
+          id: string
+          invitation_id: string
+          organization_id: string
+          revoked_at?: string | null
+          status: string
+          test_run_id?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          access_level?: string
+          client_id?: string
+          granted_at?: string
+          id?: string
+          invitation_id?: string
+          organization_id?: string
+          revoked_at?: string | null
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_external_access_v2_invitation_id_fkey"
+            columns: ["invitation_id"]
+            referencedRelation: "student_share_invitations_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_external_access_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "student_external_access_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_external_access_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      student_share_events_v2: {
+        Row: {
+          actor_user_id: string
+          client_id: string
+          event_type: string
+          id: string
+          invitation_id: string
+          occurred_at: string
+          organization_id: string
+          reason: string
+          sequence: number
+          snapshot: Json
+          test_run_id: string | null
+        }
+        Insert: {
+          actor_user_id: string
+          client_id: string
+          event_type: string
+          id: string
+          invitation_id: string
+          occurred_at?: string
+          organization_id: string
+          reason?: string
+          sequence: number
+          snapshot: Json
+          test_run_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string
+          client_id?: string
+          event_type?: string
+          id?: string
+          invitation_id?: string
+          occurred_at?: string
+          organization_id?: string
+          reason?: string
+          sequence?: number
+          snapshot?: Json
+          test_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_share_events_v2_invitation_id_fkey"
+            columns: ["invitation_id"]
+            referencedRelation: "student_share_invitations_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_share_events_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "student_share_events_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_share_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      student_share_invitations_v2: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          access_level: string
+          client_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          invited_by: string
+          message: string
+          organization_id: string
+          recipient_email: string
+          recipient_user_id: string | null
+          revoked_at: string | null
+          status: string
+          test_run_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          access_level: string
+          client_id: string
+          created_at?: string
+          expires_at?: string | null
+          id: string
+          invited_by: string
+          message?: string
+          organization_id: string
+          recipient_email: string
+          recipient_user_id?: string | null
+          revoked_at?: string | null
+          status: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          access_level?: string
+          client_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          message?: string
+          organization_id?: string
+          recipient_email?: string
+          recipient_user_id?: string | null
+          revoked_at?: string | null
+          status?: string
+          test_run_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_share_invitations_v2_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "student_share_invitations_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_share_invitations_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      support_ticket_events_v2: {
+        Row: {
+          action: string
+          actor_user_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          organization_id: string
+          payload: Json
+          reason: string | null
+          test_run_id: string | null
+          ticket_id: string
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          organization_id: string
+          payload?: Json
+          reason?: string | null
+          test_run_id?: string | null
+          ticket_id: string
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          organization_id?: string
+          payload?: Json
+          reason?: string | null
+          test_run_id?: string | null
+          ticket_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_events_v2_organization_id_actor_user_id_fkey"
+            columns: ["organization_id", "actor_user_id"]
+            referencedRelation: "memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "support_ticket_events_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "support_ticket_events_v2_organization_id_ticket_id_fkey"
+            columns: ["organization_id", "ticket_id"]
+            referencedRelation: "support_tickets_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      support_ticket_messages_v2: {
+        Row: {
+          author_user_id: string
+          body: string
+          created_at: string
+          id: string
+          organization_id: string
+          sequence: number
+          test_run_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          author_user_id: string
+          body: string
+          created_at?: string
+          id: string
+          organization_id: string
+          sequence: number
+          test_run_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          author_user_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          sequence?: number
+          test_run_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_v2_organization_id_author_user_id_fkey"
+            columns: ["organization_id", "author_user_id"]
+            referencedRelation: "memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "support_ticket_messages_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "support_ticket_messages_v2_organization_id_ticket_id_fkey"
+            columns: ["organization_id", "ticket_id"]
+            referencedRelation: "support_tickets_v2"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      support_tickets_v2: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          organization_id: string
+          requester_user_id: string
+          status: string
+          test_run_id: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id: string
+          organization_id: string
+          requester_user_id: string
+          status?: string
+          test_run_id?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          requester_user_id?: string
+          status?: string
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_v2_organization_id_requester_user_id_fkey"
+            columns: ["organization_id", "requester_user_id"]
+            referencedRelation: "memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+          {
+            foreignKeyName: "support_tickets_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -1561,7 +4299,6 @@ export type Database = {
           {
             foreignKeyName: "test_data_batches_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1599,8 +4336,71 @@ export type Database = {
           {
             foreignKeyName: "test_data_cleanup_log_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notifications_v2: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          organization_id: string
+          read_at: string | null
+          resource_path: string
+          share_event_id: string | null
+          test_run_id: string | null
+          title: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          organization_id: string
+          read_at?: string | null
+          resource_path: string
+          share_event_id?: string | null
+          test_run_id?: string | null
+          title: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          read_at?: string | null
+          resource_path?: string
+          share_event_id?: string | null
+          test_run_id?: string | null
+          title?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_v2_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notifications_v2_organization_id_test_run_id_fkey"
+            columns: ["organization_id", "test_run_id"]
+            referencedRelation: "test_data_batches"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "user_notifications_v2_share_event_id_fkey"
+            columns: ["share_event_id"]
+            referencedRelation: "student_share_events_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -1610,6 +4410,275 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aba_attachment_archive_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_attachment_confirm_verified_v2: {
+        Args: {
+          p_actor_user_id: string
+          p_confirmation: Json
+          p_organization_id: string
+          p_reservation: Json
+          p_verified_sha256: string
+        }
+        Returns: Json
+      }
+      aba_attachment_list_v2: {
+        Args: {
+          p_include_archived?: boolean
+          p_organization_id: string
+          p_resource: Json
+        }
+        Returns: Json
+      }
+      aba_attachment_mark_verification_failed_v2: {
+        Args: {
+          p_actor_user_id: string
+          p_organization_id: string
+          p_reason: string
+          p_reservation: Json
+        }
+        Returns: boolean
+      }
+      aba_attachment_read_v2: {
+        Args: {
+          p_organization_id: string
+          p_resource: Json
+          p_version_id: string
+        }
+        Returns: Json
+      }
+      aba_attachment_reserve_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_attachment_resource_authorized_v2: {
+        Args: {
+          p_capability: string
+          p_organization_id: string
+          p_resource: Json
+        }
+        Returns: boolean
+      }
+      aba_attachment_verification_target_v2: {
+        Args: {
+          p_confirmation: Json
+          p_organization_id: string
+          p_reservation: Json
+        }
+        Returns: Json
+      }
+      aba_authorized_search_v2: {
+        Args: { p_limit?: number; p_organization_id: string; p_query: string }
+        Returns: Json
+      }
+      aba_calendar_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_calendar_linkable_sessions_v2: {
+        Args: { p_organization_id: string; p_student_id: string }
+        Returns: Json
+      }
+      aba_calendar_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_chat_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_chat_eligible_participants_v2: {
+        Args: { p_client_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      aba_chat_messages_read_v2: {
+        Args: {
+          p_after_sequence?: number
+          p_conversation_id: string
+          p_limit?: number
+          p_organization_id: string
+        }
+        Returns: Json
+      }
+      aba_chat_read_v2: { Args: { p_organization_id: string }; Returns: Json }
+      aba_claim_team_invitation_delivery: {
+        Args: { p_actor: string; p_delivery: string; p_org: string }
+        Returns: Json
+      }
+      aba_clinical_history_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_commercial_document_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_commercial_inquiry_v2: { Args: { p_inquiry: Json }; Returns: Json }
+      aba_commercial_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_consent_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_dashboard_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_due_reminders_dispatch_v2: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      aba_family_access_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_family_access_read_v2: {
+        Args: { p_client_id?: string; p_organization_id?: string }
+        Returns: Json
+      }
+      aba_family_calendar_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_family_document_read_v2: {
+        Args: {
+          p_organization_id: string
+          p_publication_id: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
+      aba_family_portal_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_family_publication_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_family_publication_manage_read_v2: {
+        Args: { p_client_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      aba_finish_team_invitation_delivery: {
+        Args: {
+          p_actor: string
+          p_claim: string
+          p_delivery: string
+          p_error?: string
+          p_org: string
+          p_outcome: string
+        }
+        Returns: Json
+      }
+      aba_identity_context: {
+        Args: { p_organization_id?: string }
+        Returns: Json
+      }
+      aba_list_students_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_notification_read_state_v2: {
+        Args: {
+          p_expected_version: number
+          p_idempotency_key: string
+          p_notification_id: string
+          p_operation_id: string
+          p_read: boolean
+        }
+        Returns: Json
+      }
+      aba_notifications_read_v2: { Args: { p_limit?: number }; Returns: Json }
+      aba_program_student_scope_v2: {
+        Args: { p_clinic_id: string; p_student_id: string }
+        Returns: Json
+      }
+      aba_reserve_team_invitation_delivery: {
+        Args: {
+          p_invite: string
+          p_key: string
+          p_operation: string
+          p_org: string
+        }
+        Returns: Json
+      }
+      aba_resolve_team_invitation_delivery: {
+        Args: {
+          p_decision: string
+          p_delivery: string
+          p_evidence_ack: boolean
+          p_expected_version: number
+          p_org: string
+        }
+        Returns: Json
+      }
+      aba_save_professional_profile: {
+        Args: {
+          p_expected_version: number
+          p_idempotency_key: string
+          p_operation_id: string
+          p_organization_id: string
+          p_payload: Json
+          p_target_user_id: string
+        }
+        Returns: Json
+      }
+      aba_student_access_decision_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_access_request_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_access_request_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_detail_v2: {
+        Args: { p_client_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_share_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_student_share_read_v2: {
+        Args: { p_organization_id?: string }
+        Returns: Json
+      }
+      aba_subscription_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_support_ticket_command_v2: {
+        Args: { p_command: Json; p_organization_id: string }
+        Returns: Json
+      }
+      aba_support_ticket_read_v2: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      aba_team: { Args: { p_organization_id: string }; Returns: Json }
+      aba_team_invitation_deliveries: { Args: { p_org: string }; Returns: Json }
+      aba_team_invitation_delivery_status: {
+        Args: {
+          p_invite: string
+          p_key: string
+          p_operation: string
+          p_org: string
+        }
+        Returns: Json
+      }
       append_clinical_history_entries: {
         Args: { p_client_id: string; p_entries: Json; p_test_run_id?: string }
         Returns: {
@@ -1672,6 +4741,30 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      command_archive_session_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
+      }
+      command_capture_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
+      }
+      command_program_draft_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
+      }
+      command_program_lifecycle_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
+      }
+      command_result_goal_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
+      }
+      command_session_v2: {
+        Args: { p_clinic_id: string; p_command: Json }
+        Returns: Json
       }
       create_client: {
         Args: {
@@ -1748,6 +4841,7 @@ export type Database = {
           organization_id: string
           program_id: string
           program_type: string
+          revision: number
           supersedes_version_id: string | null
           test_run_id: string | null
           title: string
@@ -1778,6 +4872,7 @@ export type Database = {
           organization_id: string
           program_id: string
           program_type: string
+          revision: number
           supersedes_version_id: string | null
           test_run_id: string | null
           title: string
@@ -1808,6 +4903,7 @@ export type Database = {
           granted_actions: string[]
           id: string
           organization_id: string
+          reason: string
           request_id: string
           supersedes_decision_id: string | null
           test_run_id: string | null
@@ -1823,6 +4919,7 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: string[]
       }
+      mvp_archive_session: { Args: { p_session_id: string }; Returns: Json }
       mvp_begin_clinic_invitation: {
         Args: {
           p_email: string
@@ -1842,6 +4939,10 @@ export type Database = {
       }
       mvp_complete_clinic_invitation: {
         Args: { p_operation_id: string; p_organization_id: string }
+        Returns: Json
+      }
+      mvp_discard_record: {
+        Args: { p_expected_version: number; p_id: string }
         Returns: Json
       }
       mvp_finish_session: { Args: { p_session_id: string }; Returns: Json }
@@ -1885,7 +4986,47 @@ export type Database = {
         }
         Returns: Json
       }
+      mvp_set_student_status: {
+        Args: {
+          p_client_id: string
+          p_expected_updated_at: string
+          p_organization_id: string
+          p_status: string
+        }
+        Returns: {
+          birth_date: string
+          clinical_id: string
+          created_at: string
+          id: string
+          initials: string
+          living_arrangement: string | null
+          organization_id: string
+          primary_language: string
+          status: string
+          test_run_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       mvp_team: { Args: { p_organization_id: string }; Returns: Json }
+      mvp_update_program_draft: {
+        Args: {
+          p_design: Json
+          p_program_id: string
+          p_title: string
+          p_version_id: string
+        }
+        Returns: Json
+      }
+      read_program_session_v2: {
+        Args: { p_clinic_id: string; p_student_id: string }
+        Returns: Json
+      }
       record_consent_reference: {
         Args: {
           p_channel: string
@@ -1906,6 +5047,7 @@ export type Database = {
           created_at: string
           created_by: string
           effective_at: string | null
+          evidence_attachment_id: string | null
           evidence_reference: string | null
           expires_at: string | null
           grantor_descriptor: string
@@ -1916,6 +5058,7 @@ export type Database = {
           status: string
           supersedes_id: string | null
           test_run_id: string | null
+          version: number
         }
         SetofOptions: {
           from: "*"
@@ -1944,6 +5087,7 @@ export type Database = {
           resource_type: string
           status: string
           test_run_id: string | null
+          version: number
         }
         SetofOptions: {
           from: "*"
@@ -1964,6 +5108,7 @@ export type Database = {
           granted_actions: string[]
           id: string
           organization_id: string
+          reason: string
           request_id: string
           supersedes_decision_id: string | null
           test_run_id: string | null
@@ -2047,6 +5192,7 @@ export type Database = {
           id: string
           organization_id: string
           program_type: string
+          revision: number
           status: string
           test_run_id: string | null
           updated_at: string

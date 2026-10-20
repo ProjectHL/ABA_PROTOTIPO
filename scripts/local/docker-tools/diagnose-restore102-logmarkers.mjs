@@ -1,0 +1,3 @@
+import {spawnSync} from 'node:child_process';const r=spawnSync('/workspace/.aba.local/docker-tools/docker-linux',['logs','--tail','200','supabase_db_aba-restore-356121da'],{encoding:'utf8'});const t=r.stdout+'\n'+r.stderr;const patterns=['permission denied','cannot change','invalid value','could not access file','not allowed','unrecognized configuration','does not exist','must be superuser','syntax error','statement timeout','set_config','pgrst'];console.log(JSON.stringify({target:'aba-restore-356121da',diagnosticMarkers:patterns.filter(x=>t.includes(x)),rawLogsWithheld:true}));
+
+console.log(JSON.stringify({sanitizedErrors:t.split(/\r?\n/).filter(x=>/ERROR:/.test(x)).map(x=>x.slice(x.indexOf('ERROR:')).replace(/"[^"]*"|'[^']*'/g,'[identifier withheld]')).slice(-3)}));

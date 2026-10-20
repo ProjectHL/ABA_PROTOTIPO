@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_student_share_read_v2"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": null
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const token=pm.variables.get('qa_token_tecnico_b');
+      if(!token) throw new Error('Iniciar sesión sintética tecnico-b primero');
+      pm.variables.set('qa_token',token);
+      pm.variables.set('qa_actor_id',pm.variables.get('qa_actor_tecnico_b'));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200));
+      const data=pm.response.json();
+      pm.test('Actor correlacionado',()=>pm.expect(data.actorId).to.eql(pm.variables.get('qa_actor_id')));
+      pm.test('Sin contexto implícito',()=>pm.expect(data.clinicId).to.eql(null));
+    language: text/javascript
+order: 4000

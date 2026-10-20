@@ -1,0 +1,729 @@
+{
+  "schemaVersion": 1,
+  "status": "PREPARED_NOT_EXECUTED",
+  "createdAt": "2026-10-11T15:19:25.974Z",
+  "candidate": {
+    "name": "V17",
+    "buildId": "xhRj-69HoTbUo7X4gOAcG",
+    "migrationCount": 103
+  },
+  "constraints": {
+    "authUsed": false,
+    "functionalTestsRun": false,
+    "dbWrites": 0,
+    "productChanges": 0,
+    "originalsReadonly": true,
+    "desktopRoot": "C:/Users/Moonlabpc/Desktop/ABA/ABA_PROTOTIPO"
+  },
+  "sources": [
+    {
+      "file": ".aba.local/qa/capture-details-v8-desktop-v9-resumed-journal-20261009.json",
+      "sha256": "831eccaafbfe942281d2002ccf4817432e47cc99de17c148a692d361827e6814",
+      "sessionId": "b391f2ef-f004-4de7-be7f-9759faca7c24",
+      "records": [
+        {
+          "recordId": "91678323-4031-4fb2-8f32-efdf636c6ca7",
+          "version": 2,
+          "dimension": "frequency",
+          "phase": "treatment",
+          "oracle": {
+            "value": 600,
+            "count": 2,
+            "observedSeconds": 0.2,
+            "openWindows": 0
+          }
+        },
+        {
+          "recordId": "10a30242-6544-424d-9fe8-ef997ebadcfc",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "whole"
+          }
+        },
+        {
+          "recordId": "de5af950-297b-4f94-ade9-6baa3b6c813d",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "partial"
+          }
+        },
+        {
+          "recordId": "f3bd83dd-4692-47e4-8f68-dba2ac8f9d95",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "momentary"
+          }
+        },
+        {
+          "recordId": "b0561b88-7bb9-4c88-9e0b-1fad9805bb12",
+          "version": 2,
+          "dimension": "duration",
+          "phase": "treatment",
+          "oracle": {
+            "value": 5.5,
+            "totalSeconds": 5.5,
+            "averageSeconds": 2.75,
+            "closed": 2,
+            "open": 0
+          }
+        },
+        {
+          "recordId": "c07a5356-40d8-4a53-af9e-5caa377e61ed",
+          "version": 2,
+          "dimension": "latency",
+          "phase": "treatment",
+          "oracle": {
+            "value": 5.467,
+            "responded": 1,
+            "noResponse": 1,
+            "pending": 0
+          }
+        }
+      ],
+      "drafts": [
+        {
+          "recordId": "91678323-4031-4fb2-8f32-efdf636c6ca7",
+          "expectedVersion": 0,
+          "receiptId": "4f27287b-4fff-4e2d-9f86-1057fedbf96f",
+          "measurementSha256": "af43a57a2ade772ae2abf82cec1a717fd782ac64d1c527e4ea9367fcc3804834",
+          "oracle": {
+            "value": 600,
+            "count": 2,
+            "observedSeconds": 0.2,
+            "openWindows": 0
+          }
+        },
+        {
+          "recordId": "10a30242-6544-424d-9fe8-ef997ebadcfc",
+          "expectedVersion": 0,
+          "receiptId": "8c72982c-267f-4cfd-99c1-ad5e31013f3b",
+          "measurementSha256": "dfbb239889806f8339659e825df71798e1f3239a746802aab18df9b047153ef6",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "whole"
+          }
+        },
+        {
+          "recordId": "de5af950-297b-4f94-ade9-6baa3b6c813d",
+          "expectedVersion": 0,
+          "receiptId": "b31d6cc9-aa2e-42f9-8e26-7091317698f5",
+          "measurementSha256": "19421735ed3706439b132bab8ae7c39754fe33970f1de2304af26c3a1a03a36e",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "partial"
+          }
+        },
+        {
+          "recordId": "f3bd83dd-4692-47e4-8f68-dba2ac8f9d95",
+          "expectedVersion": 0,
+          "receiptId": "3f2c4af1-f318-4de3-a5b8-c05b71a2c5bd",
+          "measurementSha256": "6dd2f1feec2b5d6892d80f84d1a1a8555b2c5e14f7c677a0691c3e5dd10249ad",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "momentary"
+          }
+        },
+        {
+          "recordId": "b0561b88-7bb9-4c88-9e0b-1fad9805bb12",
+          "expectedVersion": 0,
+          "receiptId": "beaf9b49-3190-402a-8f04-da8e367f7f1a",
+          "measurementSha256": "fe574348fcb4906f50b5b62fa6d3869693b350ede3a48de258865c486514dba9",
+          "oracle": {
+            "value": null,
+            "totalSeconds": 0,
+            "averageSeconds": null,
+            "closed": 0,
+            "open": 1
+          }
+        },
+        {
+          "recordId": "c07a5356-40d8-4a53-af9e-5caa377e61ed",
+          "expectedVersion": 0,
+          "receiptId": "c05a83fe-08e1-42e7-9545-4ebd2106bec3",
+          "measurementSha256": "b663ed2d0a0aa8a218def5d28fbc2ba8ce07823d063d274abc1dbc6a8626992f",
+          "oracle": {
+            "value": null,
+            "responded": 0,
+            "noResponse": 0,
+            "pending": 1
+          }
+        }
+      ]
+    },
+    {
+      "file": ".aba.local/qa/capture-details-v8-mobile-v9-fresh-journal-20261009.json",
+      "sha256": "2d2b8cd7c0c817b13f72979bc72f6dfc623348176fbe41b88e08cfde02f5be0d",
+      "sessionId": "56fd5c21-78dc-4675-ab76-f99e0313c051",
+      "records": [
+        {
+          "recordId": "de42c64d-f01e-41be-adc5-fdaa7fd15ab7",
+          "version": 2,
+          "dimension": "frequency",
+          "phase": "treatment",
+          "oracle": {
+            "value": 597.0149253731344,
+            "count": 2,
+            "observedSeconds": 0.201,
+            "openWindows": 0
+          }
+        },
+        {
+          "recordId": "da4ea7b1-fd2f-463a-b03b-495552f9e9be",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "whole"
+          }
+        },
+        {
+          "recordId": "53c5537a-bee0-4651-b741-caf14f1dbb08",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "partial"
+          }
+        },
+        {
+          "recordId": "e696b6e4-64ef-4142-a579-db8d97612700",
+          "version": 2,
+          "dimension": "interval",
+          "phase": "treatment",
+          "oracle": {
+            "value": 33.333333333333336,
+            "observed": 3,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 1,
+            "method": "momentary"
+          }
+        },
+        {
+          "recordId": "b63ae964-096a-4540-8947-4aaa71b7e73a",
+          "version": 2,
+          "dimension": "duration",
+          "phase": "treatment",
+          "oracle": {
+            "value": 5.551,
+            "totalSeconds": 5.551,
+            "averageSeconds": 2.7755,
+            "closed": 2,
+            "open": 0
+          }
+        },
+        {
+          "recordId": "678ce783-6118-414d-a5ac-746d958f2a98",
+          "version": 2,
+          "dimension": "latency",
+          "phase": "treatment",
+          "oracle": {
+            "value": 5.484,
+            "responded": 1,
+            "noResponse": 1,
+            "pending": 0
+          }
+        }
+      ],
+      "drafts": [
+        {
+          "recordId": "de42c64d-f01e-41be-adc5-fdaa7fd15ab7",
+          "expectedVersion": 0,
+          "receiptId": "397d3b08-bff1-45a9-b021-cbf8e9d3b60f",
+          "measurementSha256": "fbac7f4ef1b8cca4cec24665d94c2986161ca260336c9eefbb1846c5ff929b5f",
+          "oracle": {
+            "value": 597.0149253731344,
+            "count": 2,
+            "observedSeconds": 0.201,
+            "openWindows": 0
+          }
+        },
+        {
+          "recordId": "da4ea7b1-fd2f-463a-b03b-495552f9e9be",
+          "expectedVersion": 0,
+          "receiptId": "d4989be2-7cb3-47a8-9e58-65c8756df573",
+          "measurementSha256": "f97f2f43baa7868526059f9a47aa63ab7632780b199319946d1ae1b71e724a8c",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "whole"
+          }
+        },
+        {
+          "recordId": "53c5537a-bee0-4651-b741-caf14f1dbb08",
+          "expectedVersion": 0,
+          "receiptId": "8656e163-c07a-4827-9ea6-4705e257f291",
+          "measurementSha256": "0d7327ce2d45fe42ba5dc69a3bc8998aa50add717c4b51a99819f59d11068193",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "partial"
+          }
+        },
+        {
+          "recordId": "e696b6e4-64ef-4142-a579-db8d97612700",
+          "expectedVersion": 0,
+          "receiptId": "0436c0b7-0f29-4aed-995e-4faa33902da5",
+          "measurementSha256": "c843406cdce817dae02626ba30de67a1611d3912dd15cb6cdd799a4e4798d05e",
+          "oracle": {
+            "value": 50,
+            "observed": 2,
+            "planned": 3,
+            "positive": 1,
+            "coverage": 0.6666666666666666,
+            "method": "momentary"
+          }
+        },
+        {
+          "recordId": "b63ae964-096a-4540-8947-4aaa71b7e73a",
+          "expectedVersion": 0,
+          "receiptId": "77791646-41ee-4eae-848f-39ab3de2cfa7",
+          "measurementSha256": "fdbd5dedaf9a06da53f8e140b7044ff3baa828b8d8502b35ffa5aa74d7ebc742",
+          "oracle": {
+            "value": null,
+            "totalSeconds": 0,
+            "averageSeconds": null,
+            "closed": 0,
+            "open": 1
+          }
+        },
+        {
+          "recordId": "678ce783-6118-414d-a5ac-746d958f2a98",
+          "expectedVersion": 0,
+          "receiptId": "baa34916-8542-4e1a-8db6-36a2b76f6fe3",
+          "measurementSha256": "77168285dd7ca343231b4974e9e3fd4404691886ec5a46d23c36e543571a7fd2",
+          "oracle": {
+            "value": null,
+            "responded": 0,
+            "noResponse": 0,
+            "pending": 1
+          }
+        }
+      ]
+    },
+    {
+      "file": ".aba.local/qa/percentage-phase-v9-desktop-v10-resumed-journal-20261009.json",
+      "sha256": "5bfd76ea78213f034842465fda1de8c8a971555b0b0804ed65a1131db425fc81",
+      "sessionId": "f29a71bc-1718-4a1d-812b-b6b993dfcab8",
+      "records": [
+        {
+          "recordId": "38c56154-ac6d-43bc-9c56-73e33347fbe6",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "baseline",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f5658669-f17f-415a-90df-04910b505d0c",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "treatment",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f69e5749-38f3-4a53-96f1-e01e76a7be23",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "generalization",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "06bf3179-2c77-4009-9df9-59404e37d921",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "maintenance",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        }
+      ],
+      "drafts": [
+        {
+          "recordId": "38c56154-ac6d-43bc-9c56-73e33347fbe6",
+          "expectedVersion": 0,
+          "receiptId": "075975e1-c1a0-4ef7-81ba-fec547eeb42e",
+          "measurementSha256": "83f5ab808c7dc76847a2cd610f7753d8668cd393059050a876ff1f40d6a5ddc3",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f5658669-f17f-415a-90df-04910b505d0c",
+          "expectedVersion": 0,
+          "receiptId": "c545c587-121b-4a9d-9b8b-27b6a9d4900c",
+          "measurementSha256": "ee164dd64398fc1b1c93dd1ea2ac81aff35a7cb5d42ca55e46ab90ce70f02a98",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f69e5749-38f3-4a53-96f1-e01e76a7be23",
+          "expectedVersion": 0,
+          "receiptId": "e230f047-15b2-4238-82f0-e72543574be3",
+          "measurementSha256": "8a673424009c442a812e62c85da79f6fd644161ba121649c82ccf4320e1deb20",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "06bf3179-2c77-4009-9df9-59404e37d921",
+          "expectedVersion": 0,
+          "receiptId": "78fc627a-21de-4d39-ae4c-c2177fb99b42",
+          "measurementSha256": "aa963f1f9692cc2dce048359e431171a1975f3a4d5fd8b39c9e9cc5e1d7b3a07",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        }
+      ]
+    },
+    {
+      "file": ".aba.local/qa/percentage-phase-v9-mobile-v10-fresh-journal-20261009.json",
+      "sha256": "092011a904c8217548ec193ae9b81853ff56e3464a96e14a413d372323080185",
+      "sessionId": "661edd29-7e7e-40fb-ac20-f90fc001afb5",
+      "records": [
+        {
+          "recordId": "fc326927-fea7-42bb-8aa8-6f8eed39031d",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "baseline",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "87d85f32-598c-46ec-8524-0772e88fa0a9",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "treatment",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "94fd27ea-9a13-45dd-b0d7-a582a0a0cec9",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "generalization",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f847e9eb-4306-48d4-897f-b1197ed6ea10",
+          "version": 2,
+          "dimension": "percentage",
+          "phase": "maintenance",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        }
+      ],
+      "drafts": [
+        {
+          "recordId": "fc326927-fea7-42bb-8aa8-6f8eed39031d",
+          "expectedVersion": 0,
+          "receiptId": "e53dcca4-faae-4a67-941f-f9288e53b837",
+          "measurementSha256": "5413ccdda29464f811a4f23298dd817b286629fc1f68284de425124c40e86885",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "87d85f32-598c-46ec-8524-0772e88fa0a9",
+          "expectedVersion": 0,
+          "receiptId": "89c4b5ac-7c28-41ef-98e6-228dd3e5e7b7",
+          "measurementSha256": "04f5735aebb77eacd3ca69b367edaecaba7f64ecf06b67a2cae2cae39a6e0c20",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "94fd27ea-9a13-45dd-b0d7-a582a0a0cec9",
+          "expectedVersion": 0,
+          "receiptId": "890c784f-32a3-4659-91ca-d933c9903af1",
+          "measurementSha256": "7de0c38efd7a68aeb9c1534cc5cdec20776bc5c033ca5637c78dc2d88cf66f10",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        },
+        {
+          "recordId": "f847e9eb-4306-48d4-897f-b1197ed6ea10",
+          "expectedVersion": 0,
+          "receiptId": "69ca7bea-ae03-497e-9758-b47a3bd186ec",
+          "measurementSha256": "0afae8e012fa8885b10b1591409950a8b7f430deab8fff13d5278e0d442108f5",
+          "oracle": {
+            "value": 25,
+            "recorded": 4,
+            "planned": 5,
+            "independent": 1,
+            "prompted": 1,
+            "errors": 1,
+            "noResponse": 1,
+            "unrecorded": 1
+          }
+        }
+      ]
+    }
+  ],
+  "mathAssertions": [
+    "Compare independently computed values against measurementV2Metrics current source, then authorized persisted originalMeasurement; never use production helper to compute expected.",
+    "Final records must match exact retained tuple/version/payload and current authorized DTO; drafts are historical ACK payloads, not current record versions. Read authorized revisions or scoped Docker SQL readonly to bind each draft to persistence before claiming draft/open-case current storage.",
+    "Percentage all four phases: I/A/E/NR/null -> recorded4 planned5 independent1 prompted1 errors1 NR1 unrecorded1 value25; null is excluded, NR is included.",
+    "Intervals drafts true/false/null -> observed2 planned3 positive1 coverage2/3 value50; finals true/false/false -> observed3 positive1 coverage1 value100/3. All3 methods remain distinct.",
+    "Frequency sum closed window milliseconds only, gaps excluded; final2events*60000/sum(ms). Fractional seconds must not be floored for domain metric. No retained frequency command has open window: open-window case requires one own new draft or mark missing, not invented snapshot.",
+    "Duration historical open draft: closed0 open1 valueNULL averageNULL, not zero-duration; final2closed -> sum exact milliseconds/1000 and average=sum/2.",
+    "Latency historical pending draft: responded0 pending1 NR0 valueNULL; finalresponse+NR -> mean only response latency, NR count1 excluded from numerical mean."
+  ],
+  "cases": [
+    {
+      "id": "metrics-readonly",
+      "actions": [
+        "CAPTURA metrics",
+        "QA-012 retained evidence"
+      ],
+      "writes": 0,
+      "steps": [
+        "Root claims exclusive Auth slot; adminA ordinary login and read_program_session_v2 own94.",
+        "Bind all20 retained final records to current DTO and compute independent metrics; compare metric fields, raw events, IDs, phase/method and timestamps.",
+        "Bind historical drafts via authorized revision history or readonly DB exact tuple/receipt; compute mixed null/open/pending metrics without creating records.",
+        "Read original V1 exact tuple only; never mutate original b347/session97."
+      ]
+    },
+    {
+      "id": "unsaved-close-discard-draft",
+      "actions": [
+        "SESION-009",
+        "SESION-010",
+        "SESION-012"
+      ],
+      "writes": "one owned session + one retained draft per viewport, no six-record recreation",
+      "steps": [
+        "Precheck current own94 no active/draft/paused session and exact baseline outside own resources. New session only if no reusable owned operable session; existing archived V9/V10 must stay archived.",
+        "Open new Percentage capture; set independent trial+notes. Cerrar then Continuar borrador v0 reopens same ID/observation without any command.",
+        "Descartar registro local sin guardar dismiss -> same local data; accept -> closes/removes local record, zero commands/server records.",
+        "New capture Frequency start window+event; Guardar borrador while window open -> exact correlated ACK and version1; Cerrar/reload/reopen preserves open window+ID, oracle cutoff capturedAt.",
+        "Archivar borrador persistido dismiss -> 0 writes; accept -> action discard same measurement, expectedVersion1, exact receipt/version2 and discarded=true, data/revisions retained.",
+        "Cancel own session using UI, then archive own session with reason and correlated receipt. Compare originals and all unrelated resources exactly. Never finish with an open draft."
+      ]
+    },
+    {
+      "id": "offline-selected-pending-download",
+      "actions": [
+        "OFFLINE-002",
+        "OFFLINE-003",
+        "OFFLINE-017",
+        "SESION-012"
+      ],
+      "writes": "IndexedDB only while offline; server0 for discarded pending command",
+      "steps": [
+        "Use fresh isolated Playwright context, own94 new session from preceding case; Descargar ficha and preserve scoped snapshots. Select existing own authorized document if found via currentDTO; no upload needed.",
+        "context.setOffline(true); save changed own session notes to pending IndexedDB exact operation/payload. Do not reconnect/sync until discarded.",
+        "Quitar descarga confirm -> rejects while pending; snapshots+queue unchanged.",
+        "Estado offline y sincronización > Descartar dismiss -> queue exact; accept -> removes unacknowledged pending only, no RPC/server ACK. Retain independently preexisting ACK/superseded entries if naturally available; absence cannot prove this branch.",
+        "Reconnect after queue empty; reload server -> original notes/version unchanged. Quitar offline selecteddocument removes scoped attachment only; server file/metadataversion/hash unchanged.",
+        "Quitar descarga dismiss -> snapshot unchanged; accept -> scope student and attachment snapshots removed, queue unaffected, no server writes. Original downloads in other contexts never touched."
+      ]
+    },
+    {
+      "id": "v1-inventory",
+      "actions": [
+        "SESION-021"
+      ],
+      "writes": 0,
+      "studentId": "b347646e-ff29-450b-aedf-9f9c015fb41a",
+      "sessionId": "97a8e135-1fb0-4397-910f-f4fe5f099ad1",
+      "recordId": "c38dbfa7-5f55-40c2-a2c6-1b506374a011",
+      "payload": {
+        "count": 3,
+        "notes": "QA R5 V1 AGREGADO SINTETICO 2155e99e"
+      },
+      "steps": [
+        "Open original session readonly with write interceptor aborting all commands. Visible Registro histórico V1 · frequency, Sólo lectura, 3 eventos agregados and explicit no invented events/clock. No edit/undo control within V1 card.",
+        "Search current authorized records for preexisting V1 boolean trials/manual duration; inspect if present without writes. Existing known V1 fixture proves frequency only.",
+        "Source inventory preserves true/false/manual duration and aggregate-only semantics, but absence of actual retained variants remains explicit UI evidence limitation; root decides minimal new owned V1 variants only if requirement demands live variant UI, never insert on originals."
+      ]
+    }
+  ],
+  "execution": {
+    "serialAuth": true,
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      390,
+      844
+    ],
+    "proposedSuite": "tests/e2e/r5.capture-remainders-v17.spec.mjs",
+    "proposedConfig": "playwright.capture-remainders-v17.config.ts",
+    "suiteCreated": false,
+    "rootMustReviewBeforeExecution": true,
+    "safeArtifacts": "new capture-remainders-v17-{desktop,mobile}-journal/safe files; every command retained before write, receipt correlated; no secrets"
+  },
+  "limits": [
+    "No Auth, UI, DB reads or functional suites executed by this preparation. Journals are retained authoritative historical sources only; runtime current DTO checks remain pending.",
+    "No QA003/004/015 or404 acceptance claimed. V1true/false/manualduration UI and frequencyopenwindow not already proven from known fixture.",
+    "Global offline discard is all pending in current scope, not per-item selected discard. Do not relabel as selective queue behavior.",
+    "No new migration/public contract needed for controls already present. Root owns any fixture SQL choice."
+  ]
+}

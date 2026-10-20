@@ -1,0 +1,158 @@
+{
+  "verifiedAt": "2026-10-10T16:11:28.520Z",
+  "candidate": {
+    "container": "aba-local-qa-v16",
+    "buildId": "SqXFb86Tn89rgGpuEGkKu",
+    "catalog": 103
+  },
+  "results": [
+    {
+      "project": "desktop",
+      "readonly": {
+        "passed": true,
+        "project": "desktop",
+        "buildId": "SqXFb86Tn89rgGpuEGkKu",
+        "checks": [
+          "two-real-card-projections-exact-status-session-family-diagnosis-professional",
+          "original-real-name-heading-prefill-back-preserved; empty-name-fallback-separate-pending",
+          "default-Other-clears-default-free-text-autocomplete-choice-local-only-reload-restores-DTO",
+          "team-name-profession-exact-authorized-set-no-match-three-role-filters"
+        ],
+        "attemptedWrites": 0,
+        "baselineHash": "d6b530d43ebd3a5e1a189749ddf8228527fcbb258c169323460f7347723b7f3a",
+        "limits": [
+          "autocomplete selection is local/no save; historical V11 arbitrary diagnosis write persistence remains separately linked",
+          "card flags checked against actual DTO, no new active sessions or grants created"
+        ]
+      },
+      "nameFallback": {
+        "passed": true,
+        "project": "desktop",
+        "buildId": "SqXFb86Tn89rgGpuEGkKu",
+        "studentId": "94d73448-03ec-495c-8add-30c3cfe05eaa",
+        "originalVersion": 29,
+        "restoredVersion": 31,
+        "receiptIds": [
+          "5f0135dd-d29d-4a4b-bf77-bcc51d923c8f",
+          "cdc1bf9b-7b8b-4c39-8a11-89ad5bc4802b"
+        ],
+        "ownFieldsRestored": true,
+        "originalUntouched": true,
+        "programsUnchanged": true,
+        "checks": [
+          "fullName-empty-persisted-null",
+          "initials-detail-and-list-after-reload",
+          "two-correlated-ACK-exact-version-progression",
+          "original-values-restored-no-delete"
+        ]
+      }
+    },
+    {
+      "project": "mobile",
+      "readonly": {
+        "passed": true,
+        "project": "mobile",
+        "buildId": "SqXFb86Tn89rgGpuEGkKu",
+        "checks": [
+          "two-real-card-projections-exact-status-session-family-diagnosis-professional",
+          "original-real-name-heading-prefill-back-preserved; empty-name-fallback-separate-pending",
+          "default-Other-clears-default-free-text-autocomplete-choice-local-only-reload-restores-DTO",
+          "team-name-profession-exact-authorized-set-no-match-three-role-filters"
+        ],
+        "attemptedWrites": 0,
+        "baselineHash": "d6b530d43ebd3a5e1a189749ddf8228527fcbb258c169323460f7347723b7f3a",
+        "limits": [
+          "autocomplete selection is local/no save; historical V11 arbitrary diagnosis write persistence remains separately linked",
+          "card flags checked against actual DTO, no new active sessions or grants created"
+        ]
+      },
+      "nameFallback": {
+        "passed": true,
+        "project": "mobile",
+        "buildId": "SqXFb86Tn89rgGpuEGkKu",
+        "studentId": "94d73448-03ec-495c-8add-30c3cfe05eaa",
+        "originalVersion": 31,
+        "restoredVersion": 33,
+        "receiptIds": [
+          "640e77c9-9aa2-4701-be03-8cccca0a4033",
+          "53bb19c4-df28-4c2b-bb16-41a0c9106b8e"
+        ],
+        "ownFieldsRestored": true,
+        "originalUntouched": true,
+        "programsUnchanged": true,
+        "checks": [
+          "fullName-empty-persisted-null",
+          "initials-detail-and-list-after-reload",
+          "two-correlated-ACK-exact-version-progression",
+          "original-values-restored-no-delete"
+        ]
+      }
+    }
+  ],
+  "static": {
+    "lint": "PASS specs/configs"
+  },
+  "coverage": [
+    "Real cards own/original match authorized DTO status/session/family/diagnosis/professional",
+    "Actual back button and original name exact, no original mutation",
+    "Other clears default diagnosis; free text and actual autocomplete option selection, reload discards unsaved values",
+    "Team name/profession search exact authorized results, empty and three role filters",
+    "Own empty fullname command persists null; detail/list initials after reload; original name restored by second correlated ACK each viewport"
+  ],
+  "limits": [
+    "Autocomplete selection in this package is not saved: arbitrary diagnosis persistence is historical V11 and stays separate.",
+    "Card flags are compared to actual current DTO; no new positive session/family grant was fabricated.",
+    "Only synthetic admin-a; no whole-profile/global QA003 acceptance.",
+    "Initial readonly guard assumed original name null and failed before UI/no writes. It actually has QA SINTETICO LOCAL A; failure retained and harness corrected. Empty-name test moved to own94; no changes to original."
+  ],
+  "artifacts": [
+    {
+      "path": "tests/e2e/r5.small-controls-v16.spec.mjs",
+      "sha256": "2347141b41ddba1b6e88aa50ccd544491081cdc10aff037227cd05b0502d4829"
+    },
+    {
+      "path": "playwright.small-controls-v16.config.ts",
+      "sha256": "9e6aef0d144cf2d0ba4c8faa74f3375b3a32745445e0da3fcadf29e51b53f093"
+    },
+    {
+      "path": "tests/e2e/r5.initials-fallback-v16.spec.mjs",
+      "sha256": "1bc2a4a8e1e080c98c18390bbce7ba9df3719b9a92a2a80c624c66bbca902432"
+    },
+    {
+      "path": "playwright.initials-fallback-v16.config.ts",
+      "sha256": "7d44d9337e6fef8e15aab0908832398a0090e0d2d9838f24b50431913e4e619e"
+    },
+    {
+      "path": ".aba.local/qa/small-controls-v16r1-desktop-journal.json",
+      "sha256": "ed857761d72eb734b3474d4e0db6edb3dc7b4fbf6d59b3990b23e78e8039eb73"
+    },
+    {
+      "path": ".aba.local/qa/initials-v16-desktop-journal.json",
+      "sha256": "89c93d10b73833b7dd812c8990356b8419eae618d4b36d71a48b45de6b71053d"
+    },
+    {
+      "path": ".aba.local/qa/small-controls-v16r1-desktop-safe.json",
+      "sha256": "1b015ce2652fb5c6b6db87d0b61e53bf7a04086052827a56255636d699163ee9"
+    },
+    {
+      "path": ".aba.local/qa/initials-v16-desktop-safe.json",
+      "sha256": "a8cf63511f2c8c8c9760844f627ad1c8be2c6caa480d74acee3f388f1142fba9"
+    },
+    {
+      "path": ".aba.local/qa/small-controls-v16r1-mobile-journal.json",
+      "sha256": "cde089a52634caa7cc9451799a27aab0d6ff24fc84874b19334b8143e72079eb"
+    },
+    {
+      "path": ".aba.local/qa/initials-v16-mobile-journal.json",
+      "sha256": "21be91b68aecf78f0fe0b36c66e63b5ef037724518d27b6c0baf7ef968284ab2"
+    },
+    {
+      "path": ".aba.local/qa/small-controls-v16r1-mobile-safe.json",
+      "sha256": "e88e7a202aeb3ebb3732af9ffe21f13a3ba1ed4bf58129e9cf16d5b3988163d3"
+    },
+    {
+      "path": ".aba.local/qa/initials-v16-mobile-safe.json",
+      "sha256": "709d0e7749ee4637c496744a2015d6c0e1889ad6bc66c903bff7270deba83902"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{qa_api_url}}/rest/v1/rpc/aba_identity_context"
+method: POST
+headers:
+  apikey: "{{qa_public_key}}"
+  Authorization: Bearer {{qa_token_admin_a}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "p_organization_id": "{{qa_clinic_a}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: if(!pm.variables.get('qa_token_admin_a')) throw new Error('Iniciar sesión del actor sintético primero');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200',()=>pm.response.to.have.status(200)); if(pm.response.code!==200) throw new Error('HTTP inesperado; cuerpo omitido');
+      const d=pm.response.json(); pm.test('Identidad y clínica correlacionadas',()=>{pm.expect(d.userId).to.eql(pm.variables.get('qa_actor_admin_a'));pm.expect(d.active.id).to.eql(pm.variables.get('qa_clinic_a'));pm.expect(d.active.role).to.eql('admin');}); if(d.active?.id!==pm.variables.get('qa_clinic_a')||d.userId!==pm.variables.get('qa_actor_admin_a')||d.active.role!=='admin') throw new Error('Contexto sintético no verificado'); pm.variables.set('qa_identity_admin_a',true);
+    language: text/javascript
+order: 2000

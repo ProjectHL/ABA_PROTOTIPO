@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{qa_api_url}}/storage/v1/object/authenticated/clinical-attachments/{{qa_png_path}}"
+method: GET
+headers:
+  apikey: "{{qa_public_key}}"
+  Content-Type: application/json
+scripts:
+  - type: afterResponse
+    code: pm.test('Acceso HTTP denegado',()=>pm.expect([400,401,403,404]).to.include(pm.response.code)); if(![400,401,403,404].includes(pm.response.code)) throw new Error('Denegación no confirmada; cuerpo omitido');
+    language: text/javascript
+order: 27000

@@ -1,0 +1,177 @@
+{
+  "status": "terminal-passed-focal-only",
+  "recordedDate": "2026-10-10",
+  "buildId": "SqXFb86Tn89rgGpuEGkKu",
+  "distDir": ".aba.local/qa/next-build-v16-medication",
+  "catalogContext": 103,
+  "catalogEvidence": "Root candidate context; no new SQL catalog query in this suite",
+  "actor": "Synthetic admin-a, fixture batch 2155e99e-bda4-4c68-95cf-b74cacd84ecd",
+  "results": [
+    {
+      "project": "desktop",
+      "status": "PASS",
+      "tests": "1/1",
+      "durationSeconds": 15.5,
+      "runId": "8b45e0f7-73b3-42f8-8e20-4560f0b274ec",
+      "safe": ".aba.local/qa/ui-states-v16-desktop-safe.json",
+      "journal": ".aba.local/qa/ui-states-v16-desktop-journal.json",
+      "checks": [
+        "dashboard-initial-loader-aborted-read-error-no-metrics-and-real-Actualizar-recovery",
+        "refresh-error-preserves-confirmed-metrics-with-warning-and-real-retry",
+        "search-busy-escape-blocked-network-error-query-retained-real-retry-DTO-and-close",
+        "real-Ver-carpetas-list-loader-authorized-card-menu-folder-fields-and-back",
+        "real-sidebar-dashboard-return-and-authorized-counts"
+      ],
+      "faults": [
+        {
+          "label": "dashboard-initial-read",
+          "exportedName": "loadDashboardSnapshot",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "dashboard-refresh-read",
+          "exportedName": "loadDashboardSnapshot",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "authorized-search-read",
+          "exportedName": "searchAuthorizedResources",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "student-list-read",
+          "exportedName": "listAuthorizedStudents",
+          "mode": "hold",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": true,
+          "completed": "released-real-read"
+        }
+      ],
+      "attemptedWrites": 0,
+      "clinicalWrites": 0,
+      "baselineHash": "1b9cd3d9f4812228417b8b32149fe709fdbb432ee2b758c350ce67f56896bfa4"
+    },
+    {
+      "project": "mobile",
+      "status": "PASS",
+      "tests": "1/1",
+      "durationSeconds": 14.3,
+      "runId": "60f9c7fc-41a5-4797-8a72-80457c59f2f6",
+      "safe": ".aba.local/qa/ui-states-v16-mobile-safe.json",
+      "journal": ".aba.local/qa/ui-states-v16-mobile-journal.json",
+      "checks": [
+        "dashboard-initial-loader-aborted-read-error-no-metrics-and-real-Actualizar-recovery",
+        "refresh-error-preserves-confirmed-metrics-with-warning-and-real-retry",
+        "search-busy-escape-blocked-network-error-query-retained-real-retry-DTO-and-close",
+        "real-Ver-carpetas-list-loader-authorized-card-menu-folder-fields-and-back",
+        "real-sidebar-dashboard-return-and-authorized-counts"
+      ],
+      "faults": [
+        {
+          "label": "dashboard-initial-read",
+          "exportedName": "loadDashboardSnapshot",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "dashboard-refresh-read",
+          "exportedName": "loadDashboardSnapshot",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "authorized-search-read",
+          "exportedName": "searchAuthorizedResources",
+          "mode": "abort",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": false,
+          "completed": "aborted-before-forward"
+        },
+        {
+          "label": "student-list-read",
+          "exportedName": "listAuthorizedStudents",
+          "mode": "hold",
+          "observed": true,
+          "origin": "http://localhost:3001",
+          "serverRequestForwarded": true,
+          "completed": "released-real-read"
+        }
+      ],
+      "attemptedWrites": 0,
+      "clinicalWrites": 0,
+      "baselineHash": "1b9cd3d9f4812228417b8b32149fe709fdbb432ee2b758c350ce67f56896bfa4"
+    }
+  ],
+  "staticChecks": [
+    "eslint PASS",
+    "Playwright list: two cases desktop/mobile"
+  ],
+  "artifactsSHA256": {
+    ".aba.local/qa/ui-states-v16-desktop-journal.json": "56da0ab6dc4cf435c4baa0e421db5d85f4c4217804c91347e3eec66a0a79648a",
+    "tests/e2e/r5.ui-states-v16.spec.mjs": "1ce20ab6d577d5295b1ea1f268647b1bacebd9eab23fcef3cf0afec7fd263463",
+    ".aba.local/qa/ui-states-v16-desktop-safe.json": "81bb452537587c892f6419068c8037b7b8e391003f84e46fd86451b8dadc60e5",
+    ".aba.local/qa/ui-states-v16-mobile-safe.json": "a2c628910152ed24884edea83036329d95d3a02ca0defe30f7547294906f2272",
+    "playwright.ui-states-v16.config.ts": "dee49d2c4fb3a415df1e786a058e2060a86402de93a1dacdbd5f479e8702a496",
+    ".aba.local/qa/ui-states-v16-mobile-journal.json": "9be87b78687842d1d92658d94d33ae1a8986960ee7684d064be9d3e90c613b60"
+  },
+  "ledgerProposal": [
+    {
+      "action": "ESTADOS-001",
+      "scope": "Focal only",
+      "evidence": "Dashboard first read, search busy and student-list client loaders; global app/loading.tsx untested"
+    },
+    {
+      "action": "ESTADOS-003",
+      "scope": "Focal only",
+      "evidence": "Actual browser aborted read produces dashboard/search recoverable UI error"
+    },
+    {
+      "action": "ESTADOS-004",
+      "scope": "Focal only",
+      "evidence": "Actual Actualizar/Buscar retry resolves and matches ordinary authorized DTO"
+    },
+    {
+      "action": "FICHA-008",
+      "scope": "Actual control exercised desktop/mobile",
+      "evidence": "Own synthetic folder Volver a la lista -> /students and visible authorized filter"
+    },
+    {
+      "action": "BUSQUEDA-001/002",
+      "scope": "Recovery supplement only",
+      "evidence": "Actual modal busy/error/retry/close with one authorized student query; three result types and B negatives remain linked to V13 evidence"
+    }
+  ],
+  "preservation": "Whole own94/original b347 clinical and program-session projections deep-equal before/after, including original session97; same baseline hash both projects",
+  "faultScope": "Only exact localhost NextAction read IDs obtained from the candidate manifest; three requests aborted before server forward and one delayed then forwarded as real read per project; no fabricated responses or server state changes",
+  "commandGuard": "Parsed operationId+idempotencyKey command is aborted before forwarding; attemptedWrites=0 both projects",
+  "receipts": "None: read-only suite. Evidence consists of actual UI assertions, real authorized read DTO comparison and invariant snapshots",
+  "omissions": [
+    "Global app/error.tsx boundary untested",
+    "Global app/loading.tsx route fallback untested",
+    "ESTADOS-005 not-found not exercised in this package",
+    "Only synthetic admin-a; no all-profile or full QA003 closure",
+    "Browser read aborts do not prove server outage, offline, Storage or Realtime resilience"
+  ],
+  "auth": "Clients closed and gates released; root notified Auth free",
+  "closure": "Proposal for root reconciliation only. QA003 global remains open; no canon/map/product changes"
+}

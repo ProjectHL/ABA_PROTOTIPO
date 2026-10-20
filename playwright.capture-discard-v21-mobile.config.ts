@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./tests/e2e',testMatch:'r5.capture-discard-v21-mobile.spec.mjs',workers:1,retries:0,fullyParallel:false,reporter:'line',outputDir:'.aba.local/qa/capture-discard-v21-mobile-output',expect:{timeout:15000},use:{baseURL:'http://localhost:3001',channel:'chrome',actionTimeout:15000,trace:'off',video:'off',screenshot:'off',serviceWorkers:'block'},projects:[{name:'mobile',use:{viewport:{width:390,height:844},isMobile:true,hasTouch:true}}]});

@@ -1,140 +1,65 @@
-import { useState, useEffect } from 'react';
-import { Stack, Select, Paper, Text, Modal } from '@mantine/core';
-import { type MeasurementDimension } from '@/api/dataCollectionTypes';
-import { PercentageRecorder } from './PercentageRecorder';
-import { FrequencyRecorder } from './FrequencyRecorder';
-import { IntervalRecorder } from './IntervalRecorder';
-import { notifications } from '@mantine/notifications';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { ActionIcon, Alert, Badge, Button, Group, Modal, MultiSelect, NumberInput, Paper, RingProgress, SegmentedControl, Select, SimpleGrid, Stack, Text, Textarea, Title } from '@mantine/core';
+import { Minus, Plus } from 'lucide-react';
+import { measurementV2Metrics, measurementV2Schema, type MeasurementV2 } from '@/domain/measurements/measurement-v2';
+import { DurationRecorder } from './DurationRecorder';
+import { LatencyRecorder } from './LatencyRecorder';
 
-interface DataCollectionEngineProps {
-    programId: string;
-    programName: string;
-    defaultDimension?: MeasurementDimension;
-    opened: boolean;
-    onClose: () => void;
+type Dimension = MeasurementV2['dimension'];
+export type CaptureCommit = 'save-draft' | 'submit';
+interface DataCollectionEngineProps { programId: string; programName: string; defaultDimension?: Dimension; opened: boolean;
+  initialMeasurement?: MeasurementV2; busy?: boolean; error?: string | null; onClose: () => void;
+  onPersist?: (action: CaptureCommit, measurement: MeasurementV2) => Promise<boolean>; onAcknowledged?: (measurement: MeasurementV2) => void;
+  onMeasurementChange?: (measurement: MeasurementV2) => void; onDimensionChange?: (current: MeasurementV2, next: Dimension) => boolean;
+  revisionReason?: string; onRevisionReasonChange?: (value:string)=>void;
+  submitLabel?: string; recovery?: ReactNode }
+const phases = ['baseline', 'treatment', 'generalization', 'maintenance'] as const;
+export function createMeasurement(dimension: Dimension): MeasurementV2 {
+  const common = { schemaVersion: 2 as const, phase: 'treatment' as const, capturedAt: new Date().toISOString(), notes: '' };
+  if (dimension === 'percentage') return { ...common, dimension, trials: Array.from({ length: 10 }, (_, index) => ({ id: crypto.randomUUID(), order: index + 1, response: null, recordedAt: null, responsePrompt: null, stimulusPrompts: [], notes: '' })) };
+  if (dimension === 'frequency') return { ...common, dimension, windows: [], events: [] };
+  if (dimension === 'interval') { const start = Date.now(); return { ...common, dimension, method: 'partial', intervals: Array.from({ length: 10 }, (_, index) => ({ id: crypto.randomUUID(), order: index + 1, startedAt: new Date(start + index * 10000).toISOString(), endedAt: new Date(start + (index + 1) * 10000).toISOString(), observedAt: null, occurred: null, notes: '' })) }; }
+  if (dimension === 'duration') return { ...common, dimension, episodes: [] };
+  return { ...common, dimension, trials: [] };
 }
 
-export function DataCollectionEngine({
-    programId,
-    programName,
-    defaultDimension = 'percentage',
-    opened,
-    onClose,
-}: DataCollectionEngineProps) {
-    const [dimension, setDimension] = useState<MeasurementDimension>(defaultDimension);
-    const [_sessionData, setSessionData] = useState<Record<string, unknown> | null>(null);
+function Percentage({ value, change }: { value: Extract<MeasurementV2,{dimension:'percentage'}>; change:(value:MeasurementV2)=>void }) {
+  const [resizeKey,setResizeKey]=useState(0);
+  const recorded=value.trials.filter(item=>item.response!==null);const count=(response:string)=>recorded.filter(item=>item.response===response).length;const independent=count('independent');
+  const resize=(amount:number)=>{if(amount===value.trials.length)return;if(!window.confirm('Cambiar el número de ensayos conserva los primeros y descarta sólo los excedentes. ¿Continuar?')){setResizeKey(key=>key+1);return;}const trials=value.trials.slice(0,amount);while(trials.length<amount)trials.push({id:crypto.randomUUID(),order:trials.length+1,response:null,recordedAt:null,responsePrompt:null,stimulusPrompts:[],notes:''});change({...value,trials});};
+  const reset=()=>{if(!window.confirm('¿Reiniciar todos los ensayos? Se perderán respuestas, ayudas y notas todavía no guardadas.'))return;change({...value,capturedAt:new Date().toISOString(),trials:value.trials.map(item=>({...item,response:null,recordedAt:null,responsePrompt:null,stimulusPrompts:[],notes:''}))});};
+  return <Stack><Paper p="md" withBorder><Group justify="space-between"><div><Title order={3}>Registro por Porcentaje</Title><Text size="sm" c="dimmed">{value.trials.length} ensayos · fase {value.phase}</Text></div><Group><Badge color="green">{recorded.length?Math.round(100*independent/recorded.length):0}% I</Badge><Badge>I {independent}</Badge><Badge color="yellow">A {count('prompted')}</Badge><Badge color="red">E {count('error')}</Badge><Badge color="gray">NR {count('no-response')}</Badge></Group></Group></Paper><Group align="end"><NumberInput key={resizeKey} style={{flex:1}} label="Número de ensayos" value={value.trials.length} min={1} max={1000} onChange={amount=>resize(Number(amount)||1)}/><Button color="red" variant="light" disabled={!recorded.length&&!value.trials.some(item=>item.notes||item.stimulusPrompts.length)} onClick={reset}>Reiniciar ensayos</Button></Group><Alert>“Sin registrar” no es NR. Selecciona I, A, E o NR sólo cuando exista una observación.</Alert><SimpleGrid cols={{base:1,sm:2,md:3}}>{value.trials.map((trial) => <Paper key={trial.id} withBorder p="sm"><Group justify="space-between"><Text>Ensayo {trial.order}</Text><SegmentedControl value={trial.response ?? 'missing'} data={[{value:'missing',label:'—'},{value:'independent',label:'I'},{value:'prompted',label:'A'},{value:'error',label:'E'},{value:'no-response',label:'NR'}]} onChange={(response) => { const now = new Date().toISOString(); change({ ...value, capturedAt: now, trials: value.trials.map((item) => item.id === trial.id ? { ...item, response: response === 'missing' ? null : response as typeof trial.response, recordedAt: response === 'missing' ? null : now, responsePrompt: response === 'prompted' ? item.responsePrompt : null } : item) }); }}/></Group>{trial.response === 'prompted' && <Select mt="xs" label="Ayuda en la respuesta" required value={trial.responsePrompt} data={['full-physical','partial-physical','gestural','shadow','model','echoic-full','echoic-partial','verbal-full','verbal-partial','unspecified']} onChange={(prompt) => change({ ...value, trials: value.trials.map((item) => item.id === trial.id ? { ...item, responsePrompt: prompt as typeof item.responsePrompt } : item) })}/>}<MultiSelect mt="xs" label="Ayudas en el estímulo" value={[...trial.stimulusPrompts]} data={['position','redundancy','movement','time-delay-0','time-delay-3','time-delay-5','time-delay-10']} onChange={(prompts)=>change({...value,trials:value.trials.map(item=>item.id===trial.id?{...item,stimulusPrompts:prompts as typeof item.stimulusPrompts}:item)})}/></Paper>)}</SimpleGrid></Stack>;
+}
+function Frequency({ value, change, clock }: { value: Extract<MeasurementV2,{dimension:'frequency'}>; change:(value:MeasurementV2)=>void; clock:number }) {
+  const open = value.windows.find((item) => item.endedAt === null);
+  const now = () => new Date().toISOString();
+  const removeLast=()=>{if(!value.events.length)return;change({...value,events:value.events.slice(0,-1),capturedAt:now()});};
+  const seconds=Math.max(0,Math.floor(value.windows.reduce((sum,item)=>sum+((item.endedAt?Date.parse(item.endedAt):clock)-Date.parse(item.startedAt)),0)/1000));const rate=seconds?value.events.length*60/seconds:0;
+  return <Stack><Paper p="md" withBorder><Group justify="space-between"><div><Title order={3}>Registro por Frecuencia</Title><Text size="sm" c="dimmed">Los eventos y ventanas conservan timestamps originales</Text></div><Group><Badge size="lg">{value.events.length} eventos</Badge><Badge color="violet">{rate.toFixed(1)}/min</Badge></Group></Group></Paper><Alert color={open?'green':'blue'}>{open?'Observación activa. Los eventos conservan su timestamp.':'Inicia una ventana para observar; las pausas quedan fuera.'}</Alert><Paper p="xl" withBorder><Stack align="center"><RingProgress size={260} thickness={22} sections={[{value:100,color:'blue'}]} label={<div><Text ta="center" size="60px" fw={900} c="blue">{value.events.length}</Text><Text ta="center">{Math.floor(seconds/60).toString().padStart(2,'0')}:{(seconds%60).toString().padStart(2,'0')}</Text></div>}/><Group><ActionIcon size={70} radius="xl" color="red" onClick={removeLast} disabled={!value.events.length}><Minus size={32}/></ActionIcon><Button size="xl" h={100} w={100} radius="xl" disabled={!open} onClick={() => {const time=now();change({...value,capturedAt:time,events:[...value.events,{id:crypto.randomUUID(),occurredAt:time,notes:''}]});}}><Plus size={42}/></Button></Group></Stack></Paper><Group><Button disabled={Boolean(open)} onClick={() => { const time=now();change({...value,capturedAt:time,windows:[...value.windows,{id:crypto.randomUUID(),startedAt:time,endedAt:null}]}); }}>Iniciar cronómetro</Button><Button disabled={!open} variant="light" onClick={() => {const time=now();change({...value,capturedAt:time,windows:value.windows.map(item=>item.id===open?.id?{...item,endedAt:time}:item)});}}>Pausar cronómetro</Button></Group><Text>{value.windows.length} ventanas de observación</Text></Stack>;
+}
+function Intervals({ value, change, clock }: { value: Extract<MeasurementV2,{dimension:'interval'}>; change:(value:MeasurementV2)=>void; clock:number }) {
+  const inferred=value.intervals[0]?Math.max(1,Math.round((Date.parse(value.intervals[0].endedAt)-Date.parse(value.intervals[0].startedAt))/1000)):30;
+  const rebuild=(count:number,duration=inferred)=>{if(!window.confirm('Reconfigurar intervalos reinicia este registro. ¿Continuar?'))return;const start=Date.now();change({...value,capturedAt:new Date(start).toISOString(),intervals:Array.from({length:count},(_,index)=>({id:crypto.randomUUID(),order:index+1,startedAt:new Date(start+index*duration*1000).toISOString(),endedAt:new Date(start+(index+1)*duration*1000).toISOString(),observedAt:null,occurred:null,notes:''}))});};
+  const current=value.intervals.find(item=>item.occurred===null);const remaining=current?Math.max(0,Math.ceil((Date.parse(current.endedAt)-clock)/1000)):0;const observed=value.intervals.filter(item=>item.occurred!==null);const positives=observed.filter(item=>item.occurred).length;
+  return <Stack><Paper p="md" withBorder><Group justify="space-between"><div><Title order={3}>Registro por Intervalos</Title><Text size="sm" c="dimmed">{value.method} · intervalo {current?.order??value.intervals.length}/{value.intervals.length}</Text></div><Badge size="lg">{observed.length?Math.round(100*positives/observed.length):0}% ocurrencia</Badge></Group></Paper><Group grow><Select label="Método" allowDeselect={false} value={value.method} data={[{value:'whole',label:'Intervalo total'},{value:'partial',label:'Intervalo parcial'},{value:'momentary',label:'Muestreo momentáneo'}]} onChange={(method)=>{if(method)change({...value,method:method as typeof value.method});}}/><NumberInput label="Número de intervalos" min={1} max={1000} value={value.intervals.length} onChange={next=>rebuild(Number(next)||1)}/><NumberInput label="Duración (segundos)" min={1} max={3600} value={inferred} onChange={next=>rebuild(value.intervals.length,Number(next)||1)}/></Group><Paper p="lg" withBorder><Stack align="center"><RingProgress size={210} thickness={18} sections={[{value:current?100*Math.max(0,Math.min(1,remaining/inferred)):0,color:'blue'}]} label={<Text ta="center" size="48px" fw={800}>{remaining}</Text>}/><Text c="dimmed">segundos hasta habilitar el intervalo actual</Text></Stack></Paper><SimpleGrid cols={{base:1,sm:2}}>{value.intervals.map(item=>{const ready=Date.parse(item.endedAt)<=clock;return <Paper key={item.id} withBorder p="sm" bg={item.occurred===true?'green.0':item.occurred===false?'red.0':undefined}><Group justify="space-between"><div><Text>Intervalo {item.order}</Text>{!ready&&<Text size="xs" c="dimmed">Disponible al finalizar su ventana</Text>}</div><SegmentedControl disabled={!ready} value={item.occurred===null?'missing':String(item.occurred)} data={[{value:'missing',label:'Sin observar'},{value:'true',label:'Ocurrió'},{value:'false',label:'No ocurrió'}]} onChange={(next)=>{const time=new Date().toISOString();change({...value,capturedAt:time,intervals:value.intervals.map(entry=>entry.id===item.id?{...entry,occurred:next==='missing'?null:next==='true',observedAt:next==='missing'?null:time}:entry)});}}/></Group></Paper>})}</SimpleGrid></Stack>;
+}
 
-    // Save to localStorage for persistence
-    // Save to localStorage for persistence
-    useEffect(() => {
-        const savedData = localStorage.getItem(`session-${programId}`);
-        if (savedData) {
-            try {
-                const parsed = JSON.parse(savedData);
-                // Use setTimeout to avoid synchronous setState warning during render
-                setTimeout(() => setSessionData(parsed), 0);
-            } catch (error) {
-                console.error('Error loading saved session:', error);
-            }
-        }
-    }, [programId]);
-
-    const handleSave = (data: unknown) => {
-        const sessionRecord = {
-            programId,
-            programName,
-            dimension,
-            data,
-            timestamp: new Date().toISOString(),
-        };
-
-        // Save to localStorage
-        localStorage.setItem(`session-${programId}`, JSON.stringify(sessionRecord));
-
-        // Simulate API call
-        console.log('Saving session data:', sessionRecord);
-
-        notifications.show({
-            title: 'Registro Guardado',
-            message: 'Los datos se guardaron correctamente',
-            color: 'green',
-        });
-
-        // Clear localStorage after successful save
-        localStorage.removeItem(`session-${programId}`);
-
-        onClose();
-    };
-
-    const handleCancel = () => {
-        // Optionally clear localStorage
-        const shouldClear = window.confirm('¿Deseas descartar los datos del registro actual?');
-        if (shouldClear) {
-            localStorage.removeItem(`session-${programId}`);
-        }
-        onClose();
-    };
-
-    return (
-        <Modal
-            opened={opened}
-            onClose={onClose}
-            title={<Text fw={600} size="lg">Motor de Registro de Datos</Text>}
-            size="xl"
-            fullScreen
-        >
-            <Stack gap="lg">
-                {/* Dimension Selector */}
-                <Paper p="md" radius="md" withBorder>
-                    <Select
-                        label="Dimensión de Medición"
-                        description="Selecciona el tipo de registro que deseas realizar"
-                        value={dimension}
-                        onChange={(value) => setDimension(value as MeasurementDimension)}
-                        data={[
-                            { value: 'percentage', label: 'Porcentaje (Ensayos Discretos)' },
-                            { value: 'frequency', label: 'Frecuencia (Conteo de Eventos)' },
-                            { value: 'interval', label: 'Intervalos (Muestreo Temporal)' },
-                            { value: 'duration', label: 'Duración (Tiempo Total)' },
-                            { value: 'latency', label: 'Latencia (Tiempo de Respuesta)' },
-                        ]}
-                        size="lg"
-                    />
-                </Paper>
-
-                {/* Conditional Rendering based on Dimension */}
-                {dimension === 'percentage' && (
-                    <PercentageRecorder
-                        programName={programName}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                    />
-                )}
-
-                {dimension === 'frequency' && (
-                    <FrequencyRecorder
-                        programName={programName}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                    />
-                )}
-
-                {dimension === 'interval' && (
-                    <IntervalRecorder
-                        programName={programName}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                    />
-                )}
-
-                {(dimension === 'duration' || dimension === 'latency') && (
-                    <Paper p="xl" radius="md" withBorder style={{ textAlign: 'center' }}>
-                        <Text c="dimmed" size="lg">
-                            El registro de {dimension === 'duration' ? 'Duración' : 'Latencia'} estará disponible próximamente
-                        </Text>
-                    </Paper>
-                )}
-            </Stack>
-        </Modal>
-    );
+export function DataCollectionEngine({ programName, defaultDimension='percentage', opened, initialMeasurement, busy=false, error, onClose, onPersist, onAcknowledged, onMeasurementChange, onDimensionChange, revisionReason, onRevisionReasonChange, submitLabel='Enviar registro', recovery }: DataCollectionEngineProps) {
+  const [dimension,setDimension]=useState<Dimension>(initialMeasurement?.dimension??defaultDimension); const [measurement,setMeasurement]=useState<MeasurementV2>(()=>initialMeasurement??createMeasurement(defaultDimension));
+  const [clock,setClock]=useState(()=>Date.now());
+  useEffect(()=>{if(opened&&initialMeasurement){setDimension(initialMeasurement.dimension);setMeasurement(initialMeasurement);}},[opened,initialMeasurement]);
+  useEffect(()=>{const timer=window.setInterval(()=>setClock(Date.now()),1000);return()=>window.clearInterval(timer);},[]);
+  const committing=useRef(false);
+  const change=(next:MeasurementV2)=>{if(busy||committing.current)return;setMeasurement(next);onMeasurementChange?.(next);};
+  const metric=useMemo(()=>{const parsed=measurementV2Schema.safeParse(measurement);return parsed.success?measurementV2Metrics(parsed.data):null;},[measurement]);
+  const changeDimension=(next:Dimension)=>{if(next===dimension||busy||committing.current)return;if(!window.confirm('La dimensión nueva se guardará en otra captura. La captura actual se conservará sin convertir sus observaciones. ¿Continuar?'))return;if(onDimensionChange?.(measurement,next))return;setDimension(next);change(createMeasurement(next));};
+  const persist=async(action:CaptureCommit)=>{
+    if(!onPersist||busy||committing.current)return;
+    const candidate={...measurement,capturedAt:new Date().toISOString()};
+    change(candidate);committing.current=true;
+    try{if(await onPersist(action,candidate)){onAcknowledged?.(candidate);if(action==='submit')onClose();}}
+    finally{committing.current=false;}
+  };
+  return <Modal opened={opened} onClose={onClose} title={<Text fw={700}>{programName}</Text>} size="xl" fullScreen closeOnClickOutside={false} closeOnEscape={!busy} withCloseButton={!busy}><Stack>{recovery}{error&&<Alert color="red">{error}</Alert>}<Alert>Cerrar sólo oculta el capturador. No finaliza la sesión ni logra el programa.</Alert><fieldset disabled={busy} style={{border:0,padding:0,margin:0}}><Stack><Select label="Dimensión" value={dimension} onChange={(item)=>item&&changeDimension(item as Dimension)} data={[['percentage','Porcentaje'],['frequency','Frecuencia'],['interval','Intervalos'],['duration','Duración'],['latency','Latencia']].map(([value,label])=>({value,label}))}/><Select label="Fase" value={measurement.phase} data={phases.map(value=>({value,label:value}))} onChange={(phase)=>phase&&change({...measurement,phase:phase as typeof measurement.phase})}/>
+    {measurement.dimension==='percentage'&&<Percentage value={measurement} change={change}/>} {measurement.dimension==='frequency'&&<Frequency value={measurement} change={change} clock={clock}/>} {measurement.dimension==='interval'&&<Intervals value={measurement} change={change} clock={clock}/>} {measurement.dimension==='duration'&&<DurationRecorder programName={programName} draft={measurement} onChange={change}/>} {measurement.dimension==='latency'&&<LatencyRecorder programName={programName} draft={measurement} onChange={change}/>}<Textarea label="Notas originales" value={measurement.notes} onChange={(event)=>change({...measurement,notes:event.currentTarget.value})}/>{onRevisionReasonChange&&<Textarea required label="Motivo de la corrección" description="Se conserva junto a la revisión del registro enviado." value={revisionReason??''} onChange={event=>onRevisionReasonChange(event.currentTarget.value)} maxLength={2000}/>} {metric&&<Badge size="lg">{metric.value===null?'Sin métrica':`${metric.value.toFixed(2)} ${metric.unit}`}</Badge>}</Stack></fieldset>{!onPersist&&<Alert color="orange">Persistencia no conectada en esta vista; abre una sesión para guardar.</Alert>}<Group justify="space-between"><Button disabled={busy} variant="default" onClick={onClose}>Cerrar</Button><Group><Button disabled={busy||!onPersist||Boolean(onRevisionReasonChange)} loading={busy} variant="light" onClick={()=>void persist('save-draft')}>Guardar borrador</Button><Button disabled={busy||!onPersist||Boolean(onRevisionReasonChange&&!revisionReason?.trim())} loading={busy} onClick={()=>void persist('submit')}>{submitLabel}</Button></Group></Group></Stack></Modal>;
 }
