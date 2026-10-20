@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     # Hard RAM ceiling for the container. This workload uses a few hundred MB;
     # raise it only if pg_stat_activity shows real memory pressure.
-    mem_limit: ${DB_MEMORY_LIMIT:-10g}
+    mem_limit: ${DB_MEMORY_LIMIT:-5g}
     # Postgres uses /dev/shm for parallel query workers; the 64 MB default is
     # too small once work_mem and parallel workers kick in.
     shm_size: 256mb

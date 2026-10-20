@@ -11,7 +11,7 @@ sobre un servidor requiere autorización y una ventana de cambio separadas.
 
 | Servicio | Rol | Persistencia |
 |---|---|---|
-| `db` | PostgreSQL 17. Aloja esquema, RLS y funciones. RAM acotada por `DB_MEMORY_LIMIT` (10g por defecto). | `postgres_data` |
+| `db` | PostgreSQL 17. Aloja esquema, RLS y funciones. RAM acotada por `DB_MEMORY_LIMIT` (5g por defecto). | `postgres_data` |
 | `migrate` | Aplica `db/bootstrap.sql` y las migraciones pendientes. Termina y se detiene. | — |
 | `app` | Next.js `standalone` como usuario no root. | `storage_data` (`/data/storage`) |
 
