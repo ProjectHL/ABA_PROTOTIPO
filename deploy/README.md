@@ -41,7 +41,7 @@ No continuar si falta cualquiera de estos puntos:
 7. Site URL y redirect URL `https://HOST/auth/callback` configuradas en Supabase
    Auth, y `ABA_ALLOWED_ORIGINS` de la Edge Function con el origen HTTPS final.
 8. Estrategia de recuperación aceptada según
-   `../docs/runbooks/BACKUP_RESTORE.md` y ventana de UAT acordada.
+   la política de respaldo de PostgreSQL y Storage del entorno destino y ventana de UAT acordada.
 
 ## Directorio operativo y variables
 

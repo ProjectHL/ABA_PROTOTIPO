@@ -7,3 +7,24 @@ node_modules
 !.env.example
 npm-debug.log*
 AUDITORIA_*.md
+
+# Keep local operator artifacts and tests out of application images.
+.git
+.agent
+.atl
+.postman
+.gemini
+docs
+postman
+scripts/local
+tests
+playwright*.ts
+vitest.config.ts
+AGENTS.md
+CLAUDE.md
+HANDOFF*
+SPEC_*
+STATUS_MAP*
+SDD-*
+OPERACION_POC.md
+reporte_v4_ABA.html

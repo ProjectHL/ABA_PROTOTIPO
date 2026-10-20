@@ -37,10 +37,7 @@ supabase/.temp
 *.sw?
 
 # Agent and documentation files (local only)
-.agent/*
-!.agent/README.md
-!.agent/GUIA_TECNICA_ABA_PARA_DEV_E_IA.md
-!.agent/INVENTARIO_TECNICO_ABA.json
+.agent/
 .gemini/
 AGENT.md
 ARCHITECTURE.md
@@ -56,3 +53,35 @@ REPORT.md
 
 # Local Postman Cloud workspace linkage (collections remain versioned).
 .postman/
+
+# Internal operator history retained locally, excluded from delivery.
+AGENTS.md
+CLAUDE.md
+/AUDITORIA*
+/HANDOFF*
+/SPEC_*
+/STATUS_MAP*
+/SDD-*
+/OPERACION_POC.md
+/reporte_v4_ABA.html
+/docs/*
+!/docs/DEVELOPMENT.md
+!/docs/ARCHITECTURE.md
+!/docs/TESTING.md
+/postman/
+/scripts/local/
+/deploy/local.*
+/playwright.*.config.ts
+!/playwright.local.config.ts
+/tests/e2e/r5.*
+/tests/e2e/qa004.*
+/tests/local/*
+!/tests/local/calendar-time.test.mjs
+!/tests/local/offline-queue.test.ts
+!/tests/local/offline-sync-engine.test.ts
+!/tests/local/session-display-clock.test.mjs
+/scripts/generate-local-supabase-types.mjs
+/scripts/install-local-schema.ps1
+/scripts/inventory-original-ui.mjs
+/scripts/test-data-runbook.sql
+/scripts/check-staging-auth-preflight.mjs

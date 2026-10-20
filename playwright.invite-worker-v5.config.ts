@@ -1,2 +1,0 @@
-import {defineConfig} from '@playwright/test';
-export default defineConfig({testDir:'./tests/e2e',testMatch:'r5.invite-worker-v5.spec.mjs',workers:1,retries:0,reporter:'line',outputDir:'.aba.local/qa/playwright/invite-worker-v5',expect:{timeout:15000},use:{baseURL:'http://localhost:3002',channel:'chrome',viewport:{width:1440,height:900},trace:'off',video:'off',screenshot:'off'}});
