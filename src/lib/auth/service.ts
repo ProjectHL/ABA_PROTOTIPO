@@ -19,7 +19,11 @@ interface UserRow {
 const INVALID_CREDENTIALS = 'Correo o contraseña incorrectos.';
 
 export function appUrl(): string {
-    return (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+    const configured = process.env.NEXT_PUBLIC_APP_URL;
+    if (!configured && process.env.NODE_ENV === 'production') {
+        throw new Error('NEXT_PUBLIC_APP_URL es obligatorio en producción.');
+    }
+    return (configured ?? 'http://localhost:3000').replace(/\/+$/, '');
 }
 
 function normalizeEmail(email: string): string {

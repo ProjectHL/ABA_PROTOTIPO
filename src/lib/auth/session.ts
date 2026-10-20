@@ -15,10 +15,17 @@ export interface SessionUser {
     emailConfirmedAt: string | null;
 }
 
+// Values shipped in infra/.env.example: long enough to pass the length check
+// but publicly known, so a session cookie could be forged with them.
+const PLACEHOLDER_SECRETS = new Set(['change-me-with-at-least-32-bytes', 'change-me']);
+
 function secret(): string {
     const value = process.env.AUTH_SECRET;
     if (!value || Buffer.byteLength(value, 'utf8') < 32) {
         throw new Error('AUTH_SECRET debe tener al menos 32 bytes.');
+    }
+    if (PLACEHOLDER_SECRETS.has(value)) {
+        throw new Error('AUTH_SECRET sigue con el valor de ejemplo; genera uno con: openssl rand -base64 48');
     }
     return value;
 }

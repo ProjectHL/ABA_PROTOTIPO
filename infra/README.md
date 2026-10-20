@@ -26,8 +26,18 @@ sobre un servidor requiere autorización y una ventana de cambio separadas.
 
 ## Variables requeridas
 
-Copie `infra/.env.example` a `infra/.env` (o cárguelo en el panel de Dokploy) y
-complete:
+Genere el archivo con secretos reales (no se versiona, queda con permisos 600):
+
+```sh
+NEXT_PUBLIC_APP_URL=https://tu-dominio npm run env:init
+```
+
+Eso escribe `infra/.env` desde `infra/.env.example`. Después edite `SMTP_*`.
+También puede copiar el contenido al panel de entorno de Dokploy: el comando
+que ejecuta Dokploy lee `infra/.env`, así que las variables deben existir en ese
+archivo o en el entorno del proceso.
+
+Variables:
 
 | Variable | Regla |
 |---|---|
