@@ -9,7 +9,8 @@ import {
     sessionIdentity,
     signInWithPassword,
 } from '@/lib/auth/service';
-import { destroyCurrentSession } from '@/lib/auth/session';
+import { destroyCurrentSession, createSession } from '@/lib/auth/session';
+import { createFirstAdmin } from '@/lib/auth/bootstrap';
 
 async function requestMeta() {
     const store = await headers();
@@ -17,6 +18,18 @@ async function requestMeta() {
         userAgent: store.get('user-agent') ?? undefined,
         ip: store.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined,
     };
+}
+
+export async function createFirstAdminAction(input: {
+    email: string;
+    password: string;
+    name: string;
+    organization: string;
+}) {
+    const result = await createFirstAdmin(input);
+    if (!result.ok) return result;
+    await createSession(result.userId, await requestMeta());
+    return { ok: true as const };
 }
 
 export async function signInAction(input: { email: string; password: string }) {

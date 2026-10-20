@@ -1,3 +1,4 @@
+import type { PoolClient } from 'pg';
 import type { Database } from '@/lib/db/database.types';
 import { getPool } from './pool';
 import { QueryBuilder, type DbError, type DbResult } from './query';
@@ -50,6 +51,25 @@ export async function systemQuery<T>(sql: string, params: readonly unknown[] = [
     try {
         const result = await client.query(sql, params as unknown[]);
         return result.rows as T[];
+    } finally {
+        client.release();
+    }
+}
+
+/**
+ * Privileged transaction for platform work that must be atomic and must not
+ * run under a user role (auth bootstrap). The caller owns every statement.
+ */
+export async function systemTransaction<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await getPool().connect();
+    try {
+        await client.query('begin');
+        const result = await work(client);
+        await client.query('commit');
+        return result;
+    } catch (error) {
+        await client.query('rollback').catch(() => undefined);
+        throw error;
     } finally {
         client.release();
     }
