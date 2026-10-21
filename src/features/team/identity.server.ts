@@ -69,6 +69,24 @@ export async function setTeamMembership(raw:unknown) {
   if(receipt.user_id!==command.userId||receipt.role!==command.role||receipt.status!==command.status)throw new Error('El recibo no corresponde al cambio de membresía solicitado.');
   revalidatePath('/','layout'); return receipt;
 }
+export async function removeTeamMember(raw:unknown) {
+  const command=z.object({clinicId:z.uuid(),userId:z.uuid()}).strict().parse(raw);
+  const ctx=await expectedClinic(command.clinicId);
+  if(ctx.active?.role!=='admin') throw new Error('Administración de clínica requerida.');
+  if(command.userId===ctx.userId) throw new Error('No puedes eliminarte a ti mismo del equipo. Pide a otro administrador que retire tu membresía.');
+  const {db}=await authorized();
+  const result=await db.rpc('aba_remove_team_member',{p_organization_id:ctx.active.id,p_user_id:command.userId});
+  if(result.error) {
+    const reason=result.error.message;
+    throw new Error(reason.includes('last_admin_required')?'No se puede eliminar al último administrador activo de la clínica.'
+      :reason.includes('member_not_found')?'El miembro ya no pertenece a esta clínica; actualiza el equipo.'
+      :reason.includes('cannot_remove_self')?'No puedes eliminarte a ti mismo del equipo.'
+      :'El servidor no confirmó la eliminación del miembro.');
+  }
+  const receipt=z.object({user_id:z.uuid(),removed:z.literal(true)}).strict().parse(result.data);
+  if(receipt.user_id!==command.userId) throw new Error('El recibo no corresponde al miembro eliminado.');
+  revalidatePath('/','layout'); return receipt;
+}
 export async function inviteTeamMember(raw:unknown) {
   const command=z.object({clinicId:z.uuid(),email:z.email().max(254),role:professionalRole,operationId:z.uuid()}).strict().parse(raw);
   const ctx=await expectedClinic(command.clinicId);
