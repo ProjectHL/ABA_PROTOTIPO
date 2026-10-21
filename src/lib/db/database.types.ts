@@ -4876,6 +4876,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      aba_remove_team_member: {
+        Args: { p_organization_id: string; p_user_id: string }
+        Returns: Json
+      }
       aba_team: { Args: { p_organization_id: string }; Returns: Json }
       aba_team_invitation_deliveries: { Args: { p_org: string }; Returns: Json }
       aba_team_invitation_delivery_status: {

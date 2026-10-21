@@ -46,7 +46,64 @@ Variables:
 | `AUTH_SECRET` | Al menos 32 bytes aleatorios; firma las cookies de sesión. |
 | `NEXT_PUBLIC_APP_URL` | Origen público exacto, por ejemplo `https://app.example.com`. Se usa en enlaces de invitación y recuperación. |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Base64 de 32 bytes, estable entre despliegues. Se entrega al build como secreto de BuildKit. |
-| `SMTP_*` | Servidor de correo. Sin SMTP en producción, invitaciones y recuperación fallan de forma explícita. |
+| `SMTP_HOST` | Host del servidor de correo. El despliegue usa `email.shiftium.xyz`. |
+| `SMTP_PORT` | `25` para el docker-mailserver (STARTTLS oportunista). `465` sólo con TLS implícito. |
+| `SMTP_SECURE` | `false` en el puerto 25; `true` en 465. |
+| `SMTP_EHLO_NAME` | FQDN que la app presenta en EHLO (`email.shiftium.xyz`). Postfix puede rechazar un hostname corto de contenedor. |
+| `SMTP_FROM` | Remitente del dominio: `ABA Clínico <no-reply@email.shiftium.xyz>`. |
+| `SMTP_USER` / `SMTP_PASS` | Sólo si el servidor exige autenticación en ese puerto. |
+| `SMTP_IGNORE_TLS` | `false` salvo que el servidor no ofrezca STARTTLS. |
+| `SMTP_TLS_REJECT_UNAUTHORIZED` | `true`; `false` sólo con una CA privada confiable. |
+
+### Cuenta de envío
+
+La app envía como `no-reply@email.shiftium.xyz`. Si el servidor exige
+autenticación (puertos 587/465), el buzón tiene que existir en
+docker-mailserver y sus credenciales van en `SMTP_USER` y `SMTP_PASS`:
+
+```sh
+# En el contenedor del mailserver, una sola vez
+docker exec -it <mailserver> setup email add no-reply@email.shiftium.xyz 'UnaClaveLarga'
+```
+
+Después definí `SMTP_USER=no-reply@email.shiftium.xyz` y `SMTP_PASS` en
+`infra/.env` (permisos 600) o en el panel de secretos de Dokploy. Nunca
+commitees la contraseña. El puerto 25 normalmente no autentica: autoriza por
+IP del host (`mynetworks`) o rechaza el relay con `554 relay access denied`.
+
+### Verificación de correo
+
+El script de diagnóstico conecta con el SMTP configurado y, si se lo pide,
+envía un mensaje real. Nunca imprime credenciales:
+
+```sh
+# En una máquina con las variables en el entorno o en infra/.env
+npm run mail:check
+npm run mail:check -- --to=tu@correo.com
+
+# Contra el stack desplegado, usando la imagen y el entorno de Dokploy
+docker compose --env-file infra/.env -f infra/docker-compose.yml run --rm --no-deps \
+  app node /app/mail-check.mjs --to=tu@correo.com
+```
+
+Qué revisar si falla:
+
+- `ECONNECTION` / `ETIMEDOUT`: el VPS o el firewall bloquea el puerto 25
+  saliente. Es habitual en proveedores cloud; hay que pedir el desbloqueo o
+  enviar por el 587 con autenticación.
+- `EAUTH`: `SMTP_USER`/`SMTP_PASS` inválidos, o el servidor no acepta AUTH en
+  el puerto 25.
+- `EENVELOPE` / `554 relay access denied`: el docker-mailserver no autoriza a
+  la app a enviar a destinatarios externos. Hay que permitir la IP del host en
+  `mynetworks` o usar autenticación en el 587.
+- `ETLS`: certificado inválido para `email.shiftium.xyz`. Emitir uno válido;
+  no desactivar la verificación salvo con una CA privada propia.
+- Los enlaces de invitación usan `NEXT_PUBLIC_APP_URL`. Si apunta a
+  `localhost`, el correo llega pero el enlace no abre desde otra máquina.
+
+Para entregabilidad real, el dominio remitente necesita SPF, DKIM y DMARC
+publicados (docker-mailserver los configura con `setup config dkim`), y el PTR
+del servidor debe coincidir con `email.shiftium.xyz`.
 
 Genere los secretos una sola vez:
 

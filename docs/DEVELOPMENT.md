@@ -20,7 +20,7 @@ El comando es idempotente: si el usuario ya existe actualiza la contraseña y co
 
 Para un entorno nuevo y desechable, cree una base vacía y aplique `npm run db:migrate`. El script ejecuta `db/bootstrap.sql` (roles, esquema `auth`, shim de Storage) y las migraciones pendientes de `db/migrations/`, registrando cada versión en `public.schema_migrations`. Es idempotente. No apuntar pruebas de escritura a producción ni ejecutar un reset sobre volúmenes con trabajo que deba conservarse. La CI crea y prepara su propio entorno efímero.
 
-Las invitaciones y la recuperación de contraseña requieren SMTP y `NEXT_PUBLIC_APP_URL` correctos para el entorno. El correo impreso en consola durante desarrollo no constituye entrega por Internet. Las invitaciones se procesan en `src/features/team/invitation.service.ts` y la verificación de adjuntos en `src/modules/attachments/verify.server.ts`.
+Las invitaciones y la recuperación de contraseña requieren SMTP y `NEXT_PUBLIC_APP_URL` correctos para el entorno. El correo impreso en consola durante desarrollo no constituye entrega por Internet. El despliegue usa `email.shiftium.xyz:25` (STARTTLS oportunista) con remitente `no-reply@email.shiftium.xyz`. Antes de dar por operativo el correo, corra `npm run mail:check -- --to=tu@correo.com`; el script verifica la conexión y envía un mensaje real sin imprimir credenciales. Las invitaciones se procesan en `src/features/team/invitation.service.ts` y la verificación de adjuntos en `src/modules/attachments/verify.server.ts`.
 
 ## Datos de demostración
 
@@ -45,6 +45,7 @@ El seed vive en `db/seed/demo.sql` y no lo ejecuta `npm run db:migrate`: las mig
 | `npm run test:db` | Pruebas de base incluidas en Vitest |
 | `npm run test:e2e` | Recorrido público con Playwright |
 | `npm run seed:demo` | Datos ficticios para desarrollo y pruebas |
+| `npm run mail:check -- --to=tu@correo.com` | Verifica el SMTP y envía un correo de prueba |
 | `npm run build -- --webpack` | Construcción de la aplicación |
 | `npm start` | Servir una construcción existente |
 

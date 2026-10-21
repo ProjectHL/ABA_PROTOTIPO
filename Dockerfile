@@ -25,6 +25,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts/create-admin.mjs ./create
 # Synthetic demo data, only for development and test environments.
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/seed-demo.mjs ./seed-demo.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/db/seed ./seed
+# SMTP smoke test: node /app/mail-check.mjs --to=you@example.com
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/mail-check.mjs ./mail-check.mjs
 USER nextjs
 EXPOSE 3000
 CMD ["node","server.js"]
