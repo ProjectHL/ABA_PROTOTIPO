@@ -22,6 +22,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # One-time bootstrap of the first clinic administrator.
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/create-admin.mjs ./create-admin.mjs
+# SMTP smoke test: node /app/mail-check.mjs --to=you@example.com
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/mail-check.mjs ./mail-check.mjs
 USER nextjs
 EXPOSE 3000
 CMD ["node","server.js"]
