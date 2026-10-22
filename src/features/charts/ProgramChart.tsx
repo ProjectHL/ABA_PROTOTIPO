@@ -183,7 +183,7 @@ export function ProgramChart({ programId, programName }: ProgramChartProps) {
                                     return (
                                         <Paper p="sm" withBorder shadow="md">
                                             <Text size="sm" fw={600}>Sesión {data.session}</Text>
-                                            <Text size="xs" c="dimmed">{new Date(data.date).toLocaleDateString('es-ES')}</Text>
+                                            <Text size="xs" c="dimmed">{new Date(data.date).toLocaleDateString('es-CL')}</Text>
                                             {showIndependent && (
                                                 <Text size="xs" c="green">Independientes: {data.independent}%</Text>
                                             )}

@@ -36,19 +36,42 @@ function membership(raw: unknown, role: string): MembershipReceipt {
 
 export async function ensureInvitedUser(email: string): Promise<string> {
     const normalized = email.trim().toLowerCase();
-    const existing = await systemQuery<{ id: string }>(
-        `select id from auth.users
-          where lower(email) = lower($1) and deleted_at is null
+    // `auth.users` is unique on lower(email) regardless of deleted_at, so a
+    // soft-deleted address cannot be inserted again. Reuse and revive it.
+    const existing = await systemQuery<{ id: string; deleted_at: string | null }>(
+        `select id, deleted_at::text
+           from auth.users
+          where lower(email) = lower($1)
+          order by deleted_at nulls first
           limit 1`,
         [normalized],
     );
-    if (existing[0]) return existing[0].id;
+    if (existing[0]) {
+        if (existing[0].deleted_at) {
+            await systemQuery(
+                'update auth.users set deleted_at = null, updated_at = now() where id = $1',
+                [existing[0].id],
+            );
+        }
+        return existing[0].id;
+    }
 
-    const created = await systemQuery<{ id: string }>(
-        'insert into auth.users (email) values ($1) returning id',
-        [normalized],
-    );
-    return created[0].id;
+    try {
+        const created = await systemQuery<{ id: string }>(
+            'insert into auth.users (email) values ($1) returning id',
+            [normalized],
+        );
+        return created[0].id;
+    } catch (cause) {
+        // A concurrent invitation may have created the identity first.
+        if ((cause as { code?: string }).code !== '23505') throw cause;
+        const raced = await systemQuery<{ id: string }>(
+            'select id from auth.users where lower(email) = lower($1) limit 1',
+            [normalized],
+        );
+        if (!raced[0]) throw cause;
+        return raced[0].id;
+    }
 }
 
 export async function userIsConfirmed(userId: string): Promise<boolean> {
@@ -156,6 +179,14 @@ export async function deliverInvitation(params: {
             const classified = classifySmtpFailure(error);
             outcome = classified.outcome;
             errorCode = classified.errorCode;
+            console.error('[invite] smtp send failed', {
+                organizationId,
+                deliveryId: pending.deliveryId,
+                outcome,
+                errorCode,
+                code: (error as { code?: string })?.code ?? null,
+                message: error instanceof Error ? error.message : String(error),
+            });
         }
     } else {
         outcome = 'failed';
@@ -263,7 +294,14 @@ export async function inviteClinicMember(params: {
         });
         delivery = result.delivery;
         deliveryError = result.deliveryError;
-    } catch {
+    } catch (cause) {
+        // Never swallow the cause: without it the administrator only sees a
+        // generic "uncertain" message and cannot diagnose the SMTP boundary.
+        console.error('[invite] delivery failed', {
+            organizationId,
+            operationId: canonical,
+            message: cause instanceof Error ? cause.message : String(cause),
+        });
         deliveryError = 'outcome-not-confirmed';
     }
 

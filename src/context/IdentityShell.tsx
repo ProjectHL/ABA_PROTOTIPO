@@ -72,9 +72,16 @@ export function IdentityShell({children,slots={}}:{children:ReactNode;slots?:Ide
   // Chat is deliberately outside the current release scope. Its contracts and
   // persistence remain dormant for a later paid upgrade; no live navigation is exposed.
   const clinicalNav=[{icon:Home,label:'Dashboard',path:'/dashboard'},{icon:Users,label:'Mi Equipo',path:'/team'},{icon:FolderOpen,label:'Carpetas de Estudiantes',path:'/students'},{icon:CalendarDays,label:'Agenda',path:'/calendar'},{icon:FileCheck,label:'Accesos Compartidos',path:'/shared-access'}];
-  const nav=role==='family'?[{icon:HeartHandshake,label:'Portal Familiar',path:'/family'}]:clinicalNav;
+  // Each role only gets destinations it can actually use: `/team` is admin-only
+  // and an external identity works through explicit resource grants.
+  const staffNav=clinicalNav.filter(item=>item.path!=='/team'||role==='admin');
+  const nav=role==='family'
+    ?[{icon:HeartHandshake,label:'Portal Familiar',path:'/family'},{icon:FileCheck,label:'Invitaciones',path:'/invitations'}]
+    :role==='external'
+      ?[{icon:FileCheck,label:'Accesos Compartidos',path:'/shared-access'}]
+      :staffNav;
   return <AppShell header={{height:70}} navbar={{width:280,breakpoint:'sm',collapsed:{mobile:!opened}}} padding="md">
-    <AppShell.Header><Group h="100%" px="md" justify="space-between"><Group><Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm"/><Avatar color={roleColor} radius="sm" size="md"><RoleIcon size={16}/></Avatar><Box><Text fw={700} size="lg">ABA Admin</Text><Group gap={6}><Text size="xs" c="dimmed">Sistema de Supervisión</Text><Badge color={roleColor} size="xs" variant="light">{role??'Sin clínica activa'}</Badge></Group></Box></Group><Group>
+    <AppShell.Header><Group h="100%" px="md" justify="space-between"><Group><Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm"/><Avatar color={roleColor} radius="sm" size="md"><RoleIcon size={16}/></Avatar><Box><Text fw={700} size="lg">{identity.active?.name??'ABA Clínico'}</Text><Group gap={6}><Text size="xs" c="dimmed">ABA Clínico</Text><Badge color={roleColor} size="xs" variant="light">{role??'Sin clínica activa'}</Badge></Group></Box></Group><Group>
       {slots.search}
       {slots.notifications}
       {slots.offline}
@@ -83,7 +90,7 @@ export function IdentityShell({children,slots={}}:{children:ReactNode;slots?:Ide
     <AppShell.Navbar p="md"><AppShell.Section grow><Select label="Clínica activa" placeholder="Selecciona tu clínica" value={identity.active?.id??null} data={identity.choices.map(choice=>({value:choice.id,label:choice.name}))} disabled={busy||loading} mb="md" onChange={id=>{if(id)void run(async()=>{if(slots.beforeClinicChange&&!await slots.beforeClinicChange(id))return;await selectClinic(id);router.refresh();});}}/>
       {nav.map(item=>{const Icon=item.icon;return <NavLink key={item.path} label={item.label} leftSection={<Icon size={18}/>} active={pathname===item.path||pathname.startsWith(item.path+'/')} onClick={()=>go(item.path)} mb="xs" disabled={!identity.active&&item.path!=='/shared-access'}/>;})}
     </AppShell.Section><AppShell.Section><Stack gap="xs" p="md" style={{borderTop:'1px solid var(--mantine-color-gray-2)'}}><Box><Group gap="sm" mb={4}><Avatar src={avatar} color={profile.avatarPreset} size="md" radius="md">{profile.name.slice(0,2)}</Avatar><Box style={{flex:1}}><Text size="sm" fw={600} lineClamp={1}>{profile.name||identity.email}</Text><Text size="xs" c="dimmed" lineClamp={1}>{profile.title}</Text></Box></Group><Text size="xs" c="dimmed" lineClamp={2} mb="sm">{profile.description}</Text></Box>
-      {slots.plan??<Button fullWidth variant="gradient" gradient={{from:'blue',to:'cyan'}} size="xs" leftSection={<Sparkles size={14}/>} onClick={openUpgrade}>Upgrade de plan</Button>}
+      {role==='admin'&&(slots.plan??<Button fullWidth variant="gradient" gradient={{from:'blue',to:'cyan'}} size="xs" leftSection={<Sparkles size={14}/>} onClick={openUpgrade}>Upgrade de plan</Button>)}
       {slots.support??<Menu position={mobileViewport?"top-start":"right-end"} shadow="md" width={200}><Menu.Target><Button fullWidth variant="subtle" color="gray" size="xs" justify="space-between" leftSection={<HelpCircle size={14}/>} rightSection={<ChevronRight size={14}/>}>Soporte</Button></Menu.Target><Menu.Dropdown><Menu.Label>Ayuda y Contacto</Menu.Label><Menu.Item leftSection={<HelpCircle size={14}/>} onClick={()=>go('/help')}>Ayuda</Menu.Item><Menu.Item leftSection={<Mail size={14}/>} onClick={()=>go('/support')}>Contacto</Menu.Item></Menu.Dropdown></Menu>}
     </Stack></AppShell.Section></AppShell.Navbar>
     <AppShell.Main>{error&&<Alert color="yellow" mb="md" title="Revalidación pendiente">{error}<Button variant="subtle" onClick={()=>void refresh()} loading={loading}>Reintentar</Button></Alert>}{!verified&&identity&&<Text c="dimmed" size="xs" mb="sm">Permisos pendientes de revalidación. No se confirma ningún comando desde este estado.</Text>}{actionError&&<Alert color="red" mb="md" withCloseButton onClose={()=>setActionError(null)}>{actionError}</Alert>}{!identity.active&&<Alert color="yellow" mb="md">Selecciona una clínica autorizada. Identidades externas y familiares acceden por recursos específicos, no por una membresía general.</Alert>}{children}</AppShell.Main>

@@ -7,6 +7,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ZodError } from 'zod';
 import { MainLayout } from '@/components/MainLayout';
 import { StudentDetail, StudentsList, type StudentProfile } from '@/features/students';
 import { getAuthorizedStudent, listAuthorizedStudents, saveStudentV2 } from '@/modules/students/student.server';
@@ -31,6 +32,7 @@ function StudentsWorkspace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pendingCreate, setPendingCreate] = useState(false);
   const [createOpened, createModal] = useDisclosure(false);
   const createCommandRef = useRef<unknown>(null);
   const creatingRef = useRef(false);
@@ -72,20 +74,42 @@ function StudentsWorkspace() {
         payload: { schemaVersion: 2 as const, clinicalId: values.clinicalId, fullName: values.fullName, initials: values.initials, rut: null, photoAttachmentId: null, birthDate: values.birthDate, primaryLanguage: 'No informado', livingArrangement: '', reportedDiagnosis, consultationReason: '', context: { home: '', school: '', adaptations: '' }, people: [], siblings: [] },
       });
       createCommandRef.current = command;
+      setPendingCreate(true);
       const result = await saveStudentV2({ clinicId, command });
       if (result.status !== 'acknowledged') {
         createCommandRef.current = null;
+        setPendingCreate(false);
         notifications.show({ title: 'Ficha sin confirmar', color: 'yellow', message: result.message });
         return;
       }
       notifications.show({ title: 'Ficha creada', color: 'green', message: result.replayed ? 'Se recuperó el recibo de la operación previa.' : 'El servidor confirmó la nueva ficha.' });
-      createCommandRef.current = null; createModal.close(); createForm.reset();
+      createCommandRef.current = null; setPendingCreate(false); createModal.close(); createForm.reset();
       try { await refreshList(); }
       catch { notifications.show({ title: 'Ficha creada; lista sin actualizar', color: 'yellow', message: 'El alta ya fue confirmada. Abriremos su ficha; no repitas la creación.' }); }
       navigate(`/students/${command.studentId}`);
     } catch (cause) {
-      notifications.show({ title: 'No se creó la ficha', color: 'red', message: cause instanceof Error ? cause.message : 'Resultado desconocido; conserva los datos e intenta con la misma operación si estaban disponibles.' });
+      // A client-side validation error never reached the server: the same
+      // command may be corrected. Anything else is an unknown outcome and must
+      // keep the exact command for an idempotent retry.
+      if (cause instanceof ZodError) {
+        createCommandRef.current = null;
+        setPendingCreate(false);
+        notifications.show({ title: 'Revisá los datos de la ficha', color: 'red', message: cause.issues[0]?.message ?? 'Algunos datos no son válidos.' });
+        return;
+      }
+      notifications.show({ title: 'No se confirmó la ficha', color: 'red', message: 'La operación quedó pendiente. Reintentá la misma ficha o descartala explícitamente; revisá la lista antes de crear otra.' });
     } finally { creatingRef.current = false; setCreating(false); }
+  };
+
+  const discardPendingCreate = () => {
+    if (!window.confirm('Si descartás, no podremos saber si la ficha llegó a crearse. Revisá la lista antes de reintentar. ¿Descartar la operación pendiente y volver a editar?')) return;
+    createCommandRef.current = null;
+    setPendingCreate(false);
+  };
+  const closeCreate = () => {
+    if (creating || creatingRef.current) return;
+    if (createCommandRef.current && !window.confirm('La ficha quedó pendiente: si cerrás, no sabremos si se creó. Revisá la lista antes de reintentar. ¿Cerrar de todas formas?')) return;
+    createModal.close();
   };
 
   const leaveNow = () => {
@@ -142,11 +166,11 @@ function StudentsWorkspace() {
           {!loading && !error && studentId && !selectedSummary && detail && <Alert color="blue" title="Ficha cargada">La ficha fue abierta directamente y sigue sujeta a autorización vigente.</Alert>}
         </Stack>
       </Container>
-      <Modal opened={createOpened} onClose={() => { if (!creating && !createCommandRef.current) createModal.close(); }} closeOnClickOutside={false} closeOnEscape={!creating&&!createCommandRef.current} withCloseButton={!creating&&!createCommandRef.current} title="Nueva ficha clínica">
+      <Modal opened={createOpened} onClose={closeCreate} closeOnClickOutside={false} closeOnEscape={!creating} withCloseButton={!creating} title="Nueva ficha clínica">
         <form onSubmit={createForm.onSubmit(createStudent)}>
           <Stack>
-            {createCommandRef.current !== null && <Alert color="yellow">Resultado pendiente. Reintenta la misma operación antes de cerrar; los datos enviados se conservan.</Alert>}
-            <Fieldset disabled={creating||!!createCommandRef.current}><Stack>
+            {pendingCreate && <Alert color="yellow" title="Resultado pendiente">Reintentá la misma ficha para recuperar su recibo; los datos enviados se conservan. Si necesitás corregirlos, descartá la operación con confirmación y revisá antes la lista.<Group mt="xs"><Button size="xs" variant="light" color="yellow" onClick={discardPendingCreate}>Descartar y corregir</Button></Group></Alert>}
+            <Fieldset disabled={creating||pendingCreate}><Stack>
             <TextInput label="Nombre completo" required {...createForm.getInputProps('fullName')} />
             <TextInput label="Iniciales clínicas" required maxLength={12} {...createForm.getInputProps('initials')} />
             <TextInput label="Identificador clínico" required maxLength={64} {...createForm.getInputProps('clinicalId')} />
@@ -154,7 +178,7 @@ function StudentsWorkspace() {
             <Select label="Diagnóstico inicial reportado" required searchable data={diagnosisOptions} {...createForm.getInputProps('diagnosis')} />
             {createForm.values.diagnosis === 'Otro' && <Autocomplete label="Especificar diagnóstico" required data={existingDiagnoses} {...createForm.getInputProps('customDiagnosis')} />}
             </Stack></Fieldset>
-            <Group justify="flex-end"><Button variant="default" disabled={creating||!!createCommandRef.current} onClick={createModal.close}>Cancelar</Button><Button type="submit" loading={creating}>{createCommandRef.current?'Reintentar misma ficha':'Crear ficha'}</Button></Group>
+            <Group justify="flex-end"><Button variant="default" disabled={creating} onClick={closeCreate}>Cancelar</Button><Button type="submit" loading={creating}>{pendingCreate?'Reintentar misma ficha':'Crear ficha'}</Button></Group>
           </Stack>
         </form>
       </Modal>
