@@ -139,6 +139,22 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
             expect(listed.find(row=>row.email==='new.professional@example.invalid')).toMatchObject({accepted:false,eligible:true});
         });
     });
+    it('grants access directly when the invited identity already confirmed its email',async()=>{
+        const confirmed=randomUUID(), email='confirmed.member@example.invalid', operation=randomUUID();
+        await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[confirmed,email]);
+        await asUser(db,adminA,async()=>{
+            await db.query("select mvp_begin_clinic_invitation($1,$2,$3,'therapist')",[orgA,operation,email]);
+            await db.query('select mvp_complete_clinic_invitation($1,$2)',[orgA,operation]);
+        });
+        // A confirmed account has no token to redeem: pending would lock it out
+        // of the clinic forever because no second invitation is delivered.
+        expect((await db.query('select status from memberships where organization_id=$1 and user_id=$2',[orgA,confirmed])).rows)
+            .toEqual([{status:'active'}]);
+        await asUser(db,confirmed,async()=>{
+            const context=await db.query<{choices:unknown[]}>("select (aba_identity_context())->'choices' choices");
+            expect(context.rows[0].choices.length).toBeGreaterThan(0);
+        });
+    });
     it('keeps the session capture time immutable across later commands',async()=>{
         const sessionId=randomUUID();
         const envelope=(expectedVersion:number,occurredAt:string,notes:string)=>({
