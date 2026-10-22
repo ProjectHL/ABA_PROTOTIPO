@@ -20,17 +20,17 @@ Rama: `fix/ui-business-logic-audit`. Estrategia de entrega: `single-pr` (un PR s
 
 | ID | Specs | Ruta | Estado | Commit |
 |---|---|---|---|---|
-| T1 | S1 | inline (DB+TS+UI+tests) | pending | |
-| T2 | S2 | inline (DB+TS+tests) | pending | |
-| T3 | S3 | inline (DB+tests) | pending | |
-| T4 | S4 | inline (DB+TS) | pending | |
-| T5 | S5 | inline (TS) | pending | |
-| T6 | S6 | inline (UI) | pending | |
-| T7 | S7 | inline (UI) | pending | |
-| T8 | S8 | inline (UI) | pending | |
-| T9 | S9 | inline (UI) | pending | |
-| T10 | S10 | inline (UI) | pending | |
-| T11 | S11 | inline (UI) | pending | |
+| T1 | S1 | inline (DB+TS+UI+tests) | done | b7decc5 |
+| T2 | S2 | inline (DB+TS+tests) | done | 20a322d |
+| T3 | S3 | inline (DB+tests) | done | 7fcbd75 |
+| T4 | S4 | inline (DB+TS) | done | 063cfae |
+| T5 | S5 | inline (TS) | done | b7cb133 |
+| T6 | S6 | inline (UI) | done | 9c7102c |
+| T7 | S7 | inline (UI) | done | 9516843 |
+| T8 | S8 | inline (UI) | done | bcda7d8 |
+| T9 | S9 | inline (UI) | done | 05ec40b |
+| T10 | S10 | inline (UI) | done | 195c6db |
+| T11 | S11 | inline (UI) | done | 7ed71bc |
 
 ## Log
 
@@ -40,3 +40,4 @@ Rama: `fix/ui-business-logic-audit`. Estrategia de entrega: `single-pr` (un PR s
 - **L4** — Decisión de diseño T1: se agrega `pending` al check de `memberships`. Todas las políticas y funciones existentes exigen `status='active'`, así que una membresía pendiente no obtiene acceso. La activación ocurre en `resetPassword()` al consumir el token de invitación, que es el acto de aceptación. `require_delivery_target` acepta `pending` para permitir el envío y reenvío.
 - **L5** — Corrección de la auditoría: `private.is_primary_student_supervisor` fue redefinida en `20260908140309` e **incluye** al administrador de la clínica, así que el bloqueo reportado no existe. El test lo demostró al fallar la aserción `ok=false`. El defecto real de esa función es no heredar `test_run_id`; T2 se limita a eso.
 - **L6** — Decisión de diseño T3: `captured_at` queda inmutable (se fija al crear la sesión). La guarda de orden se mantiene con la comparación contra `captured_at` y los eventos ya persistidos.
+- **L7** — Verificación final T1–T11: `npm run typecheck` y `npm run lint` sin errores, `npm test` 53/53, `npm run test:db` 28/28. Tarea completa; push y PR quedan a decisión del usuario.
