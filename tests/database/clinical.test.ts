@@ -33,6 +33,18 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
             await expect(command(orgB,clientB.id,clientA.updated_at)).rejects.toMatchObject({code:'42501'});
         });
     });
+    it('test-run assignments inherit the student batch',async()=>{
+        const batch=randomUUID();
+        await db.query('insert into test_data_batches(organization_id,id,created_by) values($1,$2,$3)',[orgA,batch,adminA]);
+        const testClient=await asUser(db,adminA,()=>command(orgA,null,null,{...payload,clinical_id:'DUMMY-TEST-001'},batch));
+        await asUser(db,adminA,async()=>{
+            const assigned=(await db.query<{user_id:string;test_run_id:string|null}>(
+                "select user_id,test_run_id from set_student_assignment($1,$2,'therapist','active')",[testClient.id,technician],
+            )).rows[0];
+            expect(assigned).toMatchObject({user_id:technician,test_run_id:batch});
+            await db.query("select set_student_assignment($1,$2,'therapist','inactive')",[testClient.id,technician]);
+        });
+    });
     it('rejects moving a student into a different clinic',async()=>{
         await asUser(db,adminA,()=>expect(db.query('update clients set organization_id=$1 where id=$2',[orgB,clientA.id])).rejects.toMatchObject({code:'42501'}));
     });
