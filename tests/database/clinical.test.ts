@@ -115,6 +115,34 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         expect((await db.query("select id from clinic_admin_events where organization_id=$1 and subject_user_id=$2 and action='invitation_completed:supervisor'",[orgA,invitedProfessional])).rows)
             .toHaveLength(1);
     });
+    it('keeps the session capture time immutable across later commands',async()=>{
+        const sessionId=randomUUID();
+        const envelope=(expectedVersion:number,occurredAt:string,notes:string)=>({
+            schemaVersion:2,operationId:randomUUID(),idempotencyKey:randomUUID(),
+            studentId:clientA.id,sessionId,expectedVersion,action:'update-notes',
+            occurredAt,notes,programs:[],terminalConfirmation:false,
+        });
+        const captured=new Date('2026-10-20T10:00:00Z').toISOString();
+        const edited=new Date('2026-10-20T11:00:00Z').toISOString();
+        await asUser(db,adminA,async()=>{
+            const first=(await db.query<{status:string}>(
+                "select (command_session_v2($1,$2::jsonb))->>'status' status",[orgA,JSON.stringify(envelope(0,captured,'primera'))],
+            )).rows[0];
+            expect(first).toMatchObject({status:'acknowledged'});
+            const second=(await db.query<{status:string}>(
+                "select (command_session_v2($1,$2::jsonb))->>'status' status",[orgA,JSON.stringify(envelope(1,edited,'editada'))],
+            )).rows[0];
+            expect(second).toMatchObject({status:'acknowledged'});
+            const state=(await db.query<{captured_at:string}>(
+                'select captured_at::text from clinical_session_v2_state where session_id=$1',[sessionId],
+            )).rows[0];
+            expect(Date.parse(state.captured_at)).toBe(Date.parse(captured));
+        });
+        // Leave no clinical rows behind for the cleanup contract test.
+        await db.query('delete from clinical_session_v2_events where session_id=$1',[sessionId]);
+        await db.query('delete from clinical_session_v2_state where session_id=$1',[sessionId]);
+        await db.query('delete from clinical_sessions where id=$1',[sessionId]);
+    });
     it('atomic family edit survives reread and rejects stale version',async()=>{
         await asUser(db,adminA,async()=>{
             const edited=await command(orgA,clientA.id,clientA.updated_at,{...payload,initials:'A.C.'});
