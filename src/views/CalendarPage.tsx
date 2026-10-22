@@ -193,7 +193,7 @@ function CalendarWorkspace({ clinicId, verified }: { clinicId: string; verified:
         {current && !loading && !readError && <Stack gap="xs" mt="sm"><Text size="sm">{current.title} · {wallTime(current.startsAt,current.timeZone)} · {current.notes}</Text>
           <Text size="sm">{current.participants.map(p => p.label).join(', ')}</Text>
           <Text size="sm">Estado: {current.status} · versión {current.version} · serie {current.seriesVersion ?? '—'}</Text>
-          <pre style={{maxHeight:220,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify({startsAt:current.startsAt,endsAt:current.endsAt,timeZone:current.timeZone,recurrence:current.recurrence,reminders:current.reminders,linkedSessionId:current.linkedSessionId},null,2)}</pre>
+          <details><summary>Ver datos técnicos</summary><pre style={{maxHeight:220,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify({startsAt:current.startsAt,endsAt:current.endsAt,timeZone:current.timeZone,recurrence:current.recurrence,reminders:current.reminders,linkedSessionId:current.linkedSessionId},null,2)}</pre></details>
           <Button variant="light" disabled={busy||!verified||current.status!=='scheduled'} onClick={() => { if(loading||readError||!verified||current.status!=='scheduled')return;setTarget(current);setConfirmed(false);setConflict(false);setError(''); }}>He revisado los cambios; usar esta versión</Button></Stack>}
       </Alert>}
       <Fieldset disabled={busy||!!pending||conflict||!verified}><Stack>
