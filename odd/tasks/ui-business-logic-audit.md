@@ -15,6 +15,7 @@ Rama: `fix/ui-business-logic-audit`. Estrategia de entrega: `single-pr` (un PR s
 - **S9** — Desde una sesión se puede volver a la ficha sin depender del historial del navegador, y un conflicto de versión se presenta en lenguaje legible, no como JSON crudo.
 - **S10** — Los controles que solo muestran un icono tienen nombre accesible.
 - **S11** — Las fechas se formatean de forma uniforme y la agenda agrupa por la zona horaria que muestra.
+- **S12** — Al invitar un correo que ya tiene una invitación pendiente se envía un correo nuevo con un token nuevo y el enlace anterior deja de servir. Quote: *"si se envia o si ya existia un invitado no se vuelve a mandar un correo con la nueva invitacion y nuevo token"*. Una cuenta con correo ya confirmado no recibe otra invitación; se le indica iniciar sesión.
 
 ## Tasks
 
@@ -31,6 +32,7 @@ Rama: `fix/ui-business-logic-audit`. Estrategia de entrega: `single-pr` (un PR s
 | T9 | S9 | inline (UI) | done | 05ec40b |
 | T10 | S10 | inline (UI) | done | 195c6db |
 | T11 | S11 | inline (UI) | done | 7ed71bc |
+| T12 | S12 | inline (SQL+UI+tests) | done | 23f3f15 |
 
 ## Log
 
@@ -41,3 +43,4 @@ Rama: `fix/ui-business-logic-audit`. Estrategia de entrega: `single-pr` (un PR s
 - **L5** — Corrección de la auditoría: `private.is_primary_student_supervisor` fue redefinida en `20260908140309` e **incluye** al administrador de la clínica, así que el bloqueo reportado no existe. El test lo demostró al fallar la aserción `ok=false`. El defecto real de esa función es no heredar `test_run_id`; T2 se limita a eso.
 - **L6** — Decisión de diseño T3: `captured_at` queda inmutable (se fija al crear la sesión). La guarda de orden se mantiene con la comparación contra `captured_at` y los eventos ya persistidos.
 - **L7** — Verificación final T1–T11: `npm run typecheck` y `npm run lint` sin errores, `npm test` 53/53, `npm run test:db` 28/28. Tarea completa; push y PR quedan a decisión del usuario.
+- **L8** — Pedido textual del usuario: "si se envia o si ya existia un invitado no se vuelve a mandar un correo con la nueva invitacion y nuevo token". Causa: `aba_team_invitation_deliveries_impl` exigía `m.status='active'` para `eligible`, así que toda membresía `pending` (introducida en T1) quedaba invisible para el reenvío; además el formulario de invitación sólo mostraba `existing_membership_use_resend`. T12 incluye la migración `20261021160000_resend_pending_invitation.sql`, el reenvío explícito desde el modal (nuevo `operationId`/`idempotencyKey` → token nuevo, tokens anteriores invalidados) y un test de regresión (RED observado: `eligible:false`).
