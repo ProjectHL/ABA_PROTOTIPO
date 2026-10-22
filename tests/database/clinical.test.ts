@@ -93,7 +93,13 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
             await db.query('select mvp_complete_clinic_invitation($1,$2)',[orgA,firstOperation]);
         });
         expect((await db.query('select user_id,role,status from memberships where organization_id=$1 and user_id=$2',[orgA,invitedProfessional])).rows)
-            .toEqual([{user_id:invitedProfessional,role:'supervisor',status:'active'}]);
+            .toEqual([{user_id:invitedProfessional,role:'supervisor',status:'pending'}]);
+        // An invitation is not access: the pending member sees no clinical data.
+        await asUser(db,invitedProfessional,async()=>{
+            expect((await db.query('select id from clients')).rows).toEqual([]);
+            // Identity context exposes no clinic choice while the invitation is pending.
+            expect((await db.query<{choices:unknown[]}>("select (aba_identity_context())->'choices' choices")).rows[0].choices).toEqual([]);
+        });
         expect((await db.query("select id from clinic_admin_events where organization_id=$1 and subject_user_id=$2 and action='invitation_completed:supervisor'",[orgA,invitedProfessional])).rows)
             .toHaveLength(1);
     });
