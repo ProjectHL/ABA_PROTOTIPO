@@ -13,7 +13,7 @@ export function CompletedSessionsCard({ sessions, onViewProgram }: CompletedSess
 
     const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
+        return date.toLocaleDateString('es-CL', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',

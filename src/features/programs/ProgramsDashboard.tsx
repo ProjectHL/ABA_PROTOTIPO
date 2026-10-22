@@ -247,7 +247,7 @@ export function ProgramsDashboard({
                                     </Table.Td>
                                     <Table.Td>
                                         <Text size="sm" c="dimmed">
-                                            {new Date(program.lastModified).toLocaleDateString('es-ES')}
+                                            {new Date(program.lastModified).toLocaleDateString('es-CL')}
                                         </Text>
                                     </Table.Td>
                                     <Table.Td>
@@ -335,7 +335,7 @@ export function ProgramsDashboard({
                                     </Table.Td>
                                     <Table.Td>
                                         <Text size="sm" c="dimmed">
-                                            {new Date(program.lastModified).toLocaleDateString('es-ES')}
+                                            {new Date(program.lastModified).toLocaleDateString('es-CL')}
                                         </Text>
                                     </Table.Td>
                                     <Table.Td>

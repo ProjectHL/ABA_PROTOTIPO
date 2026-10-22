@@ -216,7 +216,7 @@ export default function ProgramAnalysisDashboard() {
                         <Table.Tbody>
                             {filteredData.slice(-10).reverse().map((row) => (
                                 <Table.Tr key={row.id}>
-                                    <Table.Td>{new Date(row.date).toLocaleDateString()}</Table.Td>
+                                    <Table.Td>{new Date(row.date).toLocaleDateString('es-CL')}</Table.Td>
                                     <Table.Td>
                                         <Badge size="sm" variant="dot" color={row.phase === 'baseline' ? 'gray' : 'blue'}>
                                             {row.phase}
