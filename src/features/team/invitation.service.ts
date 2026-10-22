@@ -179,6 +179,14 @@ export async function deliverInvitation(params: {
             const classified = classifySmtpFailure(error);
             outcome = classified.outcome;
             errorCode = classified.errorCode;
+            console.error('[invite] smtp send failed', {
+                organizationId,
+                deliveryId: pending.deliveryId,
+                outcome,
+                errorCode,
+                code: (error as { code?: string })?.code ?? null,
+                message: error instanceof Error ? error.message : String(error),
+            });
         }
     } else {
         outcome = 'failed';
@@ -286,7 +294,14 @@ export async function inviteClinicMember(params: {
         });
         delivery = result.delivery;
         deliveryError = result.deliveryError;
-    } catch {
+    } catch (cause) {
+        // Never swallow the cause: without it the administrator only sees a
+        // generic "uncertain" message and cannot diagnose the SMTP boundary.
+        console.error('[invite] delivery failed', {
+            organizationId,
+            operationId: canonical,
+            message: cause instanceof Error ? cause.message : String(cause),
+        });
         deliveryError = 'outcome-not-confirmed';
     }
 
