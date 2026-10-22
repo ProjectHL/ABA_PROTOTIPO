@@ -91,7 +91,6 @@ export default function LandingPage() {
                         <Group gap="xl" visibleFrom="md">
                             <Anchor size="sm" fw={500} href="#caracteristicas">Características</Anchor>
                             <Anchor size="sm" fw={500} href="#entorno-local">Entorno local</Anchor>
-                            <Anchor size="sm" fw={500} href="/help">Documentación local</Anchor>
                             <Button variant="outline" radius="xl" onClick={() => navigate('/login')}>
                                 Ingresar
                             </Button>
@@ -151,7 +150,7 @@ export default function LandingPage() {
                             radius="xl"
                             variant="default"
                             rightSection={<ArrowRight size={20} />}
-                            onClick={() => navigate('/support')}
+                            onClick={() => navigate('/contact')}
                         >
                             Contactar soporte
                         </Button>
