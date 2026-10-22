@@ -100,6 +100,19 @@ export async function resetPassword(
           where id = $1`,
         [consumed.userId, encoded],
     );
+    // Consuming the invitation token is the acceptance act. Invitations create
+    // `pending` memberships that grant no access; activating them here is the
+    // only transition from "invited" to "member".
+    await systemQuery(
+        `with activated as (
+            update public.memberships set status = 'active'
+             where user_id = $1 and status = 'pending'
+            returning organization_id
+         )
+         insert into public.clinic_admin_events(organization_id, actor_user_id, subject_user_id, action)
+         select organization_id, $1, $1, 'invitation_accepted' from activated`,
+        [consumed.userId],
+    );
     await destroyUserSessions(consumed.userId);
     await createSession(consumed.userId, meta);
     return { ok: true };

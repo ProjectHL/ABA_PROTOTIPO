@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Card, Checkbox, Container, Fieldset, Group, Loade
   MultiSelect, NumberInput, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
 import { CalendarDays, Plus, RefreshCw } from 'lucide-react';
 import { MainLayout } from '@/components/MainLayout';
+import { formatWallTime } from '@/lib/format';
 import { useIdentity } from '@/context/IdentityContext';
 import { appointmentCommandSchema, type AppointmentCommand, type AppointmentInput } from '@/domain/agenda/appointment';
 import { loadCalendarPageData, loadCalendarSessions, saveAppointmentV2 } from '@/modules/calendar/calendar.server';
@@ -145,7 +146,7 @@ function CalendarWorkspace({ clinicId, verified }: { clinicId: string; verified:
   const item = (a: CalendarAppointmentDto) => <Card key={a.id} withBorder p="sm">
     <Group justify="space-between"><Text fw={600}>{a.title}</Text><Badge color={a.status === 'cancelled' ? 'gray' : 'blue'}>{a.status === 'cancelled' ? 'Cancelada' : 'Programada'}</Badge></Group>
     <Text size="sm">{data?.students.find(s => s.id === a.studentId)?.displayName ?? 'Ficha autorizada'}</Text>
-    <Text size="sm">{wallTime(a.startsAt,a.timeZone).replace('T',' ')} – {wallTime(a.endsAt,a.timeZone).replace('T',' ')} · {a.timeZone}</Text>
+    <Text size="sm">{formatWallTime(wallTime(a.startsAt,a.timeZone))} – {formatWallTime(wallTime(a.endsAt,a.timeZone))} · {a.timeZone}</Text>
     {a.seriesId && <Text size="xs" c="dimmed">Serie semanal · ocurrencia original {a.originalLocalDate}</Text>}
     {a.notes && <Text size="sm" style={{whiteSpace:'pre-wrap'}}>{a.notes}</Text>}
     <Text size="xs">{a.participants.map(p => p.label).join(', ')}</Text>
@@ -177,7 +178,7 @@ function CalendarWorkspace({ clinicId, verified }: { clinicId: string; verified:
       {dayCount > 0 && Array.from({length:(new Date(month+'-01T12:00:00Z').getUTCDay()+6)%7},(_,i) => <div key={'offset-'+i} className="mantine-visible-from-lg" aria-hidden="true"/>)}
       {Array.from({length:dayCount},(_,i) => {
         const date = month+'-'+String(i+1).padStart(2,'0');
-        return <Card key={date} withBorder><Text fw={700} mb="xs">{new Intl.DateTimeFormat('es',{weekday:'short',day:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'))}</Text>
+        return <Card key={date} withBorder><Text fw={700} mb="xs">{new Intl.DateTimeFormat('es-CL',{weekday:'short',day:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'))}</Text>
           <Stack gap="xs">{appointments.filter(a => wallTime(a.startsAt,data?.timeZone ?? 'America/Santiago').slice(0,10) === date).map(item)}</Stack></Card>;
       })}
     </SimpleGrid>}
@@ -190,10 +191,10 @@ function CalendarWorkspace({ clinicId, verified }: { clinicId: string; verified:
         <Button mt="sm" loading={loading} disabled={busy||!verified} onClick={() => void refresh()}>Consultar estado actual</Button>
         {readError && <Text c="red" size="sm">{readError}</Text>}
         {!loading&&!readError&&!current && <Text size="sm">La cita ya no está disponible. No se recreará desde este formulario.</Text>}
-        {current && !loading && !readError && <Stack gap="xs" mt="sm"><Text size="sm">{current.title} · {wallTime(current.startsAt,current.timeZone)} · {current.notes}</Text>
+        {current && !loading && !readError && <Stack gap="xs" mt="sm"><Text size="sm">{current.title} · {formatWallTime(wallTime(current.startsAt,current.timeZone))} · {current.notes}</Text>
           <Text size="sm">{current.participants.map(p => p.label).join(', ')}</Text>
           <Text size="sm">Estado: {current.status} · versión {current.version} · serie {current.seriesVersion ?? '—'}</Text>
-          <pre style={{maxHeight:220,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify({startsAt:current.startsAt,endsAt:current.endsAt,timeZone:current.timeZone,recurrence:current.recurrence,reminders:current.reminders,linkedSessionId:current.linkedSessionId},null,2)}</pre>
+          <details><summary>Ver datos técnicos</summary><pre style={{maxHeight:220,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify({startsAt:current.startsAt,endsAt:current.endsAt,timeZone:current.timeZone,recurrence:current.recurrence,reminders:current.reminders,linkedSessionId:current.linkedSessionId},null,2)}</pre></details>
           <Button variant="light" disabled={busy||!verified||current.status!=='scheduled'} onClick={() => { if(loading||readError||!verified||current.status!=='scheduled')return;setTarget(current);setConfirmed(false);setConflict(false);setError(''); }}>He revisado los cambios; usar esta versión</Button></Stack>}
       </Alert>}
       <Fieldset disabled={busy||!!pending||conflict||!verified}><Stack>
@@ -208,7 +209,7 @@ function CalendarWorkspace({ clinicId, verified }: { clinicId: string; verified:
         {mode === 'cancel' ? <><Textarea label="Motivo de cancelación" required value={reason} onChange={e => setReason(e.currentTarget.value)}/>
           <Checkbox label="Confirmo la cancelación del alcance seleccionado" checked={confirmed} onChange={e => setConfirmed(e.currentTarget.checked)}/></>
         : mode === 'link-session' ? <Select label="Sesión finalizada" placeholder={sessionsLoading ? 'Cargando sesiones…' : 'Selecciona una sesión'} disabled={sessionsLoading} value={sessionId} onChange={setSessionId}
-          data={sessions.map(s => ({value:s.id,label:wallTime(s.capturedAt,zone).replace('T',' ')+' · '+s.id.slice(0,8)}))}/>
+          data={sessions.map(s => ({value:s.id,label:formatWallTime(wallTime(s.capturedAt,zone))+' · '+s.id.slice(0,8)}))}/>
         : <><Select label="Estudiante" required searchable data={studentLabels} value={student} disabled={!!target} onChange={value => {setStudent(value);setParticipants(p => p.filter(v => v.startsWith('p:')));}}/>
           <TextInput label="Título" required maxLength={300} value={title} onChange={e => setTitle(e.currentTarget.value)}/>
           <Textarea label="Notas" maxLength={10000} value={notes} onChange={e => setNotes(e.currentTarget.value)}/>

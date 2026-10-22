@@ -46,7 +46,7 @@ export function ActiveSessionCard({ sessions, onViewProgram }: ActiveSessionCard
 
     const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
+        return date.toLocaleDateString('es-CL', {
             day: '2-digit',
             month: 'short',
             year: 'numeric',

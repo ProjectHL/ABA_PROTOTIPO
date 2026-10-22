@@ -138,7 +138,17 @@ function PlansWorkspace({clinicId,admin,verified,initialPlan}:{clinicId:string;a
           <Button mt="sm" loading={loading} disabled={busy||!verified} onClick={()=>void refresh()}>Consultar estado actual</Button>
           {readError&&<Text c="red" size="sm">{readError}</Text>}
           {page&&!loading&&!readError&&<>
-            <pre style={{maxHeight:240,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify(mode==='plan'||mode==='cancel'?page.subscription:latestDocument??{estado:'Documento no disponible'},null,2)}</pre>
+            {mode==='plan'||mode==='cancel'?(page.subscription?<Stack gap={4}>
+              <Text size="sm">Plan vigente: {page.subscription.plan.name} · {page.subscription.seats} plazas ({page.subscription.occupiedSeats} ocupadas)</Text>
+              <Text size="sm">Estado: {page.subscription.status==='active'?'Activa':'Cancelada'} · versión {page.subscription.version}</Text>
+              <Text size="sm">Vigente desde: {new Date(page.subscription.effectiveAt).toLocaleString('es-CL')}</Text>
+            </Stack>:<Text size="sm">No hay suscripción vigente registrada.</Text>)
+              :latestDocument?<Stack gap={4}>
+                <Text size="sm">{latestDocument.title} · {latestDocument.kind==='internal-summary'?'Resumen interno':latestDocument.kind==='internal-proposal'?'Propuesta interna':'Acuerdo interno'}</Text>
+                <Text size="sm">Versión {latestDocument.version} · emitido {new Date(latestDocument.issuedAt).toLocaleDateString('es-CL')}{latestDocument.archived?' · archivado':''}</Text>
+                <Text size="sm">Importe de demostración: {new Intl.NumberFormat('es-CL',{style:'currency',currency:latestDocument.currency}).format(latestDocument.lines.reduce((total,line)=>total+line.amountMinor,0)/10**latestDocument.minorUnitDigits)}</Text>
+              </Stack>:<Text size="sm">El documento ya no está disponible.</Text>}
+            {mode==='plan'||mode==='cancel'?page.subscription?<details><summary>Ver datos técnicos</summary><pre style={{maxHeight:240,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify(page.subscription,null,2)}</pre></details>:null:latestDocument?<details><summary>Ver datos técnicos</summary><pre style={{maxHeight:240,overflow:'auto',whiteSpace:'pre-wrap'}}>{JSON.stringify(latestDocument,null,2)}</pre></details>:null}
             <Button mt="sm" variant="light" disabled={busy||!verified||!admin||((mode==='plan'||mode==='cancel')?(!page.subscription||page.subscription.status==='cancelled'):(!latestDocument||latestDocument.archived))}
               onClick={()=>{
                 if(loading||readError||!verified||!admin)return;

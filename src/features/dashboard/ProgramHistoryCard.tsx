@@ -62,7 +62,7 @@ export function ProgramHistoryCard({ programs }: ProgramHistoryCardProps) {
                                             </Text>
                                         </Group>
                                         <Text size="xs" c="dimmed">
-                                            {new Date(program.achievedDate).toLocaleDateString('es-ES', {
+                                            {new Date(program.achievedDate).toLocaleDateString('es-CL', {
                                                 day: 'numeric',
                                                 month: 'short',
                                                 year: 'numeric',

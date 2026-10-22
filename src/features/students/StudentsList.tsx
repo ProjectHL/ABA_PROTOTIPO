@@ -56,7 +56,7 @@ export function StudentsList({ students, onCreate }: StudentsListProps) {
                                     {student.familyAccessEnabled && <Badge variant="outline" color="blue" size="xs">Acceso familiar</Badge>}
                                 </Group>
                                 <Menu shadow="md" width={200} position="bottom-end" keepMounted>
-                                    <Menu.Target><ActionIcon variant="subtle" color="gray" onClick={(event) => event.stopPropagation()}><MoreVertical size={16} /></ActionIcon></Menu.Target>
+                                    <Menu.Target><ActionIcon variant="subtle" color="gray" aria-label={`Acciones de ${student.displayName}`} onClick={(event) => event.stopPropagation()}><MoreVertical size={16} /></ActionIcon></Menu.Target>
                                     <Menu.Dropdown>
                                         <Menu.Label>Acciones</Menu.Label>
                                         <Menu.Item leftSection={<Eye size={16} />} onClick={(event) => { event.stopPropagation(); navigate(`/students/${student.id}`); }}>Ver carpeta</Menu.Item>

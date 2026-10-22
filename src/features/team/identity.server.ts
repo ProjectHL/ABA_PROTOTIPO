@@ -59,13 +59,13 @@ export async function saveProfessionalProfile(raw:unknown) {
   revalidatePath('/','layout'); return receipt;
 }
 export async function setTeamMembership(raw:unknown) {
-  const command=z.object({clinicId:z.uuid(),userId:z.uuid(),role:professionalRole,status:z.enum(['active','inactive'])}).strict().parse(raw);
+  const command=z.object({clinicId:z.uuid(),userId:z.uuid(),role:professionalRole,status:z.enum(['active','inactive','pending'])}).strict().parse(raw);
   const ctx=await expectedClinic(command.clinicId);
   if(ctx.active?.role!=='admin') throw new Error('Administración de clínica requerida.');
   const {db}=await authorized();
   const result=await db.rpc('mvp_set_member',{p_organization_id:ctx.active.id,p_user_id:command.userId,p_role:command.role,p_status:command.status});
   if(result.error || !result.data) throw new Error('Membresía no modificada. No se permite retirar al último administrador activo.');
-  const receipt=z.object({user_id:z.uuid(),role:professionalRole,status:z.enum(['active','inactive'])}).parse(result.data);
+  const receipt=z.object({user_id:z.uuid(),role:professionalRole,status:z.enum(['active','inactive','pending'])}).parse(result.data);
   if(receipt.user_id!==command.userId||receipt.role!==command.role||receipt.status!==command.status)throw new Error('El recibo no corresponde al cambio de membresía solicitado.');
   revalidatePath('/','layout'); return receipt;
 }

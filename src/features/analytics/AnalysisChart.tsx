@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
 
         return (
             <Paper p="xs" shadow="md" withBorder style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
-                <Text size="xs" fw={700}>{new Date(point.date).toLocaleDateString()}</Text>
+                <Text size="xs" fw={700}>{new Date(point.date).toLocaleDateString('es-CL')}</Text>
                 <Text size="sm" c="blue" fw={500}>
                     Valor: {point.value}{isPercentage ? '%' : ''}
                 </Text>
