@@ -27,7 +27,6 @@ export function TeamManagement({members,clinicId,onRefresh,onIdentityRefresh}:{m
         const target=(await loadTeamInvitations(clinicId)).find(row=>row.email.toLowerCase()===email.trim().toLowerCase());
         if(!target)throw new Error('Ese correo ya tiene una membresía en esta clínica, pero no hay una invitación reenviable. Revisá Correos de invitación.');
         if(target.accepted)throw new Error('Ese correo ya tiene una cuenta confirmada: la persona debe iniciar sesión y no se envía otra invitación.');
-        if(!target.eligible)throw new Error('La membresía no está habilitada para reenvío. Revisá su estado en Correos de invitación.');
         if(target.lastDelivery&&['pending','claimed','unknown'].includes(target.lastDelivery.state))throw new Error('Hay una entrega sin resolver para esa invitación. Consultala en Correos de invitación antes de pedir otra.');
         if(!window.confirm(`Ya existe una invitación pendiente para ${target.email}. ¿Enviar un correo nuevo con otro token? El enlace anterior dejará de servir.`))return;
         const receipt=await resendTeamInvitation({clinicId,invitationId:target.invitationId,operationId:crypto.randomUUID(),idempotencyKey:crypto.randomUUID()});
