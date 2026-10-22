@@ -33,6 +33,22 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
             await expect(command(orgB,clientB.id,clientA.updated_at)).rejects.toMatchObject({code:'42501'});
         });
     });
+    it('revives a soft-deleted identity on a new invitation',async()=>{
+        const email='deleted.professional@example.invalid';
+        const deletedUser=randomUUID();
+        await db.query('insert into auth.users(id,email,deleted_at) values($1,$2,now())',[deletedUser,email]);
+        const operation=randomUUID();
+        await asUser(db,adminA,async()=>{
+            await db.query("select mvp_begin_clinic_invitation($1,$2,$3,'therapist')",[orgA,operation,email]);
+            const completed=(await db.query<{value:{user_id:string}}>(
+                'select mvp_complete_clinic_invitation($1,$2) value',[orgA,operation],
+            )).rows[0].value;
+            expect(completed.user_id).toBe(deletedUser);
+        });
+        expect((await db.query<{deleted_at:string|null}>('select deleted_at::text from auth.users where id=$1',[deletedUser])).rows[0].deleted_at).toBeNull();
+        expect((await db.query("select status from memberships where organization_id=$1 and user_id=$2",[orgA,deletedUser])).rows)
+            .toEqual([{status:'pending'}]);
+    });
     it('test-run assignments inherit the student batch',async()=>{
         const batch=randomUUID();
         await db.query('insert into test_data_batches(organization_id,id,created_by) values($1,$2,$3)',[orgA,batch,adminA]);
