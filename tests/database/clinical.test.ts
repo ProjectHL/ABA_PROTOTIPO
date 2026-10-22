@@ -130,6 +130,14 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         });
         expect((await db.query("select id from clinic_admin_events where organization_id=$1 and subject_user_id=$2 and action='invitation_completed:supervisor'",[orgA,invitedProfessional])).rows)
             .toHaveLength(1);
+        // A pending invitation must stay eligible for an explicit resend; the
+        // old `active`-only rule hid every existing guest from that panel.
+        await asUser(db,adminA,async()=>{
+            const listed=(await db.query<{value:{email:string;accepted:boolean;eligible:boolean}[]}>(
+                'select aba_team_invitation_deliveries($1) value',[orgA],
+            )).rows[0].value;
+            expect(listed.find(row=>row.email==='new.professional@example.invalid')).toMatchObject({accepted:false,eligible:true});
+        });
     });
     it('keeps the session capture time immutable across later commands',async()=>{
         const sessionId=randomUUID();
