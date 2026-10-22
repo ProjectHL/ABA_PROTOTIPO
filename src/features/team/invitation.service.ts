@@ -282,30 +282,35 @@ export async function inviteClinicMember(params: {
         throw new Error('invalid_receipt');
     }
 
+    const alreadyAccepted = await userIsConfirmed(saved.user_id);
+
     let delivery: unknown | null = null;
     let deliveryError: 'outcome-not-confirmed' | null = null;
-    try {
-        const result = await deliverInvitation({
-            actorId,
-            organizationId,
-            invitationId: canonical,
-            operationId: canonical,
-            idempotencyKey: canonical,
-        });
-        delivery = result.delivery;
-        deliveryError = result.deliveryError;
-    } catch (cause) {
-        // Never swallow the cause: without it the administrator only sees a
-        // generic "uncertain" message and cannot diagnose the SMTP boundary.
-        console.error('[invite] delivery failed', {
-            organizationId,
-            operationId: canonical,
-            message: cause instanceof Error ? cause.message : String(cause),
-        });
-        deliveryError = 'outcome-not-confirmed';
+    // A confirmed identity has no invitation link to redeem: the ledger refuses
+    // the delivery (`invitation_already_accepted`), so do not report a bogus
+    // uncertain outcome for a mail that was never going to be sent.
+    if (!alreadyAccepted) {
+        try {
+            const result = await deliverInvitation({
+                actorId,
+                organizationId,
+                invitationId: canonical,
+                operationId: canonical,
+                idempotencyKey: canonical,
+            });
+            delivery = result.delivery;
+            deliveryError = result.deliveryError;
+        } catch (cause) {
+            // Never swallow the cause: without it the administrator only sees a
+            // generic "uncertain" message and cannot diagnose the SMTP boundary.
+            console.error('[invite] delivery failed', {
+                organizationId,
+                operationId: canonical,
+                message: cause instanceof Error ? cause.message : String(cause),
+            });
+            deliveryError = 'outcome-not-confirmed';
+        }
     }
-
-    const alreadyAccepted = await userIsConfirmed(saved.user_id);
     const deliveryState = (delivery as { state?: string } | null)?.state;
     const confirmationSource = (delivery as { confirmationSource?: string | null } | null)?.confirmationSource;
 
