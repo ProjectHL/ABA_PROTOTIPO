@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { Alert, Button, TextInput, Card, Text, Stack, Group, PasswordInput, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
@@ -12,7 +11,6 @@ import { AccessInformation } from '@/features/team/AccessInformation'
 
 export default function LoginPage() {
     const navigate = useNavigate()
-    const router = useRouter()
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
@@ -38,9 +36,11 @@ export default function LoginPage() {
 
         notifications.show({ title: 'Sesión iniciada', message: 'Bienvenido a ABA Clínico.', color: 'green' })
         setLoading(false)
-        const redirectTo = searchParams.get('redirectTo')
-        router.replace(getSafeRedirect(redirectTo))
-        router.refresh()
+        // The session cookie was just set by the server action. A full
+        // navigation sends it with the next document request and remounts the
+        // root IdentityProvider; a client-side transition reuses the provider
+        // mounted while signed out and renders "Tu sesión no está disponible".
+        window.location.replace(getSafeRedirect(searchParams.get('redirectTo')))
     }
 
     return (
