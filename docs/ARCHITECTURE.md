@@ -54,7 +54,7 @@ El modelo agrupa clínicas y membresías; fichas y antecedentes; asignaciones; p
 
 Los programas publicados conservan versiones. Las sesiones y capturas referencian su contexto de programa y mantienen estados explícitos. Las cinco dimensiones de medición son porcentaje, frecuencia, intervalo, duración y latencia. Los cálculos y exportaciones deben respetar la semántica de cada dimensión, sus pausas y sus ventanas de observación.
 
-Los datos V1 conservan compatibilidad con los contratos V2. Un agregado histórico no permite reconstruir eventos que nunca fueron almacenados. El archivado lógico y la eliminación física son operaciones diferentes.
+La consolidación V1 → V2 traslada los datos clínicos heredados a las tablas canónicas y retira las tablas y comandos V1. Un agregado histórico no permite reconstruir eventos que nunca fueron almacenados. El archivado lógico y la eliminación física son operaciones diferentes.
 
 ## Flujo clínico
 
