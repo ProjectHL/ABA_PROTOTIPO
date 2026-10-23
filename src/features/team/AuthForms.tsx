@@ -31,7 +31,12 @@ export function AuthPasswordForm({mode='recover'}:{mode?:'recover'|'reset'|'chan
       const result=await resetPasswordAction({token,password});
       if(!result.ok)throw new Error(result.message);
     }
-    setPassword('');setConfirm('');setCurrent('');router.replace('/dashboard');router.refresh();
+    setPassword('');setConfirm('');setCurrent('');
+    // Reset and invitation acceptance create a session. The root
+    // IdentityProvider is already mounted without one, so only a full
+    // navigation makes it observe the new cookie. Changing a password keeps
+    // the existing session and can stay client-side.
+    if(change){router.replace('/dashboard');router.refresh();}else{window.location.replace('/dashboard');}
   }catch(cause){setMessage(cause instanceof Error?cause.message:'No se confirmó la operación de acceso.');}finally{setBusy(false);}}}><Stack><Title order={2}>{recovery?'Recuperar acceso':change?'Cambiar contraseña':'Nueva contraseña'}</Title>
     {recovery?<TextInput label="Correo" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.currentTarget.value)}/>:<>{change&&<PasswordInput label="Contraseña actual" autoComplete="current-password" required value={current} onChange={e=>setCurrent(e.currentTarget.value)}/>}<PasswordInput label="Nueva contraseña" autoComplete="new-password" required value={password} onChange={e=>setPassword(e.currentTarget.value)} description={PASSWORD_DESCRIPTION}/><PasswordInput label="Confirmar contraseña" autoComplete="new-password" required value={confirm} onChange={e=>setConfirm(e.currentTarget.value)}/></>}
     {message&&<Alert withCloseButton onClose={()=>setMessage('')}>{message}</Alert>}<Button type="submit" loading={busy}>{recovery?'Solicitar enlace':'Cambiar contraseña'}</Button><Button component="a" href="/login" variant="subtle">Volver al acceso</Button>
