@@ -2,18 +2,61 @@ import { randomUUID } from 'node:crypto';
 import { beforeAll, afterAll, describe, expect, it } from 'vitest';
 import { type PGlite } from '@electric-sql/pglite';
 import { asUser, createTestDatabase } from './harness';
+import { sessionV2Schema } from '../../src/domain/sessions/session-v2';
 
 describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', () => {
     let db: PGlite;
     const orgA=randomUUID(), orgB=randomUUID(), adminA=randomUUID(), adminB=randomUUID();
     const supervisor=randomUUID(), technician=randomUUID(), future=randomUUID();
     const invitedProfessional=randomUUID();
-    let clientA: { id: string; updated_at: string }, clientB: { id: string };
-    const payload={clinical_id:'DUMMY-001',initials:'A.B.',birth_date:'2015-01-01',primary_language:'Español',guardians:[{initials:'M.B.',relationship:'Madre'}],siblings:[]};
-    const command=async (org:string, client:string|null, version:string|null, value=payload, testRun:string|null=null) => {
-        const r=await db.query<{ value: typeof clientA & {test_run_id:string|null} }>('select public.mvp_save_student($1,$2,$3,$4::jsonb,$5) value',[org,client,version,JSON.stringify(value),testRun]);
+    type FixtureClient = { id: string; updated_at: string; test_run_id: string|null; version: number };
+    type FamilyPayload = { clinical_id:string; initials:string; birth_date:string; primary_language:string; living_arrangement?:string|null; guardians?:{initials:string;relationship?:string}[]; siblings?:{initials:string;birth_date?:string}[] };
+    let clientA: FixtureClient, clientB: FixtureClient;
+    const payload: FamilyPayload={clinical_id:'DUMMY-001',initials:'A.B.',birth_date:'2015-01-01',primary_language:'Español',guardians:[{initials:'M.B.',relationship:'Madre'}],siblings:[]};
+    const createFixture=async (org:string, actor:string, value:FamilyPayload=payload, testRun:string|null=null):Promise<FixtureClient> => {
+        const id=randomUUID();
+        const row=(await db.query<{updated_at:string;test_run_id:string|null}>(
+            `insert into clients(id,organization_id,clinical_id,initials,birth_date,primary_language,living_arrangement,test_run_id)
+             values($1,$2,$3,$4,$5,$6,$7,$8) returning updated_at,test_run_id`,
+            [id,org,value.clinical_id,value.initials,value.birth_date,value.primary_language,value.living_arrangement??null,testRun],
+        )).rows[0];
+        await db.query(
+            `insert into client_profiles_v2(client_id,organization_id,full_name,reported_diagnosis,consultation_reason,context_home,context_school,context_adaptations,version,created_by,updated_by,test_run_id)
+             values($1,$2,$3,'','','','','',1,$4,$4,$5)`,
+            [id,org,value.initials,actor,testRun],
+        );
+        for (const guardian of value.guardians??[]) await db.query(
+            `insert into client_people_v2(id,client_id,organization_id,full_name,initials,birth_date,relationship,phone,email,roles,is_primary_contact,version,created_by,updated_by,test_run_id)
+             values($1,$2,$3,null,$4,null,$5,'',null,array['family'],false,1,$6,$6,$7)`,
+            [randomUUID(),id,org,guardian.initials,guardian.relationship??'',actor,testRun],
+        );
+        for (const sibling of value.siblings??[]) await db.query(
+            `insert into client_siblings_v2(id,client_id,organization_id,full_name,initials,birth_date,notes,version,created_by,updated_by,test_run_id)
+             values($1,$2,$3,null,$4,$5,'',1,$6,$6,$7)`,
+            [randomUUID(),id,org,sibling.initials,sibling.birth_date??null,actor,testRun],
+        );
+        await db.query(
+            `insert into student_assignments(organization_id,client_id,user_id,role,is_primary,created_by,test_run_id)
+             values($1,$2,$3,'supervisor',true,$3,$4)`,
+            [org,id,actor,testRun],
+        );
+        return {id,updated_at:row.updated_at,test_run_id:row.test_run_id,version:1};
+    };
+    const studentPayload=(overrides:Record<string,unknown>={})=>({
+        schemaVersion:2 as const,clinicalId:'DUMMY-001',fullName:'A.B.',initials:'A.B.',rut:null,
+        photoAttachmentId:null,birthDate:'2015-01-01',primaryLanguage:'Español',livingArrangement:'',
+        reportedDiagnosis:'',consultationReason:'',context:{home:'',school:'',adaptations:''},
+        people:[{id:randomUUID(),fullName:null,initials:'M.B.',birthDate:null,relationship:'Madre',phone:'',email:null,roles:['family'],isPrimaryContact:false}],
+        siblings:[],...overrides,
+    });
+    const studentCommand=async (org:string, command:Record<string,unknown>) => {
+        const r=await db.query<{value:Record<string,unknown>}>('select aba_student_command_v2($1,$2::jsonb) value',[org,JSON.stringify(command)]);
         return r.rows[0].value;
     };
+    const updateCommand=(studentId:string,expectedVersion:number,value:Record<string,unknown>) => ({
+        schemaVersion:2,operationId:randomUUID(),idempotencyKey:randomUUID(),studentId,expectedVersion,
+        action:'update',payload:value,statusConfirmation:false,
+    });
     beforeAll(async () => {
         db=await createTestDatabase();
         for (const id of [adminA,adminB,supervisor,technician,future]) await db.query('insert into auth.users(id,email) values($1,$2)',[id,`${id}@example.invalid`]);
@@ -21,8 +64,8 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         for (const [org,id,role] of [[orgA,adminA,'admin'],[orgB,adminB,'admin'],[orgA,supervisor,'supervisor'],[orgA,technician,'therapist'],[orgA,future,'supervisor']]) {
             await db.query('insert into memberships(organization_id,user_id,role) values($1,$2,$3)',[org,id,role]);
         }
-        clientA=await asUser(db,adminA,()=>command(orgA,null,null));
-        clientB=await asUser(db,adminB,()=>command(orgB,null,null));
+        clientA=await createFixture(orgA,adminA);
+        clientB=await createFixture(orgB,adminB);
         await db.query("insert into student_assignments(organization_id,client_id,user_id,role,created_by) values($1,$2,$3,'therapist',$4),($1,$2,$5,'supervisor',$4)",[orgA,clientA.id,technician,adminA,supervisor]);
     },60000);
     afterAll(async()=>{ await db?.close(); });
@@ -30,7 +73,8 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         await asUser(db,adminA,async()=>{
             expect((await db.query('select id from clients')).rows).toEqual([{id:clientA.id}]);
             expect((await db.query<{cap:string[]}>('select get_student_capabilities($1) cap',[clientB.id])).rows[0].cap).toEqual([]);
-            await expect(command(orgB,clientB.id,clientA.updated_at)).rejects.toMatchObject({code:'42501'});
+            const rejected=await studentCommand(orgB,updateCommand(clientB.id,1,studentPayload()));
+            expect(rejected).toMatchObject({status:'rejected',code:'permission-denied'});
         });
     });
     it('revives a soft-deleted identity on a new invitation',async()=>{
@@ -52,7 +96,7 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
     it('test-run assignments inherit the student batch',async()=>{
         const batch=randomUUID();
         await db.query('insert into test_data_batches(organization_id,id,created_by) values($1,$2,$3)',[orgA,batch,adminA]);
-        const testClient=await asUser(db,adminA,()=>command(orgA,null,null,{...payload,clinical_id:'DUMMY-TEST-001'},batch));
+        const testClient=await createFixture(orgA,adminA,{...payload,clinical_id:'DUMMY-TEST-001'},batch);
         await asUser(db,adminA,async()=>{
             const assigned=(await db.query<{user_id:string;test_run_id:string|null}>(
                 "select user_id,test_run_id from set_student_assignment($1,$2,'therapist','active')",[testClient.id,technician],
@@ -67,7 +111,7 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
     it('technician reads assigned student but cannot edit',async()=>{
         await asUser(db,technician,async()=>{
             expect((await db.query('select id from clients')).rows).toHaveLength(1);
-            await expect(command(orgA,clientA.id,clientA.updated_at)).rejects.toMatchObject({code:'42501'});
+            await expect(studentCommand(orgA,updateCommand(clientA.id,1,studentPayload()))).resolves.toMatchObject({status:'rejected',code:'permission-denied'});
         });
     });
     it('non-primary supervisor cannot decide/revoke authorizations',async()=>{
@@ -181,32 +225,77 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         // Leave no clinical rows behind for the cleanup contract test.
         await db.query('delete from clinical_session_v2_events where session_id=$1',[sessionId]);
         await db.query('delete from clinical_session_v2_state where session_id=$1',[sessionId]);
-        await db.query('delete from clinical_sessions where id=$1',[sessionId]);
     });
-    it('atomic family edit survives reread and rejects stale version',async()=>{
+    it('returns a capture boundary that covers every persisted session event',async()=>{
+        const sessionId=randomUUID();
+        const started='2026-10-20T10:00:00Z', paused='2026-10-20T11:00:00Z';
+        await db.query(
+            `insert into clinical_session_v2_state(session_id,organization_id,client_id,captured_at,created_by)
+             values($1,$2,$3,$4,$5)`,
+            [sessionId,orgA,clientA.id,started,adminA],
+        );
+        await db.query(
+            `insert into clinical_session_v2_events(id,session_id,organization_id,client_id,sequence,event_type,occurred_at,actor_user_id)
+             values($1,$2,$3,$4,1,'started',$5,$6),($7,$2,$3,$4,2,'paused',$8,$6)`,
+            [randomUUID(),sessionId,orgA,clientA.id,started,adminA,randomUUID(),paused],
+        );
+        const snapshot=await asUser(db,adminA,async()=>{
+            const result=await db.query<{data:{sessions:unknown[]}}>('select read_program_session_v2($1,$2) data',[orgA,clientA.id]);
+            return result.rows[0].data;
+        });
+        const session=(snapshot.sessions as Record<string,unknown>[]).find((item)=>item.id===sessionId);
+        expect(session).toBeDefined();
+        expect(Date.parse(String(session!.capturedAt))).toBeGreaterThanOrEqual(Date.parse(paused));
+        expect(sessionV2Schema.safeParse(session).success).toBe(true);
+        await db.query('delete from clinical_session_v2_events where session_id=$1',[sessionId]);
+        await db.query('delete from clinical_session_v2_state where session_id=$1',[sessionId]);
+    });
+    it('archives a V2 session without the removed V1 mirror',async()=>{
+        const sessionId=randomUUID();
+        await db.query(
+            'insert into clinical_session_v2_state(session_id,organization_id,client_id,captured_at,created_by) values($1,$2,$3,now(),$4)',
+            [sessionId,orgA,clientA.id,adminA],
+        );
         await asUser(db,adminA,async()=>{
-            const edited=await command(orgA,clientA.id,clientA.updated_at,{...payload,initials:'A.C.'});
-            await expect(command(orgA,clientA.id,clientA.updated_at)).rejects.toMatchObject({code:'40001'});
-            expect((await db.query('select initials from guardians where client_id=$1',[clientA.id])).rows).toEqual([{initials:'M.B.'}]);
-            clientA=edited;
+            const command={schemaVersion:2,operationId:randomUUID(),idempotencyKey:randomUUID(),studentId:clientA.id,sessionId,expectedVersion:0,reason:'demo'};
+            const result=(await db.query<{value:{status:string}}>(
+                'select command_archive_session_v2($1,$2::jsonb) value',[orgA,JSON.stringify(command)],
+            )).rows[0].value;
+            expect(result.status).toBe('acknowledged');
+            const state=(await db.query<{archived_at:string|null}>(
+                'select archived_at::text from clinical_session_v2_state where session_id=$1',[sessionId],
+            )).rows[0];
+            expect(state.archived_at).not.toBeNull();
+        });
+        await db.query('delete from clinical_session_v2_state where session_id=$1',[sessionId]);
+    });
+    it('updates a student through V2 with optimistic concurrency',async()=>{
+        await asUser(db,adminA,async()=>{
+            const updated=await studentCommand(orgA,updateCommand(clientA.id,clientA.version,studentPayload({initials:'A.C.'})));
+            expect(updated.status).toBe('acknowledged');
+            const stale=await studentCommand(orgA,updateCommand(clientA.id,clientA.version,studentPayload({initials:'A.D.'})));
+            expect(stale).toMatchObject({status:'conflict'});
+            expect((await db.query('select initials from client_people_v2 where client_id=$1 and archived_at is null',[clientA.id])).rows)
+                .toEqual([{initials:'M.B.'}]);
+            expect((await db.query('select version from client_profiles_v2 where client_id=$1',[clientA.id])).rows[0]).toEqual({version:2});
         });
     });
     it('rejects direct DML that would bypass clinical commands',async()=>{
         await asUser(db,adminA,async()=>{
             const privileges=(await db.query<{
                 clients_update:boolean;
-                guardians_update:boolean;
+                people_update:boolean;
                 context_update:boolean;
                 history_insert:boolean;
             }>(`select
                 has_table_privilege('authenticated','public.clients','update') clients_update,
-                has_table_privilege('authenticated','public.guardians','update') guardians_update,
+                has_table_privilege('authenticated','public.client_people_v2','update') people_update,
                 has_table_privilege('authenticated','public.client_context_profiles','update') context_update,
-                has_table_privilege('authenticated','public.clinical_history_entries','insert') history_insert
+                has_table_privilege('authenticated','public.clinical_history_versions_v2','insert') history_insert
             `)).rows[0];
             expect(privileges).toEqual({
                 clients_update:false,
-                guardians_update:false,
+                people_update:false,
                 context_update:false,
                 history_insert:false,
             });
@@ -220,18 +309,18 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
         await asUser(db,supervisor,async()=>{
             await expect(db.query('select mvp_open_test_batch($1,$2)',[orgA,token]))
                 .rejects.toMatchObject({code:'42501'});
-            await expect(command(orgA,null,null,dummyPayload,token))
-                .rejects.toMatchObject({code:'42501'});
         });
         await asUser(db,adminA,async()=>{
             await db.query('select mvp_open_test_batch($1,$2)',[orgA,token]);
             await db.query('select mvp_open_test_batch($1,$2)',[orgA,token]);
-            const dummy=await command(orgA,null,null,dummyPayload,token);
-            expect(dummy.test_run_id).toBe(token);
+        });
+        const dummy=await createFixture(orgA,adminA,dummyPayload,token);
+        expect(dummy.test_run_id).toBe(token);
+        await asUser(db,adminA,async()=>{
             await db.query('select mvp_freeze_test_batch($1,$2)',[orgA,token]);
             expect((await db.query<{cap:string[]}>('select get_student_capabilities($1) cap',[dummy.id])).rows[0].cap).toEqual([]);
-            await expect(command(orgA,null,null,{...dummyPayload,clinical_id:'DUMMY-FROZEN'},token))
-                .rejects.toMatchObject({code:'22023'});
+            await expect(db.query("select set_student_assignment($1,$2,'therapist','active')",[dummy.id,technician]))
+                .rejects.toMatchObject({code:'42501'});
         });
     });
     it('keeps legacy program write RPCs closed after V2 cutover',async()=>{
@@ -243,37 +332,48 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
                 .rejects.toMatchObject({code:'42501'});
         });
     });
-    it('keeps legacy capture and session-finish RPCs closed',async()=>{
-        const save=(client:string)=>db.query(
-            "select mvp_save_record($1,$2,$3,$4,'percentage',$5::jsonb,$6,$7)",
-            [randomUUID(),randomUUID(),client,randomUUID(),JSON.stringify({trials:[true,false]}),0,false],
-        );
-        await asUser(db,technician,async()=>{
-            await expect(save(clientA.id)).rejects.toMatchObject({code:'42501'});
-            await expect(db.query('select mvp_finish_session($1)',[randomUUID()])).rejects.toMatchObject({code:'42501'});
-        });
-        await asUser(db,adminB,()=>expect(save(clientB.id)).rejects.toMatchObject({code:'42501'}));
+    it('removes legacy capture and session-finish RPCs',async()=>{
+        const rows=(await db.query<{save:string|null;finish:string|null}>(
+            "select to_regprocedure('public.mvp_save_record(uuid,uuid,uuid,uuid,text,jsonb,integer,boolean)') save, to_regprocedure('public.mvp_finish_session(uuid)') finish",
+        )).rows[0];
+        expect(rows).toEqual({save:null,finish:null});
     });
     it('disallows direct session DML bypass after V2 cutover',async()=>{
         await asUser(db,technician,async()=>{
-            await expect(db.query("update clinical_sessions set status='draft' where id=$1",[randomUUID()]))
+            await expect(db.query("update clinical_session_v2_state set status='draft' where session_id=$1",[randomUUID()]))
                 .rejects.toMatchObject({code:'42501'});
         });
     });
     it('anonymous cannot call clinical commands',async()=>{
         await db.exec('set role anon');
-        try { await expect(command(orgA,null,null)).rejects.toMatchObject({code:'42501'}); }
-        finally { await db.exec('reset role'); }
+        try {
+            await expect(db.query('select aba_student_command_v2($1,$2::jsonb)',[orgA,JSON.stringify(updateCommand(clientA.id,1,studentPayload()))]))
+                .rejects.toMatchObject({code:'42501'});
+        } finally { await db.exec('reset role'); }
     });
     it('inventories then removes one dummy lot while preserving accounts and clinic',async()=>{
         const token=randomUUID();
-        const foreignClinicalAudit=randomUUID();
+        const historyRoot=randomUUID(), historyChild=randomUUID(), sessionId=randomUUID();
+        await db.query(
+            `insert into clinical_history_versions_v2(id,history_id,client_id,organization_id,kind,action,descriptor,status,version,created_by)
+             values($1,$1,$2,$3,'assessment','initialize-v2','Root','superseded',1,$4),
+                   ($5,$1,$2,$3,'assessment','correct','Child','active',2,$4)`,
+            [historyRoot,clientA.id,orgA,adminA,historyChild],
+        );
+        await db.query(
+            'insert into clinical_session_v2_state(session_id,organization_id,client_id,captured_at,created_by) values($1,$2,$3,now(),$4)',
+            [sessionId,orgA,clientA.id,adminA],
+        );
+        await db.query(
+            `insert into clinical_session_v2_events(id,session_id,organization_id,client_id,sequence,event_type,occurred_at,actor_user_id)
+             values($1,$2,$3,$4,1,'started',now(),$5)`,
+            [randomUUID(),sessionId,orgA,clientA.id,adminA],
+        );
         await asUser(db,adminA,()=>db.query('select mvp_open_test_batch($1,$2)',[orgA,token]));
         await asUser(db,adminB,()=>db.query('select mvp_open_test_batch($1,$2)',[orgB,token]));
         await db.query('update clients set test_run_id=$1 where id in ($2,$3)',[token,clientA.id,clientB.id]);
         await db.query("insert into audit_events(organization_id,entity_type,entity_id,action,test_run_id) values($1,'client',$2,'updated',$3) returning id",[orgB,clientB.id,token]);
         const auditId=(await db.query<{id:string}>("select id::text from audit_events where organization_id=$1 and entity_id=$2 and test_run_id=$3 order by id desc limit 1",[orgB,clientB.id,token])).rows[0].id;
-        await db.query("insert into clinical_audit_events(organization_id,client_id,entity_type,entity_id,action,test_run_id) values($1,$2,'assessment',$3,'updated',$4)",[orgB,clientB.id,foreignClinicalAudit,token]);
         await asUser(db,adminA,async()=>{
             const openDry=(await db.query<{value:{executed:boolean;clients:number;required_confirmation:string;status:string}}>('select mvp_cleanup_test_run($1,$2,null) value',[orgA,token])).rows[0].value;
             expect(openDry).toMatchObject({executed:false,clients:1,status:'open'});
@@ -287,9 +387,10 @@ describe('MVP clinic contracts (real PostgreSQL roles, synthetic identities)', (
             expect(repeated).toMatchObject({executed:false,already_cleaned:true,status:'cleaned'});
         });
         expect((await db.query('select id from clients where id=$1',[clientA.id])).rows).toEqual([]);
+        expect((await db.query('select id from clinical_history_versions_v2 where client_id=$1',[clientA.id])).rows).toEqual([]);
+        expect((await db.query('select session_id from clinical_session_v2_state where client_id=$1',[clientA.id])).rows).toEqual([]);
         expect((await db.query('select id from clients where id=$1',[clientB.id])).rows).toHaveLength(1);
         expect((await db.query('select id from audit_events where id=$1',[auditId])).rows).toHaveLength(1);
-        expect((await db.query('select id from clinical_audit_events where entity_id=$1',[foreignClinicalAudit])).rows).toHaveLength(1);
         expect((await db.query('select user_id from memberships where organization_id=$1',[orgA])).rows.length).toBeGreaterThan(0);
         expect((await db.query('select id from organizations where id=$1',[orgA])).rows).toHaveLength(1);
     });

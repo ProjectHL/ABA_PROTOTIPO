@@ -38,77 +38,22 @@ async function capabilityForStudent(clinicId: string, studentId: string, require
   return { db, capabilities: capabilities.data };
 }
 
-function summaryFromClient(row: {
-  id: string; organization_id: string; clinical_id: string; initials: string; status: string; updated_at: string;
-}, capabilities: string[]): AuthorizedStudentSummary {
-  return authorizedStudentSummary.parse({
-    id: row.id, clinicId: row.organization_id, displayName: row.initials, initials: row.initials,
-    clinicalId: row.clinical_id,
-    rut: null, photoAttachmentId: null, reportedDiagnosis: null, hasActiveSession: false,
-    familyAccessEnabled: false, assignedProfessional: null,
-    status: row.status === 'active' ? 'active' : 'archived', capabilities, version: null,
-  });
-}
-
 /** Returns only resources allowed by the current database policy plus the canonical capability engine. */
 export async function listAuthorizedStudents(clinicId: string): Promise<AuthorizedStudentSummary[]> {
   const { db, clinicId: capturedClinicId } = await sessionForClinic(clinicId);
   const rpc = db.rpc.bind(db) as unknown as Rpc;
   const v2 = await rpc('aba_list_students_v2', { p_organization_id: capturedClinicId });
-  if (!v2.error) return z.array(authorizedStudentSummary).parse(v2.data);
-  if (v2.error.code !== '42883') throw new Error('No fue posible consultar las fichas autorizadas.');
-  const query = await db.from('clients')
-    .select('id, organization_id, clinical_id, initials, status, updated_at')
-    .eq('organization_id', capturedClinicId)
-    .order('created_at', { ascending: false });
-  if (query.error) throw new Error('No fue posible consultar las fichas autorizadas.');
-  const rows = await Promise.all((query.data ?? []).map(async (row) => {
-    const result = await db.rpc('get_student_capabilities', { p_client_id: row.id });
-    const capabilities = capabilityList.safeParse(result.data);
-    if (result.error || !capabilities.success || !capabilities.data.includes('student.view')) return null;
-    return summaryFromClient(row, capabilities.data);
-  }));
-  return rows.filter((row): row is AuthorizedStudentSummary => row !== null);
+  if (v2.error) throw new Error('No fue posible consultar las fichas autorizadas.');
+  return z.array(authorizedStudentSummary).parse(v2.data);
 }
 
-/**
- * Compatibility reader for the applied V1 schema. Fields not stored yet stay null;
- * names, RUT and V2 attachment links are never manufactured from initials or paths.
- */
+/** Canonical V2 detail reader. The V1 family/history fallback was removed with the V1 tables. */
 export async function getAuthorizedStudent(studentId: string, clinicId: string): Promise<StudentDetailDto | null> {
   const session = await sessionForClinic(clinicId);
   const rpc = session.db.rpc.bind(session.db) as unknown as Rpc;
   const v2 = await rpc('aba_student_detail_v2', { p_organization_id: clinicId, p_client_id: uuid.parse(studentId) });
-  if (!v2.error) return v2.data === null ? null : studentDetailDto.parse(v2.data);
-  if (v2.error.code !== '42883') throw new Error('No fue posible cargar la ficha autorizada.');
-  const { db, capabilities } = await capabilityForStudent(clinicId, studentId, 'student.view');
-  const clientResult = await db.from('clients')
-    .select('id, organization_id, clinical_id, initials, birth_date, primary_language, living_arrangement, status, created_at, updated_at')
-    .eq('id', studentId).eq('organization_id', clinicId).maybeSingle();
-  if (clientResult.error) throw new Error('No fue posible cargar la ficha autorizada.');
-  if (!clientResult.data) return null;
-  const [context, guardians, siblings, history, consents] = await Promise.all([
-    db.from('client_context_profiles').select('home_adaptations, schooling, school_adaptations').eq('client_id', studentId).maybeSingle(),
-    db.from('guardians').select('id, initials, birth_date, relationship, phone').eq('client_id', studentId).order('position'),
-    db.from('siblings').select('id, initials, birth_date').eq('client_id', studentId).order('position'),
-    db.from('clinical_history_entries').select('id, kind, descriptor, dose, prescriber_descriptor, started_on, ended_on, status, supersedes_id, created_at').eq('client_id', studentId).order('created_at', { ascending: false }),
-    db.from('consent_records').select('id, purpose_code, notice_version, grantor_descriptor, channel, status, evidence_attachment_id, supersedes_id, version, created_at').eq('client_id', studentId).order('created_at', { ascending: false }),
-  ]);
-  if ([context, guardians, siblings, history, consents].some((result) => result.error)) {
-    throw new Error('No fue posible recuperar la información clínica autorizada.');
-  }
-  const client = clientResult.data;
-  return studentDetailDto.parse({
-    ...summaryFromClient(client, capabilities), clinicalId: client.clinical_id, fullName: null, rut: null,
-    birthDate: client.birth_date, primaryLanguage: client.primary_language, livingArrangement: client.living_arrangement,
-    reportedDiagnosis: null, consultationReason: null,
-    context: { home: context.data?.home_adaptations ?? '', school: context.data?.schooling ?? '', adaptations: context.data?.school_adaptations ?? '' },
-    people: (guardians.data ?? []).map((person) => ({ id: person.id, fullName: null, initials: person.initials, birthDate: person.birth_date, relationship: person.relationship ?? '', phone: person.phone, email: null, roles: ['family'] as const, isPrimaryContact: false })),
-    siblings: (siblings.data ?? []).map((person) => ({ id: person.id, fullName: null, initials: person.initials, birthDate: person.birth_date, notes: null })),
-    history: (history.data ?? []).map((entry) => ({ historyId: entry.id, versionId: entry.id, kind: entry.kind, descriptor: entry.descriptor, dose: entry.dose, frequency: null, prescriber: entry.prescriber_descriptor, startedOn: entry.started_on, endedOn: entry.ended_on, notes: null, status: entry.status === 'active' || entry.status === 'inactive' || entry.status === 'superseded' || entry.status === 'entered_in_error' ? entry.status : 'entered_in_error', supersedesVersionId: entry.supersedes_id, version: null, createdAt: entry.created_at })),
-    consents: (consents.data ?? []).map((item) => ({ consentId: item.supersedes_id ?? item.id, versionId: item.id, version: item.version, id: item.id, purposeCode: item.purpose_code, noticeVersion: item.notice_version, grantor: item.grantor_descriptor, channel: item.channel, status: item.status, evidenceAttachmentId: item.evidence_attachment_id, supersedesVersionId: item.supersedes_id, createdAt: item.created_at })),
-    createdAt: client.created_at, updatedAt: client.updated_at,
-  });
+  if (v2.error) throw new Error('No fue posible cargar la ficha autorizada.');
+  return v2.data === null ? null : studentDetailDto.parse(v2.data);
 }
 
 type RpcResult = { data: unknown; error: { code?: string; message: string } | null };

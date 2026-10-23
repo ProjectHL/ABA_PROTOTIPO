@@ -204,7 +204,6 @@ correctiva hacia adelante.
 - Limpieza por lote y gate final de publicación definidos en
   `../OPERACION_POC.md`.
 
-
 ## Memoria y disco
 
 La base corre con `DB_MEMORY_LIMIT=256m` y ajustes de PostgreSQL pensados para ese techo (`shared_buffers=64MB`, `max_connections=30`, `work_mem=2MB`). Son suficientes para una clínica pequeña; si `pg_stat_activity` o el log muestran presión, subí a `384m` o `512m`. No uses `5g`: el contenedor reserva ese techo y el kernel puede matarlo por OOM igual si no hay RAM libre en el VPS.
@@ -218,3 +217,13 @@ sudo ./db-disk-quota.sh /srv/aba-db 5G
 Después definí `DB_DATA_DIR=/srv/aba-db` en `.env` y redesplegá. Cada stack necesita su propio directorio (`/srv/aba-dev`, `/srv/aba-prod`). Al llenarse, PostgreSQL devuelve "No space left on device" en vez de llenar el disco del VPS.
 
 Si ya tenés datos en el volumen con nombre, migralos antes de cambiar `DB_DATA_DIR`: `docker run --rm -v <proyecto>_postgres_data:/from -v /srv/aba-db:/to alpine cp -a /from/. /to/` con el stack detenido, y luego `chown 70:70 /srv/aba-db`.
+
+## Datos de demostración
+
+Nunca en producción. Para un ambiente de test, con la clínica ya configurada:
+
+```sh
+docker compose --env-file .env exec app node seed-demo.mjs --force
+```
+
+Carga seis fichas ficticias y las cuentas `clinico@demo.test` / `lector@demo.test`. La imagen incluye `seed-demo.mjs` y `seed/demo.sql`; el script se niega a correr con `APP_ENV=production`.
